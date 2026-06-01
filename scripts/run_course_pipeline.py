@@ -30,6 +30,7 @@ def run(cmd: list[str], skip: bool) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run transcription, visual analysis, distillation, and skill packaging.")
     parser.add_argument("--input-dir", required=True, help="Directory containing course .mp4 files.")
+    parser.add_argument("--documents-input", action="append", help="Optional PDF file or directory for MinerU OCR. Repeatable.")
     parser.add_argument("--course-name", required=True, help="Course output directory name.")
     parser.add_argument("--skill-name", required=True, help="Generated skill name.")
     parser.add_argument("--mode", default="course-expert", help="Skill mode or comma-separated modes passed to build_course_skill.py.")
@@ -39,6 +40,7 @@ def main() -> None:
     parser.add_argument("--force", action="store_true", help="Re-run stages that support overwrite.")
     parser.add_argument("--skip-transcribe", action="store_true")
     parser.add_argument("--skip-analyze", action="store_true")
+    parser.add_argument("--skip-documents", action="store_true")
     parser.add_argument("--skip-distill", action="store_true")
     parser.add_argument("--skip-package", action="store_true")
     parser.add_argument("--skip-build-skill", action="store_true")
@@ -81,6 +83,18 @@ def main() -> None:
         ],
         args.skip_analyze,
     )
+    if args.documents_input:
+        doc_cmd = [
+            py,
+            str(ROOT / "scripts" / "parse_mineru_documents.py"),
+            "--course-name",
+            args.course_name,
+            "--base-dir",
+            args.base_dir,
+        ]
+        for item in args.documents_input:
+            doc_cmd.extend(["--input", item])
+        run(doc_cmd, args.skip_documents)
     run(
         [
             py,

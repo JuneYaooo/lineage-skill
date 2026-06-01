@@ -100,6 +100,10 @@ def build_evidence(source_dir: Path) -> list[dict]:
             rows.append({"type": "screenshot", "path": str(path.relative_to(source_dir)), "granularity": "file"})
     for path in sorted(source_dir.glob("course_distillation_*.*")):
         rows.append({"type": "distillation", "path": str(path.relative_to(source_dir)), "granularity": "file"})
+    for path in sorted(source_dir.glob("documents/**/*.md")):
+        rows.append({"type": "document_ocr", "path": str(path.relative_to(source_dir)), "granularity": "file"})
+    for path in sorted(source_dir.glob("documents/**/*.json")):
+        rows.append({"type": "document_manifest", "path": str(path.relative_to(source_dir)), "granularity": "file"})
     return rows
 
 

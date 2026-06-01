@@ -4,13 +4,13 @@
 
 **把任意课程蒸馏成可对话、可溯源、可复用的 AI Skill。**
 
-面向 Codex / Claude Code / OpenClaw / Hermes / 自定义 Agent 的通用课程蒸馏框架：  
-视频、音频、讲义、PDF、截图证据进来，生成 `CoursePackage`，再按用途包装成不同模式的专家 Skill。
+面向 Codex / Claude Code / OpenClaw / Hermes / 自定义 Agent。  
+把视频、音频、讲义、PDF、截图证据和已有笔记，沉淀成可检索、可引用、可继续复用的课程专家。
 
 [![GitHub stars](https://img.shields.io/github/stars/JuneYaooo/lineage-skill?style=flat)](https://github.com/JuneYaooo/lineage-skill/stargazers)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
-[![Skill](https://img.shields.io/badge/AI%20Agent-Skill-orange.svg)](./SKILL_MODES.md)
+[![Skill](https://img.shields.io/badge/AI%20Agent-Skill-orange.svg)](./SKILL.md)
 
 ```text
 Course materials in, grounded expert skill out.
@@ -20,270 +20,127 @@ Course materials in, grounded expert skill out.
 
 ---
 
-## 为什么做这个
+## 一句话
 
-一门好课的价值通常不只是知识点，而是老师的结构、判断、案例、边界和反复强调的方法。问题是课程太长、复习太慢、引用不清，学完后很难真正调用。
+`lineage-skill` 不是课程总结器，而是课程知识系统生成器。
 
-`lineage-skill` 做的是课程资产化：
+它会帮 Agent 把一门课拆成转录、视觉证据、逐课摘要、概念、案例、方法、金句、边界和 `CoursePackage`，再包装成不同用途的 Skill。
 
-- 把长视频变成可检索转录
-- 把 PPT、板书、图表、软件界面提取成视觉证据
-- 把逐课内容压缩成摘要、概念、案例、方法、金句和边界
-- 把整门课规范化为 `CoursePackage`
-- 把 `CoursePackage` 包装成 Agent 可调用的 Skill
+## 真实案例
 
-它不是课程总结器，而是课程知识系统生成器。
+[JuneYaooo/nihaixia](https://github.com/JuneYaooo/nihaixia) 是通过这类课程蒸馏流程沉淀出来的真实 Skill 项目，来源包含 **100GB+ 视频课程材料**，最终整理成可触发、可检索、可溯源的专门领域 Skill。
 
-## 实际案例
+## 怎么安装
 
-[JuneYaooo/nihaixia](https://github.com/JuneYaooo/nihaixia) 就是通过这类课程蒸馏流程沉淀出来的真实 Skill 项目：把大量课程材料整理成可触发、可检索、可溯源的专门领域 Skill。
-
-`lineage-skill` 是把这套能力抽象成通用框架，不绑定任何课程、老师、领域、私有路径或历史蒸馏内容。
-
-## 当前能力
-
-| 能力 | 状态 | 脚本 / 文件 |
-| --- | --- | --- |
-| 视频语音转录 | 已有 | `scripts/transcribe_video.py` |
-| 视频画面分析 + 干货截图 | 已有 | `scripts/analyze_videos.py` |
-| 课程级蒸馏 | 已有 | `scripts/distill_course.py` |
-| 标准 CoursePackage | 已有 | `scripts/build_course_package.py` |
-| 多模式 Skill 生成 | 已有 | `scripts/build_course_skill.py` |
-| 一键流水线 | 已有 | `scripts/run_course_pipeline.py` |
-| 本地关键词检索 | 已有 | 生成到 Skill 的 `scripts/search_course_notes.py` |
-| PDF / OCR / MinerU 配置 | 已预留 | `.env.example` |
-
-当前视频课程主链路已经可跑通。PDF、扫描件和 MinerU OCR 已在配置层预留；外部 OCR/MinerU 产物可以进入 `CoursePackage` 和 Skill 生成层。MinerU 解析命令接入主流水线是下一步。
-
-## 整体架构
+把下面这段话发给你的 Agent：
 
 ```text
-Raw course materials
-  ├─ videos / audio
-  ├─ slides / PDF / docs
-  └─ screenshots / notes
-        ↓
-Capture + Cite
-  ├─ transcripts/*.json
-  ├─ analysis/*_analysis.md
-  └─ analysis/screenshots/*
-        ↓
-Compress + Connect
-  ├─ lesson_summaries.json
-  ├─ course_distillation_<date>.md/json
-  └─ full_transcript.md
-        ↓
-CoursePackage
-  └─ course_package.json
-        ↓
-Codify
-  └─ dist/<skill-name>/
-      ├─ SKILL.md
-      ├─ references/*
-      └─ scripts/search_course_notes.py
+帮我安装 lineage-skill：
+https://github.com/JuneYaooo/lineage-skill
 ```
 
-理论基础见 [THEORETICAL_FOUNDATION.md](./THEORETICAL_FOUNDATION.md)。方法论见 [METHODOLOGY.md](./METHODOLOGY.md)。
-
-## 快速开始
-
-```bash
-git clone git@github.com:JuneYaooo/lineage-skill.git
-cd lineage-skill
-pip install -r requirements.txt
-cp .env.example .env
-```
-
-编辑 `.env`，只填写你实际使用的 provider。不要提交 `.env`。
-
-然后运行一键流水线：
-
-```bash
-python scripts/run_course_pipeline.py \
-  --input-dir /path/to/course-videos \
-  --course-name example-course \
-  --skill-name example-course \
-  --mode course-expert \
-  --output-dir ./dist \
-  --chunk-minutes 8
-```
-
-已经有转录或分析结果时，可以跳过阶段：
-
-```bash
-python scripts/run_course_pipeline.py \
-  --input-dir /path/to/course-videos \
-  --course-name example-course \
-  --skill-name example-course-coach \
-  --mode course-expert,study-coach \
-  --skip-transcribe \
-  --skip-analyze
-```
-
-## 分阶段使用
-
-### 1. 转录视频
-
-```bash
-python scripts/transcribe_video.py \
-  --input-dir /path/to/course-videos \
-  --course-name example-course
-```
-
-输出：
+如果你的 Agent 支持读取安装说明，可以直接说：
 
 ```text
-example-course/transcripts/*_transcript.json
+安装这个课程蒸馏 Skill，并告诉我需要配置哪些环境变量。
 ```
 
-### 2. 分析画面并提取截图
+Agent 会根据自己的运行环境把仓库装成可用 Skill。具体执行细节在 [SKILL.md](./SKILL.md)，README 不展开命令手册。
 
-```bash
-python scripts/analyze_videos.py \
-  --input-dir /path/to/course-videos \
-  --course-name example-course \
-  --chunk-minutes 8
-```
+## 怎么用
 
-输出：
+安装后直接用自然语言说需求。
+
+### 蒸馏一门视频课
 
 ```text
-example-course/analysis/*_analysis.md
-example-course/analysis/screenshots/<video>/*.jpg
+帮我把这个视频课程目录蒸馏成一个 course-expert skill。
+课程名叫 example-course，输出到 dist 目录。
 ```
 
-### 3. 蒸馏课程
-
-```bash
-python scripts/distill_course.py \
-  --course-name example-course
-```
-
-输出：
+### 带 PDF / 讲义一起蒸馏
 
 ```text
-example-course/lesson_summaries.json
-example-course/full_transcript.md
-example-course/course_distillation_<date>.md
-example-course/course_distillation_<date>.json
+这个课程还有 PDF 讲义。请用 MinerU/OCR 解析 PDF，
+再和视频转录、截图分析一起生成 CoursePackage 和 Skill。
 ```
 
-### 4. 生成 CoursePackage
-
-```bash
-python scripts/build_course_package.py \
-  --course-name example-course \
-  --source-dir ./example-course
-```
-
-输出：
+### 从已有材料生成 Skill
 
 ```text
-example-course/course_package.json
+我已经有 transcripts、analysis、lesson_summaries 和 course_distillation 文件。
+请直接构建 CoursePackage，并生成一个 course-expert,practitioner 组合模式的 Skill。
 ```
 
-### 5. 生成 Skill
-
-```bash
-python scripts/build_course_skill.py \
-  --course-name example-course \
-  --skill-name example-course \
-  --mode course-expert \
-  --source-dir ./example-course \
-  --output-dir ./dist
-```
-
-输出：
+### 做学习教练
 
 ```text
-dist/example-course/
-├── SKILL.md
-├── lineage_manifest.json
-├── references/
-│   ├── course_package.json
-│   ├── course_digest.md
-│   ├── full_transcript.md
-│   ├── lesson_index.json
-│   ├── concept_glossary.md
-│   ├── evidence_map.json
-│   ├── quote_index.md
-│   └── study_paths.md
-└── scripts/
-    └── search_course_notes.py
+把这门课生成 study-coach 模式。
+我希望它能帮我按 7 天复习路径、回忆提示和薄弱点复盘来学习。
 ```
 
-## CoursePackage
-
-`course_package.json` 是稳定中间层，不绑定课程领域：
+### 做证据档案
 
 ```text
-manifest
-lessons
-concepts
-topics
-cases
-methods
-learning_checks
-quotes
-evidence
-study_paths
-boundaries
-quality
+把这门课生成 citation-archive 模式。
+回答时必须优先给来源、课时、转录或截图证据。
 ```
 
-Skill 生成器优先读取 `course_package.json`，再回到 Markdown references 查细节和原文。
+## 能产出什么
 
-## Skill 模式
-
-同一份课程可以生成不同用途的 Skill：
-
-| Mode | 用途 |
+| 产物 | 价值 |
 | --- | --- |
-| `course-expert` | 默认模式：课程问答、概念解释、课时回查、来源引用 |
+| `CoursePackage` | 通用课程知识包，统一保存 lessons、concepts、topics、cases、methods、quotes、evidence、boundaries |
+| `SKILL.md` | 告诉 Agent 什么时候触发、如何回答、如何引用、如何处理边界 |
+| `references/` | 课程总览、课时索引、概念表、证据地图、金句、学习路径 |
+| `search_course_notes.py` | 本地关键词检索课程资料 |
+| mode-specific references | 根据模式生成学习计划、playbook、citation 规则、多课程索引等 |
+
+## 支持哪些模式
+
+同一门课可以生成不同用途的 Skill：
+
+| Mode | 适合用途 |
+| --- | --- |
+| `course-expert` | 课程问答、概念解释、课时回查、来源引用 |
 | `study-coach` | 学习计划、复习路径、回忆提示、反思提示 |
 | `practitioner` | playbook、checklist、template、实操流程 |
 | `citation-archive` | 强引用、原话检索、证据档案、可审计笔记 |
 | `knowledge-base` | 多课程知识库、概念别名、跨课程主题图谱 |
 | `domain-expert` | 多课程沉淀后的领域专家、方法库、案例库、边界规则 |
 
-组合模式：
+模式可以组合，例如：
 
-```bash
-python scripts/build_course_skill.py \
-  --course-name example-course \
-  --skill-name example-course-practice \
-  --mode course-expert,practitioner \
-  --source-dir ./example-course \
-  --output-dir ./dist
+```text
+请生成 course-expert,practitioner 两种模式组合的 Skill。
 ```
 
 详细设计见 [SKILL_MODES.md](./SKILL_MODES.md)。
 
-## 环境变量
+## 当前能力
 
-`.env.example` 只放占位变量，不包含真实 token、私有路径或课程内容。
+| 能力 | 状态 |
+| --- | --- |
+| 视频转录 | 已支持 |
+| 视频画面分析与关键截图 | 已支持 |
+| 课程级蒸馏 | 已支持 |
+| CoursePackage 构建 | 已支持 |
+| 多模式 Skill 生成 | 已支持 |
+| PDF / MinerU OCR | 已接入主流水线，可选配置 |
+| 本地关键词检索 | 已支持 |
 
-```bash
-# Audio transcription
-AUDIO_TRANSCRIBE_API_KEY=
-AUDIO_TRANSCRIBE_BASE_URL=https://your-audio-endpoint/v1
-AUDIO_TRANSCRIBE_MODEL=whisper-1
+## 需要配置什么
 
-# Vision analysis
-LINEAGE_VISION_API_KEY=
-LINEAGE_VISION_BASE_URL=https://your-vision-endpoint/v1
-LINEAGE_VISION_MODEL=gpt-4o
+复制 `.env.example` 为 `.env`，只填自己实际使用的服务。
 
-# Text distillation
-LINEAGE_TEXT_API_KEY=
-LINEAGE_TEXT_BASE_URL=https://your-text-endpoint/v1
-LINEAGE_TEXT_MODEL=gpt-4o
+常用配置：
 
-# Optional OCR / MinerU
-MINERU_API_TOKEN=
-MINERU_API_BASE=https://mineru.net/api/v4
-MINERU_MODEL_VERSION=vlm
-```
+| 场景 | 变量 |
+| --- | --- |
+| 音频转录 | `AUDIO_TRANSCRIBE_API_KEY`, `AUDIO_TRANSCRIBE_BASE_URL`, `AUDIO_TRANSCRIBE_MODEL` |
+| 视觉分析 | `LINEAGE_VISION_API_KEY`, `LINEAGE_VISION_BASE_URL`, `LINEAGE_VISION_MODEL` |
+| 文本蒸馏 | `LINEAGE_TEXT_API_KEY`, `LINEAGE_TEXT_BASE_URL`, `LINEAGE_TEXT_MODEL` |
+| PDF / OCR | `MINERU_API_TOKEN`, `MINERU_API_BASE`, `MINERU_MODEL_VERSION` |
 
 安全原则：
 
@@ -291,55 +148,37 @@ MINERU_MODEL_VERSION=vlm
 - 不写死真实 token
 - 不写死私有目录
 - 不写死历史课程内容
-- 生成的转录、截图、蒸馏产物默认被 `.gitignore` 忽略
+- 转录、截图、OCR、蒸馏产物默认被 `.gitignore` 忽略
 
-## 适合场景
+## 为什么可信
 
-| 场景 | 是否适合 |
-| --- | --- |
-| 把一门视频课变成可问答 Skill | 很适合 |
-| 做课程复习、课时回查、概念整理 | 很适合 |
-| 沉淀一个老师/课程体系的方法论 | 很适合 |
-| 做带来源的课程知识库 | 适合 |
-| 多课程合并成领域专家 | 规划中，已有模式设计 |
-| 扫描 PDF 全自动接入 MinerU | 配置已预留，主命令待接入 |
-
-## 项目结构
+方法论来自 C5 + Evaluate：
 
 ```text
-.
-├── README.md
-├── METHODOLOGY.md
-├── THEORETICAL_FOUNDATION.md
-├── SKILL_MODES.md
-├── ROADMAP.md
-├── .env.example
-├── examples/
-└── scripts/
-    ├── transcribe_video.py
-    ├── analyze_videos.py
-    ├── distill_course.py
-    ├── build_course_package.py
-    ├── build_course_skill.py
-    ├── run_course_pipeline.py
-    └── llm_client.py
+Capture  →  Cite  →  Compress  →  Connect  →  Codify  →  Evaluate
+采集        溯源      压缩          关联         技能化      评估
 ```
 
-## 路线图
+理论基础结合教学设计、认知学徒制、知识管理、多媒体学习和 RAG。详见 [THEORETICAL_FOUNDATION.md](./THEORETICAL_FOUNDATION.md)。
 
-- MinerU 解析命令接入主流水线
-- OCR 结果到 CoursePackage 的标准映射
-- 片段级 / 时间点级 evidence map
-- 语义检索与向量索引
-- 多课程合并与领域专家生成
-- 用户反馈回流和质量评估增强
+## 适合谁
 
-## 参考
+| 场景 | 适合程度 |
+| --- | --- |
+| 把一门长视频课变成可问答 Skill | 很适合 |
+| 做课程复习、课时回查、概念整理 | 很适合 |
+| 沉淀一个老师或课程体系的方法论 | 很适合 |
+| 做带来源的课程知识库 | 适合 |
+| 多课程合并成领域专家 | 适合，需准备多课程材料 |
+| 只想生成一篇普通课程总结 | 可以，但不是本项目的主要价值 |
 
-- [JuneYaooo/nihaixia](https://github.com/JuneYaooo/nihaixia) — 由课程蒸馏流程产出的真实 Skill 项目
+## 项目文档
+
+- [SKILL.md](./SKILL.md) — Agent 使用入口和执行规则
 - [METHODOLOGY.md](./METHODOLOGY.md) — C5 + Evaluate 方法论
 - [THEORETICAL_FOUNDATION.md](./THEORETICAL_FOUNDATION.md) — 理论基础
 - [SKILL_MODES.md](./SKILL_MODES.md) — 多模式 Skill 设计
+- [ROADMAP.md](./ROADMAP.md) — 后续路线图
 
 ## License
 

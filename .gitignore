@@ -224,6 +224,7 @@ output/
 tmp/
 */transcripts/
 */analysis/
+*/documents/
 */course_package.json
 */course_distillation_*.md
 */course_distillation_*.json

@@ -295,6 +295,7 @@ def build_evidence_map(source_dir: Path, destination: Path) -> str:
     analysis_files = sorted(str(p.relative_to(source_dir)) for p in source_dir.glob("analysis/**/*_analysis.md"))
     screenshot_files = sorted(str(p.relative_to(source_dir)) for p in source_dir.glob("analysis/screenshots/**/*") if p.is_file())
     course_distillations = sorted(str(p.relative_to(source_dir)) for p in source_dir.glob("course_distillation_*.*"))
+    document_files = sorted(str(p.relative_to(source_dir)) for p in source_dir.glob("documents/**/*") if p.is_file())
     payload = {
         "generated_at": dt.datetime.now().isoformat(timespec="seconds"),
         "source_dir": str(source_dir),
@@ -302,6 +303,7 @@ def build_evidence_map(source_dir: Path, destination: Path) -> str:
         "analysis_files": analysis_files,
         "screenshots": screenshot_files,
         "course_distillations": course_distillations,
+        "documents": document_files,
         "notes": [
             "Evidence entries are file-level by default.",
             "Add timestamps and topic labels after deeper course distillation.",
