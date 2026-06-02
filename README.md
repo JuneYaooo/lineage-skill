@@ -2,126 +2,200 @@
 
 # 师承.skill / Lineage Skill
 
-**把课程材料蒸馏成可对话、可溯源、可复用的 AI Skill。**
+**把一整套课，炼成一个能被 Agent 调用的专家 Skill。**
+
+不是只做课程总结，而是把视频、PDF、板书、截图、转录和笔记整理成一套可追问、可检索、可溯源、可复用的知识系统。
 
 面向 Codex / Claude Code / OpenClaw / Hermes / 自定义 Agent。
 
-[![GitHub stars](https://img.shields.io/github/stars/JuneYaooo/lineage-skill?style=flat)](https://github.com/JuneYaooo/lineage-skill/stargazers)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-orange.svg)](./LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/)
 [![Skill](https://img.shields.io/badge/AI%20Agent-Skill-orange.svg)](./SKILL.md)
 
 ```text
-Course materials in, grounded expert skill out.
+Course videos / PDFs / notes
+  -> transcripts + OCR + visual evidence
+  -> CoursePackage
+  -> grounded expert Skill
 ```
 
 </div>
 
 ---
 
-## 它解决什么
+## 你会得到什么
 
-课程资料常见的问题不是“没有内容”，而是：
+如果你手上有一套视频课、训练营、讲座、PDF 讲义或长期学习笔记，`lineage-skill` 可以把它变成一个专门服务这套课程的 Agent Skill。
 
-- 视频太长，复习只能拖进度条。
-- 老师在哪一课讲过某个概念，很难找。
-- AI 能总结，但经常没有来源。
-- PPT、板书、图表、软件演示这些关键信息容易被纯转录丢掉。
-- 学完后只剩散乱笔记，无法变成可调用的方法论。
+它能帮你得到：
 
-`lineage-skill` 的目标是把课程变成一个能被 Agent 调用的知识系统。
+- 一个能回答课程问题的专家助手：问“老师在哪一课讲过这个概念”，它会优先回到课程材料里找。
+- 一套可复习的课程索引：课时、概念、主题、案例、方法、金句、学习路径都能被整理出来。
+- 一张证据地图：转录、截图、OCR 文档和课程蒸馏结果会被保留下来，回答时能尽量指出来源。
+- 一组可复用的实战材料：playbook、checklist、template、案例库和边界规则可以从课程方法里生成。
+- 一个能装进 Agent 的 Skill：生成后的 `SKILL.md`、`references/` 和检索脚本可以被 Codex 等 Agent 调用。
 
-## 它会生成什么
+一句话：**把“我学过一套课”变成“我有一个能随时调用的课程专家”。**
+
+## 适合谁
+
+适合这些场景：
+
+- 你有几十小时甚至上百小时视频课，想把它沉淀成可复习、可提问的知识库。
+- 你不想只要摘要，而是希望保留“这句话、这个图、这个案例来自哪里”。
+- 你想把课程里的方法变成可执行的流程、模板、清单和判断规则。
+- 你正在为某个领域构建长期可复用的个人或团队知识 Skill。
+- 你已经有 transcripts、OCR、课程笔记或蒸馏结果，想直接打包成 Agent Skill。
+
+## 它怎么工作
 
 ```text
-课程材料
-  ↓
-CoursePackage
-  ↓
-多模式 AI Skill
+1. Capture  采集证据
+   视频转录、画面分析、关键截图、PDF/OCR、已有笔记
+
+2. Cite     保留来源
+   记录 transcript、analysis、screenshot、document、distillation 文件
+
+3. Compress 课程蒸馏
+   提炼课时摘要、概念、主题、案例、方法、金句和学习路径
+
+4. Connect  结构化
+   生成标准 CoursePackage，作为课程知识的中间层
+
+5. Codify   技能化
+   生成可被 Agent 调用的 mode-specific Skill
+
+6. Evaluate 评估边界
+   标记缺失字段、证据强度、适用范围和不确定内容
 ```
 
-核心产物：
+核心中间层是 `course_package.json`。它让课程内容先被标准化，再根据用途生成不同类型的 Skill。
 
-- `course_package.json`：标准课程知识包，保存课时、概念、主题、案例、方法、金句、证据和边界。
-- `SKILL.md`：告诉 Agent 什么时候触发、如何回答、如何引用、如何处理边界。
-- `references/`：课程总览、课时索引、概念表、证据地图、金句、学习路径。
-- `search_course_notes.py`：生成到 Skill 内的本地检索脚本。
+## 快速开始
 
-## 真实案例
+### 方式一：让 Agent 安装并使用
 
-[JuneYaooo/nihaixia](https://github.com/JuneYaooo/nihaixia) 是通过这类课程蒸馏流程沉淀出来的真实 Skill 项目，来源包含 **100GB+ 视频课程材料**，最终整理成可触发、可检索、可溯源的专门领域 Skill。
-
-## 怎么安装
-
-把这句话发给你的 Agent：
+把这段话发给你的 Agent：
 
 ```text
 帮我安装 lineage-skill：
 https://github.com/JuneYaooo/lineage-skill
+
+安装后请检查需要配置的环境变量，并告诉我下一步怎么把我的课程目录生成 Skill。
 ```
 
-然后让 Agent 检查需要配置的环境变量：
+然后直接描述你的材料：
 
 ```text
-安装这个课程蒸馏 Skill，并告诉我需要配置哪些环境变量。
+我有一个视频课程目录和一批 PDF 讲义。
+请把它们蒸馏成 course-expert,practitioner 组合模式的 Skill。
+要求保留来源，能回答课程问题，也能输出实操清单。
 ```
 
-具体执行规则在 [SKILL.md](./SKILL.md)，README 不写命令手册。
+### 方式二：本地跑完整视频课程流水线
 
-## 怎么使用
+```bash
+pip install -r requirements.txt
 
-安装后直接用自然语言说需求。
+python scripts/run_course_pipeline.py \
+  --input-dir <course-video-dir> \
+  --course-name <course-name> \
+  --skill-name <skill-name> \
+  --mode course-expert \
+  --output-dir ./dist
+```
+
+包含 PDF / OCR：
+
+```bash
+python scripts/run_course_pipeline.py \
+  --input-dir <course-video-dir> \
+  --documents-input <pdf-or-pdf-dir> \
+  --course-name <course-name> \
+  --skill-name <skill-name> \
+  --mode course-expert,practitioner \
+  --output-dir ./dist
+```
+
+### 方式三：已有课程材料，直接打包 Skill
+
+如果你已经有 `transcripts/`、`analysis/`、`lesson_summaries.json`、`course_distillation_*.md/json` 等文件，可以跳过采集和蒸馏：
+
+```bash
+python scripts/build_course_package.py \
+  --course-name <course-name> \
+  --source-dir <course-dir>
+
+python scripts/build_course_skill.py \
+  --course-name <course-name> \
+  --skill-name <skill-name> \
+  --mode course-expert,practitioner \
+  --source-dir <course-dir> \
+  --output-dir ./dist
+```
+
+## 生成后的样子
 
 ```text
-帮我把这个视频课程目录蒸馏成一个 course-expert skill。
-它需要能回答课程问题、解释概念，并尽量给出来源。
+<generated-skill>/
+├── SKILL.md
+├── lineage_manifest.json
+├── references/
+│   ├── course_package.json
+│   ├── course_digest.md
+│   ├── full_transcript.md
+│   ├── lesson_index.json
+│   ├── concept_glossary.md
+│   ├── evidence_map.json
+│   ├── quote_index.md
+│   └── study_paths.md
+└── scripts/
+    └── search_course_notes.py
 ```
 
-```text
-这个课程还有 PDF 讲义。请用 MinerU/OCR 解析 PDF，
-再和视频转录、截图分析一起生成 CoursePackage 和 Skill。
-```
-
-```text
-我已经有 transcripts、analysis、lesson_summaries 和 course_distillation 文件。
-请直接构建 CoursePackage，并生成 course-expert,practitioner 组合模式的 Skill。
-```
+`SKILL.md` 告诉 Agent 什么时候触发、如何回答、如何引用、如何处理边界。`references/` 保存课程索引和证据材料。`search_course_notes.py` 提供轻量本地关键词检索。
 
 ## Skill 模式
 
-同一份课程可以生成不同用途的 Skill：
+同一份 CoursePackage 可以生成不同用途的 Skill，也可以组合：
 
-| Mode | 用途 |
+```text
+course-expert,practitioner
+```
+
+| Mode | 适合什么 |
 | --- | --- |
 | `course-expert` | 课程问答、概念解释、课时回查、来源引用 |
 | `study-coach` | 学习计划、复习路径、回忆提示、反思提示 |
 | `practitioner` | playbook、checklist、template、实操流程 |
 | `citation-archive` | 强引用、原话检索、证据档案、可审计笔记 |
-| `knowledge-base` | 多课程知识库、概念别名、跨课程主题图谱 |
-| `domain-expert` | 多课程沉淀后的领域专家、方法库、案例库、边界规则 |
+| `knowledge-base` | 面向多课程组织的目录、概念别名、主题索引 |
+| `domain-expert` | 面向领域沉淀的方法库、案例库、边界规则 |
 
-模式可以组合：
+说明：`knowledge-base` 和 `domain-expert` 当前可以生成对应 Skill 结构和占位引用文件；自动多课程合并、跨课程语义检索仍在路线图中。
 
-```text
-请生成 course-expert,practitioner 两种模式组合的 Skill。
-```
+## 当前能力与边界
 
-## 当前能力
-
-| 能力 | 状态 |
+| 能力 | 当前状态 |
 | --- | --- |
-| 视频转录 | 已支持 |
-| 视频画面分析与关键截图 | 已支持 |
-| PDF / MinerU OCR | 已接入主流水线 |
-| 课程级蒸馏 | 已支持 |
-| CoursePackage 构建 | 已支持 |
-| 多模式 Skill 生成 | 已支持 |
-| 本地关键词检索 | 已支持 |
+| 视频转录 | 支持 `.mp4` 课程目录，依赖 OpenAI-compatible transcription endpoint |
+| 视频画面分析 | 支持分片分析、关键截图、PPT/板书/软件界面提取 |
+| PDF / MinerU OCR | 已接入主流水线，可把 OCR 文档纳入证据层 |
+| 课程级蒸馏 | 支持 LLM 蒸馏，也支持本地抽取式 fallback |
+| CoursePackage 构建 | 支持从蒸馏结果和已有材料生成标准知识包 |
+| 多模式 Skill 生成 | 支持 `course-expert`、`study-coach`、`practitioner` 等模式 |
+| 本地关键词检索 | 支持生成轻量 `search_course_notes.py` |
+
+当前边界：
+
+- 证据地图默认还是文件级，时间点级、主题级证据仍需增强。
+- OCR 结果可以进入 CoursePackage，但 OCR 到概念/案例/方法的精细映射仍在改进。
+- 语义检索、向量索引和自动多课程合并仍在路线图中。
+- 高风险领域必须保留课程边界，不应把模型自己的泛化当成课程原意。
 
 ## 配置与安全
 
-复制 `.env.example` 为 `.env`，只填实际使用的服务。
+复制 `.env.example` 为 `.env`，只填实际使用的服务：
 
 - 音频转录：`AUDIO_TRANSCRIBE_*`
 - 视觉分析：`LINEAGE_VISION_*`
@@ -136,14 +210,9 @@ https://github.com/JuneYaooo/lineage-skill
 - 不写死历史课程内容
 - 转录、截图、OCR、蒸馏产物默认被 `.gitignore` 忽略
 
-## 方法论
+## 真实案例
 
-```text
-Capture → Cite → Compress → Connect → Codify → Evaluate
-采集      溯源    压缩        关联       技能化     评估
-```
-
-理论基础结合教学设计、认知学徒制、知识管理、多媒体学习和 RAG。详见 [THEORETICAL_FOUNDATION.md](./THEORETICAL_FOUNDATION.md)。
+[JuneYaooo/nihaixia](https://github.com/JuneYaooo/nihaixia) 是通过这类课程蒸馏流程沉淀出来的真实 Skill 项目，来源包含 **100GB+ 视频课程材料**，最终整理成可触发、可检索、可溯源的专门领域 Skill。
 
 ## 文档
 
@@ -159,4 +228,6 @@ Capture → Cite → Compress → Connect → Codify → Evaluate
 
 ## License
 
-Apache License 2.0. See [LICENSE](./LICENSE).
+This project is licensed under the [PolyForm Noncommercial License 1.0.0](./LICENSE).
+
+Noncommercial use is permitted. Commercial use requires separate authorization.
