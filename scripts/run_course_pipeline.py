@@ -15,6 +15,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from build_course_skill import default_skill_name, parse_modes
 from progress import write_progress
 
 
@@ -42,6 +43,9 @@ def run(
             base_dir=base_dir,
             output_dir=output_dir,
             mode=args.mode,
+            scope=args.scope,
+            evidence=args.evidence,
+            progress_strategy=args.progress,
             input_dir=args.input_dir,
             documents_input=args.documents_input or [],
             stage=stage,
@@ -57,6 +61,9 @@ def run(
         base_dir=base_dir,
         output_dir=output_dir,
         mode=args.mode,
+        scope=args.scope,
+        evidence=args.evidence,
+        progress_strategy=args.progress,
         input_dir=args.input_dir,
         documents_input=args.documents_input or [],
         stage=stage,
@@ -73,6 +80,9 @@ def run(
             base_dir=base_dir,
             output_dir=output_dir,
             mode=args.mode,
+            scope=args.scope,
+            evidence=args.evidence,
+            progress_strategy=args.progress,
             input_dir=args.input_dir,
             documents_input=args.documents_input or [],
             stage=stage,
@@ -88,6 +98,9 @@ def run(
         base_dir=base_dir,
         output_dir=output_dir,
         mode=args.mode,
+        scope=args.scope,
+        evidence=args.evidence,
+        progress_strategy=args.progress,
         input_dir=args.input_dir,
         documents_input=args.documents_input or [],
         stage=stage,
@@ -101,8 +114,11 @@ def main() -> None:
     parser.add_argument("--input-dir", required=True, help="Directory containing course .mp4 files.")
     parser.add_argument("--documents-input", action="append", help="Optional PDF file or directory for MinerU OCR. Repeatable.")
     parser.add_argument("--course-name", required=True, help="Course output directory name.")
-    parser.add_argument("--skill-name", required=True, help="Generated skill name.")
-    parser.add_argument("--mode", default="course-expert", help="Skill mode or comma-separated modes passed to build_course_skill.py.")
+    parser.add_argument("--skill-name", help="Generated skill name. Defaults to <course-slug>-<role>-lineage.")
+    parser.add_argument("--mode", default="mentor", help="Skill role or comma-separated roles passed to build_course_skill.py.")
+    parser.add_argument("--scope", default="auto", help="Course scope metadata passed to build_course_skill.py.")
+    parser.add_argument("--evidence", default="standard", help="Evidence strategy metadata passed to build_course_skill.py.")
+    parser.add_argument("--progress", default="auto", help="Progress strategy metadata passed to build_course_skill.py.")
     parser.add_argument("--base-dir", default=str(DEFAULT_BASE_DIR), help="Course workspace root. Defaults to ./.lineage/courses.")
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR), help="Generated skill output directory. Defaults to ./dist.")
     parser.add_argument("--chunk-minutes", type=int, default=12, help="Video analysis chunk size.")
@@ -120,6 +136,7 @@ def main() -> None:
     base_dir = Path(args.base_dir).expanduser().resolve()
     output_dir = Path(args.output_dir).expanduser().resolve()
     course_dir = base_dir / args.course_name
+    args.skill_name = args.skill_name or default_skill_name(args.course_name, parse_modes(args.mode))
     force = ["--force"] if args.force else []
     limit = ["--limit", str(args.limit)] if args.limit > 0 else []
 
@@ -130,6 +147,9 @@ def main() -> None:
         base_dir=base_dir,
         output_dir=output_dir,
         mode=args.mode,
+        scope=args.scope,
+        evidence=args.evidence,
+        progress_strategy=args.progress,
         input_dir=args.input_dir,
         documents_input=args.documents_input or [],
     )
@@ -204,6 +224,9 @@ def main() -> None:
             base_dir=base_dir,
             output_dir=output_dir,
             mode=args.mode,
+            scope=args.scope,
+            evidence=args.evidence,
+            progress_strategy=args.progress,
             input_dir=args.input_dir,
             documents_input=[],
             stage="documents",
@@ -252,6 +275,12 @@ def main() -> None:
             args.skill_name,
             "--mode",
             args.mode,
+            "--scope",
+            args.scope,
+            "--evidence",
+            args.evidence,
+            "--progress",
+            args.progress,
             "--source-dir",
             str(course_dir),
             "--output-dir",

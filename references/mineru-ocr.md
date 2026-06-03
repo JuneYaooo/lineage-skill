@@ -18,7 +18,7 @@ python scripts/run_course_pipeline.py \
   --documents-input <pdf-or-pdf-dir> \
   --course-name <course-name> \
   --skill-name <skill-name> \
-  --mode course-expert,practitioner \
+  --mode mentor,practitioner \
   --output-dir ./dist
 ```
 

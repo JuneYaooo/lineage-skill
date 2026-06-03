@@ -53,11 +53,16 @@ def generated_skills_for_course(output_dir: Path, course_name: str, course_dir: 
         manifest_course = manifest.get("course", {}).get("name") or manifest.get("course_name")
         if manifest_course != course_name and source_dir != str(course_dir):
             continue
+        roles = manifest.get("roles") or manifest.get("course", {}).get("roles") or manifest.get("modes") or manifest.get("course", {}).get("modes") or []
         rows.append(
             {
                 "skill_name": skill_dir.name,
                 "path": str(skill_dir),
-                "modes": manifest.get("course", {}).get("modes") or manifest.get("modes") or [],
+                "roles": roles,
+                "modes": roles,
+                "scope": manifest.get("scope", ""),
+                "evidence_strategy": manifest.get("evidence_strategy", ""),
+                "progress_strategy": manifest.get("progress_strategy", ""),
                 "generated_at": manifest.get("generated_at", ""),
             }
         )
@@ -119,4 +124,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

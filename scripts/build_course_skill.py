@@ -45,9 +45,29 @@ GENERATOR_SCHEMA_VERSION = "0.1"
 PROVENANCE_WATERMARK = "lineage-skill:course-skill-builder:v0.1"
 
 MODE_SPECS = {
-    "course-expert": {
-        "label": "Course Expert",
-        "description": "course-grounded explanations, lesson review, concept comparison, source-backed notes, or study paths",
+    "mentor": {
+        "label": "Mentor",
+        "description": "a source-grounded course mentor that guides learning, practice, review, and application",
+        "focus": [
+            "Act as a course-specific mentor grounded in the packaged course materials.",
+            "Guide the user through learning plans, practice, review, weak-point diagnosis, and course-backed application.",
+            "Ask clarifying or diagnostic questions when the user's goal, level, schedule, or application context is unclear.",
+        ],
+        "rules": [
+            "Use course references first, and distinguish direct course content from mentor-style synthesis.",
+            "Guide the learner toward understanding, recall, application, and review instead of only giving summaries.",
+            "When progress tracking is available, update plans based on completed lessons, weak areas, and review needs.",
+            "If the course materials do not support a claim, say what is missing.",
+        ],
+        "extra_refs": {
+            "mentor_playbook.md": "Add mentor behaviors, coaching patterns, diagnostic questions, planning rules, and review routines derived from the course.",
+            "mentor_sessions.md": "Add reusable session flows for daily study, review, application, and source lookup.",
+            "learner_progress.json": {"profile": {}, "completed": [], "weak_points": [], "review_queue": [], "notes": "Optional learner progress state when the host workflow supports persistent updates."},
+        },
+    },
+    "expert": {
+        "label": "Expert",
+        "description": "course-grounded explanations, concept clarification, lesson lookup, and source-backed answers",
         "focus": [
             "Answer course questions using packaged references first.",
             "Explain concepts, lessons, themes, cases, quotes, and study paths.",
@@ -60,33 +80,32 @@ MODE_SPECS = {
         ],
         "extra_refs": {},
     },
-    "study-coach": {
-        "label": "Study Coach",
-        "description": "learning plans, review paths, reflection prompts, weak-point review, or study coaching based on the course",
+    "consultant": {
+        "label": "Consultant",
+        "description": "course-grounded private consulting, scenario diagnosis, strategic analysis, and recommendations",
         "focus": [
-            "Turn the course into a study plan matched to the user's goal, level, and time budget.",
-            "Generate review tasks, recall prompts, reflection prompts, and spaced repetition paths when appropriate.",
-            "Use lesson order and difficulty hints when available.",
+            "Use course methods to analyze the user's concrete situation.",
+            "Diagnose problems, name assumptions, compare options, and recommend next steps grounded in the course.",
+            "Separate direct course guidance from adapted consulting judgment.",
         ],
         "rules": [
-            "Start from `study_paths.md`, then adapt to the user's time budget.",
-            "Only generate quizzes, drills, or learning checks when the course type and user request make them appropriate.",
-            "Separate review tasks from new synthesis.",
+            "Ask for missing context before making high-impact recommendations.",
+            "Label adaptations to the user's situation as inference.",
+            "Do not present generic advice as if it came from the course.",
+            "Respect professional boundaries in high-stakes domains.",
         ],
         "extra_refs": {
-            "review_prompts.md": "Add recall prompts, reflection prompts, and optional learning checks derived from the course.",
-            "learning_plans.md": "Add 1-day, 7-day, 30-day, and goal-specific review plans.",
-            "difficulty_map.json": {"lessons": [], "notes": "Map lessons or concepts to difficulty levels when available."},
-            "learning_checks.json": {"checks": [], "notes": "Optional quizzes, drills, reflection checks, or assessment checks when suitable for the course."},
+            "consulting_playbook.md": "Add diagnostic prompts, intake questions, decision frames, and advisory workflows derived from course methods.",
+            "scenario_templates.md": "Add reusable templates for user situation analysis, option comparison, and recommendation memos.",
         },
     },
     "practitioner": {
         "label": "Practitioner",
-        "description": "checklists, playbooks, templates, workflows, and practical application of course methods",
+        "description": "course-grounded execution support, checklists, playbooks, templates, workflows, and practical outputs",
         "focus": [
             "Convert course methods into usable workflows, checklists, templates, and decision aids.",
             "Use course cases as application examples.",
-            "Help users apply course methods while naming assumptions and boundaries.",
+            "Help users produce drafts, SOPs, briefs, plans, scripts, tables, or other work artifacts.",
         ],
         "rules": [
             "Prefer actionable steps backed by course references.",
@@ -100,66 +119,44 @@ MODE_SPECS = {
             "case_index.json": {"cases": [], "notes": "Index examples, demos, stories, and practical applications."},
         },
     },
-    "citation-archive": {
-        "label": "Citation Archive",
-        "description": "strict source lookup, evidence-backed answers, quote retrieval, and auditable course references",
+    "custom": {
+        "label": "Custom",
+        "description": "a user-defined course-backed Skill role based on the user's stated workflow",
         "focus": [
-            "Prioritize evidence retrieval over broad explanation.",
-            "Track whether an answer is direct quote, course summary, or model synthesis.",
-            "Expose source gaps clearly.",
+            "Follow the user's custom role and workflow while staying grounded in course materials.",
+            "Translate the course package into the custom behavior, outputs, and boundaries requested by the user.",
+            "Keep source-course distinctions when the package contains multiple courses.",
         ],
         "rules": [
-            "Every factual claim about the course should include a reference path when possible.",
-            "Use `evidence_map.json` and `quote_index.md` before summarizing.",
-            "Mark unsupported or weakly supported claims explicitly.",
+            "Write the custom role, expected outputs, and boundaries into the generated Skill references.",
+            "Distinguish direct course content, course-grounded synthesis, and custom adaptation.",
+            "If the custom behavior needs information not present in the course package, say what is missing.",
         ],
         "extra_refs": {
-            "source_manifest.json": {"sources": [], "notes": "Canonical source inventory for transcripts, screenshots, analyses, and documents."},
-            "confidence_rules.md": "Define evidence strength, citation style, and when to refuse unsupported claims.",
-        },
-    },
-    "knowledge-base": {
-        "label": "Knowledge Base",
-        "description": "multi-course lookup, topic packs, concept aliases, and cross-course organization",
-        "focus": [
-            "Organize one or more courses into a searchable knowledge base.",
-            "Normalize concepts, aliases, topics, and source courses.",
-            "Support cross-course topic discovery when multiple course packages are present.",
-        ],
-        "rules": [
-            "Do not merge conflicting claims without noting their source courses.",
-            "Prefer topic and concept indexes before reading full transcripts.",
-            "When only one course is packaged, describe cross-course fields as not yet populated.",
-        ],
-        "extra_refs": {
-            "course_catalog.json": {"courses": [], "notes": "Catalog source courses included in this knowledge base."},
-            "cross_course_topics.json": {"topics": [], "notes": "Map topics to courses, lessons, and references."},
-            "concept_aliases.json": {"aliases": [], "notes": "Normalize equivalent or related terms across materials."},
-            "teacher_views.md": "Add source-specific viewpoints, disagreements, and emphasis patterns when multiple teachers/courses exist.",
-        },
-    },
-    "domain-expert": {
-        "label": "Domain Expert",
-        "description": "domain-level synthesis, method libraries, case libraries, and source-grounded expert workflows",
-        "focus": [
-            "Synthesize a domain-level expert skill from one or more course packages.",
-            "Build a method library, case library, source-course map, and boundary rules.",
-            "Answer domain questions while tracing important claims back to course sources.",
-        ],
-        "rules": [
-            "Use domain synthesis only after checking source courses and evidence.",
-            "Label whether an answer is direct course content, cross-course synthesis, or practical inference.",
-            "Respect boundary rules for high-stakes or unsupported advice.",
-        ],
-        "extra_refs": {
-            "domain_map.md": "Add the domain knowledge map, major subfields, and topic relationships.",
-            "method_library.md": "Add reusable methods, frameworks, procedures, and decision rules.",
-            "case_library.json": {"cases": [], "notes": "Collect cross-course cases, examples, and demonstrations."},
-            "source_courses.json": {"courses": [], "notes": "List courses and materials used to build the domain skill."},
-            "boundary_rules.md": "Define domain-specific safety, confidence, and escalation boundaries.",
+            "custom_role.md": "Define the custom Skill role, use cases, output formats, and boundaries requested by the user.",
+            "custom_workflows.md": "Add workflow steps and reusable prompts for the custom role.",
         },
     },
 }
+
+MODE_ALIASES = {
+    "course-expert": "expert",
+    "study-coach": "mentor",
+    "citation-archive": "expert",
+    "knowledge-base": "expert",
+    "domain-expert": "expert",
+}
+
+ALIAS_OPTIONS = {
+    "citation-archive": {"evidence": "strict"},
+    "knowledge-base": {"scope": "multi-course"},
+    "domain-expert": {"scope": "fused"},
+    "study-coach": {"progress": "tracked"},
+}
+
+VALID_SCOPES = {"single-course", "multi-course", "fused", "auto"}
+VALID_EVIDENCE = {"standard", "strict"}
+VALID_PROGRESS = {"none", "tracked", "auto"}
 
 
 def newest_match(source_dir: Path, pattern: str) -> Path | None:
@@ -347,30 +344,83 @@ def copy_course_package(source_dir: Path, destination: Path) -> str:
 
 
 def parse_modes(raw_modes: str) -> list[str]:
-    modes = [mode.strip() for mode in raw_modes.split(",") if mode.strip()]
+    modes = []
+    for raw in [mode.strip() for mode in raw_modes.split(",") if mode.strip()]:
+        mode = MODE_ALIASES.get(raw, raw)
+        if mode not in modes:
+            modes.append(mode)
     if not modes:
-        modes = ["course-expert"]
+        modes = ["mentor"]
     unknown = [mode for mode in modes if mode not in MODE_SPECS]
     if unknown:
         valid = ", ".join(sorted(MODE_SPECS))
-        raise SystemExit(f"unknown mode(s): {', '.join(unknown)}. valid modes: {valid}")
+        raise SystemExit(f"unknown role(s): {', '.join(unknown)}. valid roles: {valid}")
     return modes
+
+
+def alias_options(raw_modes: str) -> dict[str, str]:
+    options = {}
+    for raw in [mode.strip() for mode in raw_modes.split(",") if mode.strip()]:
+        options.update(ALIAS_OPTIONS.get(raw, {}))
+    return options
+
+
+def detect_scope(source_dir: Path) -> str:
+    package = load_json_if_exists(source_dir / "course_package.json")
+    manifest = package.get("manifest", {}) if isinstance(package, dict) and isinstance(package.get("manifest"), dict) else {}
+    package_type = manifest.get("package_type")
+    if package_type == "multi-course":
+        return "multi-course"
+    if manifest.get("source_courses"):
+        return "multi-course"
+    return "single-course"
+
+
+def resolve_options(
+    source_dir: Path,
+    modes: list[str],
+    raw_modes: str,
+    scope: str,
+    evidence: str,
+    progress: str,
+) -> dict[str, str]:
+    if scope not in VALID_SCOPES:
+        raise SystemExit(f"unknown scope: {scope}. valid scopes: {', '.join(sorted(VALID_SCOPES))}")
+    if evidence not in VALID_EVIDENCE:
+        raise SystemExit(f"unknown evidence strategy: {evidence}. valid evidence strategies: {', '.join(sorted(VALID_EVIDENCE))}")
+    if progress not in VALID_PROGRESS:
+        raise SystemExit(f"unknown progress strategy: {progress}. valid progress strategies: {', '.join(sorted(VALID_PROGRESS))}")
+
+    options = alias_options(raw_modes)
+    resolved_scope = options.get("scope", scope)
+    if resolved_scope == "auto":
+        resolved_scope = detect_scope(source_dir)
+
+    resolved_progress = options.get("progress", progress)
+    if resolved_progress == "auto":
+        resolved_progress = "tracked" if "mentor" in modes else "none"
+
+    return {
+        "scope": resolved_scope,
+        "evidence": options.get("evidence", evidence),
+        "progress": resolved_progress,
+    }
 
 
 def default_skill_name(course_name: str, modes: list[str]) -> str:
     slug = slugify(course_name)
-    if "domain-expert" in modes:
-        suffix = "domain-expert"
-    elif "knowledge-base" in modes:
-        suffix = "knowledge-base"
+    if "custom" in modes:
+        suffix = "custom"
+    elif "consultant" in modes:
+        suffix = "consultant"
+    elif "mentor" in modes:
+        suffix = "mentor"
     elif "practitioner" in modes:
         suffix = "practitioner"
-    elif "study-coach" in modes:
-        suffix = "study-coach"
-    elif "citation-archive" in modes:
-        suffix = "citation-archive"
+    elif "expert" in modes:
+        suffix = "expert"
     else:
-        suffix = "course-expert"
+        suffix = "mentor"
     lineage_suffix = f"{suffix}-lineage"
     if slug.endswith(f"-{lineage_suffix}"):
         return slug
@@ -405,7 +455,7 @@ description: Use this skill when the user asks about {course_name} and needs pac
 
 You are a course-grounded skill for `{course_name}`.
 
-Active mode(s): {mode_labels}.
+Active role(s): {mode_labels}.
 
 ## Scope
 
@@ -414,7 +464,7 @@ Active mode(s): {mode_labels}.
 - Prefer precise lesson, transcript, analysis, screenshot, or quote references when available.
 - If the packaged materials do not support an answer, say what is missing instead of inventing details.
 
-## Mode Focus
+## Role Focus
 
 {focus_lines}
 
@@ -527,7 +577,7 @@ def build_agent_metadata(course_name: str, skill_name: str, modes: list[str], ag
             "#   - Reads packaged course reference files under references/.",
             "#   - Runs local scripts/search_course_notes.py for lightweight keyword lookup.",
             "#   - Does not call external services unless the host agent chooses to enrich or rebuild materials.",
-            f"#   - Active mode(s): {mode_labels}.",
+            f"#   - Active role(s): {mode_labels}.",
             "",
         ]
     )
@@ -559,13 +609,18 @@ def build_lineage_manifest(
     modes: list[str],
     source_dir: Path,
     statuses: dict[str, str],
+    options: dict[str, str],
 ) -> dict[str, object]:
     generated_at = dt.datetime.now().isoformat(timespec="seconds")
     return {
         "schema_version": GENERATOR_SCHEMA_VERSION,
         "course_name": course_name,
         "skill_name": skill_name,
+        "roles": modes,
         "modes": modes,
+        "scope": options["scope"],
+        "evidence_strategy": options["evidence"],
+        "progress_strategy": options["progress"],
         "source_dir": str(source_dir),
         "generated_at": generated_at,
         "generated_by": {
@@ -586,12 +641,15 @@ def build_lineage_manifest(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Package prepared course materials as a Codex skill.")
     parser.add_argument("--course-name", required=True, help="Human-readable course name.")
-    parser.add_argument("--skill-name", help="Skill directory/name. Defaults to a slugified course name.")
+    parser.add_argument("--skill-name", help="Skill directory/name. Defaults to <course-slug>-<role>-lineage.")
     parser.add_argument(
         "--mode",
-        default="course-expert",
-        help="Skill mode or comma-separated modes. Valid: " + ", ".join(sorted(MODE_SPECS)),
+        default="mentor",
+        help="Skill role or comma-separated roles. Valid: " + ", ".join(sorted(MODE_SPECS)),
     )
+    parser.add_argument("--scope", default="auto", help="Course scope metadata. Valid: auto, single-course, multi-course, fused.")
+    parser.add_argument("--evidence", default="standard", help="Evidence strategy metadata. Valid: standard, strict.")
+    parser.add_argument("--progress", default="auto", help="Progress strategy metadata. Valid: auto, none, tracked.")
     parser.add_argument("--source-dir", required=True, help="Directory containing prepared course notes and indexes.")
     parser.add_argument("--output-dir", required=True, help="Directory where the generated skill should be written.")
     parser.add_argument("--description", default="Packaged from prepared course distillation materials.", help="Short note added to SKILL.md.")
@@ -604,6 +662,7 @@ def main() -> None:
     source_dir = Path(args.source_dir).expanduser().resolve()
     output_dir = Path(args.output_dir).expanduser().resolve()
     modes = parse_modes(args.mode)
+    options = resolve_options(source_dir, modes, args.mode, args.scope, args.evidence, args.progress)
     skill_name = args.skill_name or default_skill_name(args.course_name, modes)
     skill_dir = output_dir / skill_name
 
@@ -665,7 +724,7 @@ def main() -> None:
 
     build_search_script(scripts_dir / "search_course_notes.py")
 
-    manifest = build_lineage_manifest(args.course_name, skill_name, modes, source_dir, statuses)
+    manifest = build_lineage_manifest(args.course_name, skill_name, modes, source_dir, statuses, options)
     (skill_dir / "lineage_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"Generated skill: {skill_dir}")

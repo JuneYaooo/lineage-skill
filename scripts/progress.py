@@ -78,6 +78,9 @@ def write_progress(
     base_dir: Path,
     output_dir: Path,
     mode: str,
+    scope: str | None = None,
+    evidence: str | None = None,
+    progress_strategy: str | None = None,
     input_dir: str | None = None,
     documents_input: list[str] | None = None,
     stage: str | None = None,
@@ -106,6 +109,12 @@ def write_progress(
             "skill_dir": str(skill_dir),
         }
     )
+    if scope is not None:
+        data["scope"] = scope
+    if evidence is not None:
+        data["evidence_strategy"] = evidence
+    if progress_strategy is not None:
+        data["progress_strategy"] = progress_strategy
     if input_dir is not None:
         data["input_dir"] = input_dir
     if documents_input is not None:

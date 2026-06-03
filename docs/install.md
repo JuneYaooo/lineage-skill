@@ -92,7 +92,7 @@ MINERU_API_TOKEN=
 如果用户已经有课程材料：
 
 ```text
-用 lineage-skill 把这个课程目录整理成 course-expert,practitioner 模式的 Skill，回答时要保留来源。
+用 lineage-skill 把这个课程目录整理成 mentor,practitioner 角色的 Skill，回答时要保留来源。
 ```
 
 ## 完成标志

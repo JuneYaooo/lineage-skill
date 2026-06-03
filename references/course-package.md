@@ -70,4 +70,4 @@ Generated Skills include a root `lineage_manifest.json`. Treat it as the provena
 - Preserve source paths.
 - Treat OCR and summaries as evidence layers, not unquestionable truth.
 - Do not force quizzes into courses where they do not fit.
-- Let Skill modes decide how to use the same package.
+- Let Skill roles decide how to use the same package.

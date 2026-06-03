@@ -59,20 +59,19 @@ scripts/build_course_package.py
 - Preserve evidence paths.
 - Do not force quizzes or exercises into courses where they do not fit.
 - Treat OCR and summaries as evidence layers, not as unquestionable truth.
-- Let Skill modes decide how to use the package.
+- Let Skill roles decide how to use the package.
 
-## Relationship To Skill Modes
+## Relationship To Skill Roles
 
 One `CoursePackage` can produce multiple Skills:
 
 ```text
 CoursePackage
-  ├─ course-expert
-  ├─ study-coach
+  ├─ mentor
+  ├─ expert
+  ├─ consultant
   ├─ practitioner
-  ├─ citation-archive
-  ├─ knowledge-base
-  └─ domain-expert
+  └─ custom
 ```
 
 Details: [skill-modes.md](./skill-modes.md)

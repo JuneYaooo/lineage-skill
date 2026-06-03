@@ -58,7 +58,7 @@ Project mapping:
 | Application | Generate checklists, prompts, learning checks, and templates when appropriate |
 | Integration | Support study plans, reflection, and real-world application |
 
-This is especially important for `study-coach` and `practitioner` modes.
+This is especially important for `mentor`, `consultant`, and `practitioner` roles.
 
 ## 3. Cognitive Apprenticeship
 
@@ -145,7 +145,7 @@ question
 
 The important rule is not "answer more"; it is "answer with the strongest available course evidence."
 
-## 7. Bloom's Taxonomy and Skill Modes
+## 7. Bloom's Taxonomy and Skill Roles
 
 Bloom's revised taxonomy is commonly used to describe levels of learning objectives: remember, understand, apply, analyze, evaluate, create.
 
@@ -153,16 +153,15 @@ Canonical works are Bloom's original taxonomy and Anderson & Krathwohl's 2001 re
 
 Reference: https://teach.ufl.edu/resource-library/blooms-taxonomy/
 
-Skill modes map to different cognitive depths:
+Skill roles map to different cognitive depths:
 
-| Mode | Learning depth |
+| Role | Learning depth |
 | --- | --- |
-| `citation-archive` | remember, understand |
-| `course-expert` | understand, analyze |
-| `study-coach` | remember, understand, apply when appropriate |
+| `mentor` | understand, apply, evaluate |
+| `expert` | understand, analyze |
+| `consultant` | analyze, evaluate |
 | `practitioner` | apply, create |
-| `knowledge-base` | analyze, evaluate |
-| `domain-expert` | evaluate, create |
+| `custom` | depends on requested workflow |
 
 This is why one CoursePackage can produce several different Skills.
 
@@ -182,7 +181,7 @@ raw course materials
   -> transcripts / visual analysis / screenshots
   -> course_distillation_*.md/json
   -> course_package.json
-  -> mode-specific Skill
+  -> role-specific Skill
 ```
 
 ## 9. Why These Sources

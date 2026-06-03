@@ -140,27 +140,29 @@ Generated Skills should also be separate by default:
 
 ```text
 dist/
-├── course-a-course-expert-lineage/
-├── course-b-course-expert-lineage/
+├── course-a-mentor-lineage/
+├── course-b-expert-lineage/
 └── course-c-practitioner-lineage/
 ```
 
 Recommended naming:
 
 - `course-name`: stable, human-readable course workspace name.
-- `skill-name`: unique deployable Skill name, usually `<course-slug>-course-expert-lineage`, `<course-slug>-study-coach-lineage`, or `<domain-slug>-knowledge-base-lineage`.
+- `skill-name`: unique deployable Skill name, usually `<topic-or-domain-slug>-<role>-lineage`.
+- Do not put `single`, `multi`, or `fused` in the Skill name by default; scope can change over time and belongs in metadata.
+- Generated Skill metadata records `scope`, `evidence_strategy`, and `progress_strategy` in `lineage_manifest.json`.
 - Do not reuse one `course-name` for different source courses.
 - Do not overwrite a generated Skill unless you intentionally pass `--force`.
 
 ## Multi-Course Skills
 
-The project supports a basic multi-course merge workflow for `knowledge-base` and `domain-expert` Skills. Semantic cross-course conflict analysis and richer topic maps are still roadmap work.
+The project supports a basic multi-course merge workflow. Multi-course and fused packages can generate any role: `mentor`, `expert`, `consultant`, `practitioner`, or `custom`.
 
 Current safe options:
 
 - Generate one Skill per course.
-- Generate multiple mode projections from one `CoursePackage`.
-- Build a combined CoursePackage with `scripts/build_multi_course_package.py`, then generate one `knowledge-base` or `domain-expert` Skill.
+- Generate multiple role projections from one `CoursePackage`.
+- Build a combined CoursePackage with `scripts/build_multi_course_package.py`, then generate the role the user needs.
 
 Example:
 
@@ -174,7 +176,7 @@ python scripts/build_multi_course_package.py \
 python scripts/build_course_skill.py \
   --course-name "my-domain-courses" \
   --source-dir .lineage/courses/my-domain-courses \
-  --mode knowledge-base \
+  --mode consultant \
   --output-dir ./dist
 ```
 
@@ -182,18 +184,17 @@ The combined package preserves `source_course` and `source_course_id` fields so 
 
 ## Skill Naming
 
-If you do not specify a Skill name, the builder uses a suffix based on the selected mode:
+If you do not specify a Skill name, the builder uses a suffix based on the selected role:
 
-| Mode | Default pattern |
+| Role | Default pattern |
 | --- | --- |
-| `course-expert` | `<course-slug>-course-expert-lineage` |
-| `study-coach` | `<course-slug>-study-coach-lineage` |
+| `mentor` | `<course-slug>-mentor-lineage` |
+| `expert` | `<course-slug>-expert-lineage` |
+| `consultant` | `<course-slug>-consultant-lineage` |
 | `practitioner` | `<course-slug>-practitioner-lineage` |
-| `citation-archive` | `<course-slug>-citation-archive-lineage` |
-| `knowledge-base` | `<course-slug>-knowledge-base-lineage` |
-| `domain-expert` | `<course-slug>-domain-expert-lineage` |
+| `custom` | `<course-slug>-custom-lineage` |
 
-For multiple courses, use a combined name that describes the collection or domain, then generate a `knowledge-base` or `domain-expert` Skill.
+For multiple courses, use a combined name that describes the collection or domain, then generate the role the user needs.
 
 Future target:
 

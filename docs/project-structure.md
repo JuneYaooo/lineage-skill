@@ -24,7 +24,7 @@ These files explain the project to people.
 | `docs/methodology.md` | C5 course distillation methodology. |
 | `docs/theoretical-foundation.md` | Theoretical background for the methodology. |
 | `docs/course-package.md` | User-facing explanation of the `CoursePackage` middle layer. |
-| `docs/skill-modes.md` | Explanation of generated Skill modes. |
+| `docs/skill-modes.md` | Explanation of generated Skill roles and orthogonal options. |
 | `docs/mineru-ocr.md` | User-facing PDF/OCR workflow. |
 | `docs/output-and-resume.md` | Output layout, resume behavior, progress records, and multi-course organization. |
 | `docs/roadmap.md` | Development roadmap. |
@@ -41,7 +41,7 @@ These files are read by Agents when the Skill is installed or invoked.
 | `references/methodology.md` | Runtime methodology reference for Agents. |
 | `references/configuration.md` | Runtime environment variable quick reference. |
 | `references/course-package.md` | Runtime `CoursePackage` schema reference. |
-| `references/skill-modes.md` | Runtime mode-selection reference. |
+| `references/skill-modes.md` | Runtime role-selection reference. |
 | `references/mineru-ocr.md` | Runtime OCR workflow reference. |
 | `references/output-and-resume.md` | Runtime output, resume, and multi-course rules. |
 
@@ -132,7 +132,7 @@ The current project can:
 - distill course materials into structured notes;
 - build a normalized `CoursePackage`;
 - merge multiple `CoursePackage` files into one combined package;
-- generate course-backed Skills in multiple modes;
+- generate course-backed Skills in multiple roles;
 - record per-course pipeline progress;
 - build a multi-course catalog across course workspaces.
 

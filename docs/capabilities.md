@@ -9,7 +9,7 @@ course materials
   -> transcripts / visual analysis / OCR documents
   -> course distillation
   -> course_package.json
-  -> mode-specific Skill
+  -> role-specific Skill
 ```
 
 ## Supported Inputs
@@ -44,16 +44,15 @@ course materials
 | Multi-course workspace catalog | `scripts/build_course_catalog.py` | Supported |
 | Local keyword search | generated `scripts/search_course_notes.py` | Supported |
 
-## Skill Modes
+## Skill Roles
 
-| Mode | Output Focus |
+| Role | Output Focus |
 | --- | --- |
-| `course-expert` | Course Q&A, concept explanation, lesson lookup, source-backed notes |
-| `study-coach` | Study paths, review prompts, reflection prompts |
+| `mentor` | Default course mentor, guided Q&A, coaching, review, application support |
+| `expert` | Course Q&A, concept explanation, lesson lookup, source-backed notes |
+| `consultant` | Course-grounded private consulting, diagnosis, recommendations |
 | `practitioner` | Checklists, playbooks, templates, workflows |
-| `citation-archive` | Evidence-first lookup, quote retrieval, auditable references |
-| `knowledge-base` | Multi-course catalog, aliases, topic mapping |
-| `domain-expert` | Domain map, method library, case library, boundary rules |
+| `custom` | User-defined course-backed workflow |
 
 More detail: [skill-modes.md](./skill-modes.md)
 

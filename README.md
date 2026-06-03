@@ -75,8 +75,8 @@ Capture -> Cite -> Compress -> Connect -> Codify -> Evaluate
 | PDF / 文档解析 | 接入 MinerU 等 OCR / 文档解析结果，把扫描 PDF、图片 PDF、讲义纳入证据 | `documents/`、`mineru_supplement.md` |
 | 课程蒸馏 | 整合转录、画面分析、截图证据、OCR 和笔记，提炼概念、方法、案例、引用 | `course_distillation_*.md/json` |
 | CoursePackage 构建 | 把课程蒸馏结果变成统一结构，保留 evidence map、lesson index 和质量信息 | `course_package.json` |
-| 多课程合并 | 把多个课程包合成一个知识库或领域专家 Skill 的输入 | combined `course_package.json` |
-| 专属导师 Skill 生成 | 按用途生成 `course-expert`、`study-coach`、`practitioner` 等模式 | 可安装/调用的课程 Skill |
+| 多课程合并 | 把多个课程包合成一个跨课程 Skill 的输入 | combined `course_package.json` |
+| 专属导师 Skill 生成 | 默认生成 `mentor`，也可按用途生成其他角色 | 可安装/调用的课程 Skill |
 | 断点与进度记录 | 记录每个阶段状态、已有产物和下一步，可从已有产物继续 | `lineage_progress.json` |
 | 多课程目录索引 | 扫描多个课程工作区和已生成 Skill，形成总目录 | `course_catalog.json` |
 
@@ -179,24 +179,31 @@ https://raw.githubusercontent.com/JuneYaooo/lineage-skill/main/docs/install.md
 | 工作产出 | “按这套课的方法，帮我写一份方案初稿。” |
 | 质量检查 | “用老师的判断标准，帮我检查这个方案哪里不完整。” |
 
-## 可选模式
+## 可选角色
 
-你可以直接告诉 Agent 想要哪种用途，也可以让它自己判断。
+你可以直接告诉 Agent 想要哪种用途，也可以让它自己判断。课程范围、证据严格度、是否记录学习进度是另外的维度，不和角色混在一起。
 
-| 模式 | 适合什么 |
+| 角色 | 适合什么 |
 | --- | --- |
-| `course-expert` | 课程问答、概念解释、课时回查、来源引用 |
-| `study-coach` | 学习计划、复习路径、回忆提示、反思提示 |
+| `mentor` | 默认专属导师：课程问答、追问陪练、复习、应用指导、来源回查 |
+| `expert` | 课程专家：概念解释、课时回查、课程问答、来源引用 |
+| `consultant` | 私人顾问：用课程方法分析你的具体情况，给判断和建议 |
 | `practitioner` | playbook、checklist、template、实操流程 |
-| `citation-archive` | 强引用、原话检索、证据档案、可审计笔记 |
-| `knowledge-base` | 多课程目录、概念别名、主题索引 |
-| `domain-expert` | 领域方法库、案例库、边界规则 |
+| `custom` | 自定义用途：按你的具体工作流生成 Skill |
+
+其他维度：
+
+| 维度 | 可选项 |
+| --- | --- |
+| 课程范围 | 单课、多课保留边界、多课融合 |
+| 证据策略 | 标准引用、严格溯源 |
+| 学习进度 | 不记录、记录进度并调整计划 |
 
 也可以组合使用：
 
 ```text
-请把这套课整理成 course-expert,practitioner 模式。
-既能回答课程问题，也能输出实操清单。
+请把这套课整理成 mentor,practitioner 角色。
+既能像导师一样陪我学习，也能输出实操清单。
 ```
 
 ## 准备材料时怎么说
