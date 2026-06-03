@@ -95,12 +95,12 @@ Default paths:
 - Use `dist/<skill-name>/` for generated Skills unless the user provides `--output-dir`.
 - Keep one source course per course workspace.
 - If the user does not provide `--skill-name`, use the builder default:
-  - `<course-slug>-course-expert` for `course-expert`.
-  - `<course-slug>-study-coach` for `study-coach`.
-  - `<course-slug>-practitioner` for `practitioner`.
-  - `<course-slug>-citation-archive` for `citation-archive`.
-  - `<course-slug>-knowledge-base` for `knowledge-base`.
-  - `<course-slug>-domain-expert` for `domain-expert`.
+  - `<course-slug>-course-expert-lineage` for `course-expert`.
+  - `<course-slug>-study-coach-lineage` for `study-coach`.
+  - `<course-slug>-practitioner-lineage` for `practitioner`.
+  - `<course-slug>-citation-archive-lineage` for `citation-archive`.
+  - `<course-slug>-knowledge-base-lineage` for `knowledge-base`.
+  - `<course-slug>-domain-expert-lineage` for `domain-expert`.
 
 ### Full Course Pipeline
 

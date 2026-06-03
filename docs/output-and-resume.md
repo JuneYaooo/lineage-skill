@@ -140,15 +140,15 @@ Generated Skills should also be separate by default:
 
 ```text
 dist/
-├── course-a-course-expert/
-├── course-b-course-expert/
-└── course-c-practitioner/
+├── course-a-course-expert-lineage/
+├── course-b-course-expert-lineage/
+└── course-c-practitioner-lineage/
 ```
 
 Recommended naming:
 
 - `course-name`: stable, human-readable course workspace name.
-- `skill-name`: unique deployable Skill name, usually `<course-slug>-course-expert`, `<course-slug>-study-coach`, or `<domain-slug>-knowledge-base`.
+- `skill-name`: unique deployable Skill name, usually `<course-slug>-course-expert-lineage`, `<course-slug>-study-coach-lineage`, or `<domain-slug>-knowledge-base-lineage`.
 - Do not reuse one `course-name` for different source courses.
 - Do not overwrite a generated Skill unless you intentionally pass `--force`.
 
@@ -186,12 +186,12 @@ If you do not specify a Skill name, the builder uses a suffix based on the selec
 
 | Mode | Default pattern |
 | --- | --- |
-| `course-expert` | `<course-slug>-course-expert` |
-| `study-coach` | `<course-slug>-study-coach` |
-| `practitioner` | `<course-slug>-practitioner` |
-| `citation-archive` | `<course-slug>-citation-archive` |
-| `knowledge-base` | `<course-slug>-knowledge-base` |
-| `domain-expert` | `<course-slug>-domain-expert` |
+| `course-expert` | `<course-slug>-course-expert-lineage` |
+| `study-coach` | `<course-slug>-study-coach-lineage` |
+| `practitioner` | `<course-slug>-practitioner-lineage` |
+| `citation-archive` | `<course-slug>-citation-archive-lineage` |
+| `knowledge-base` | `<course-slug>-knowledge-base-lineage` |
+| `domain-expert` | `<course-slug>-domain-expert-lineage` |
 
 For multiple courses, use a combined name that describes the collection or domain, then generate a `knowledge-base` or `domain-expert` Skill.
 

@@ -371,9 +371,14 @@ def default_skill_name(course_name: str, modes: list[str]) -> str:
         suffix = "citation-archive"
     else:
         suffix = "course-expert"
-    if slug.endswith(f"-{suffix}"):
+    lineage_suffix = f"{suffix}-lineage"
+    if slug.endswith(f"-{lineage_suffix}"):
         return slug
-    return f"{slug}-{suffix}"
+    if slug.endswith(f"-{suffix}"):
+        return f"{slug}-lineage"
+    if slug.endswith("-lineage"):
+        slug = slug[: -len("-lineage")]
+    return f"{slug}-{lineage_suffix}"
 
 
 def build_skill_md(course_name: str, skill_name: str, description: str, modes: list[str], destination: Path) -> None:
