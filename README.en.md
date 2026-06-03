@@ -79,38 +79,11 @@ course materials and configure suitable model interfaces.
 
 ## Requirements
 
-You need three kinds of inputs: **course materials**, **local tools**, and
-**model interfaces**.
+You need three things:
 
-| Requirement | Notes |
-| --- | --- |
-| Course materials | Videos, audio, PDFs, handouts, screenshots, transcripts, OCR output, and notes are all supported. More complete materials make the mentor closer to the course's original intent. |
-| `ffmpeg` / `ffprobe` | Used to extract audio, read media duration, split long audio, compress/chunk video, and extract screenshots. |
-| Speech-to-text model | Restores what the teacher said. Chinese courses may work well with SenseVoiceSmall / FunASR; English or multilingual courses can use `whisper-1`, `gpt-4o-transcribe`, or `gpt-4o-mini-transcribe`. |
-| Video / vision model | Understands what appears on screen. Use a model that handles long videos, slides, whiteboards, software interfaces, and screenshots well. |
-| Text distillation model | Compresses transcripts, visual analysis, OCR, and notes into a course knowledge structure. Prefer long-context, stable structured output, and strong language understanding. |
-| OCR / document parser | Plain-text PDFs can be extracted directly. Scanned PDFs, image PDFs, formulas, tables, and complex layouts should use MinerU or a comparable parser, with manual checks where needed. |
-
-The current scripts mainly use OpenAI-compatible interfaces for speech, vision,
-and text models. If a model provider does not expose that shape directly, use a
-compatible gateway or adapter layer.
-
-For details, see [docs/configuration.md](./docs/configuration.md) and
-[docs/mineru-ocr.md](./docs/mineru-ocr.md).
-
-For repository structure, see [docs/project-structure.md](./docs/project-structure.md).
-For outputs, resume behavior, progress records, multi-course organization, and
-Skill naming, see [docs/output-and-resume.md](./docs/output-and-resume.md).
-
-## Who Is This For?
-
-- You have tens or hundreds of hours of course material and want to ask it questions later.
-- You want more than a summary: you want a mentor that understands this course.
-- You want to know which lesson a concept, quote, or method came from.
-- You want to turn course methods into checklists, workflows, templates, and decision rules.
-- You want the course mentor to help produce plans, reviews, checklists, and executable documents.
-- You want an Agent to help you review, ask follow-up questions, find gaps, and organize concepts and cases.
-- You already have transcripts, OCR, notes, or distillation results and want to package them into a reusable Skill.
+- **Course materials**: videos, audio, PDFs, handouts, screenshots, transcripts, OCR output, and notes.
+- **Local tools**: `ffmpeg` / `ffprobe` when processing videos or raw audio.
+- **Model interfaces**: speech-to-text, video / vision understanding, text distillation, and optional OCR / document parsing. See [docs/model-interfaces.en.md](./docs/model-interfaces.en.md).
 
 ## Usage
 
