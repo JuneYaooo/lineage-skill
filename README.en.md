@@ -77,7 +77,20 @@ course materials and configure suitable model interfaces.
 | Resume and progress tracking | Records stage state, existing artifacts, and next steps so runs can resume | `lineage_progress.json` |
 | Multi-course catalog | Scans multiple course workspaces and generated Skills into one catalog | `course_catalog.json` |
 
-## Requirements
+## Usage
+
+### 1. Ask Your Agent to Install This Skill
+
+Send this to your Agent:
+
+```text
+Please install this Skill:
+https://raw.githubusercontent.com/JuneYaooo/lineage-skill/main/docs/install.md
+
+After installation, tell me how I can turn my course materials into a course expert.
+```
+
+### 2. Configure Materials, Tools, And Model Interfaces
 
 Everything commonly needed is listed here. `docs/install.md` is kept only for Agent-driven installation.
 
@@ -126,20 +139,7 @@ Minimum setup depends on the materials:
 | Video course with slides / boards / screen demos | `AUDIO_TRANSCRIBE_*`, `LINEAGE_VISION_*`, `LINEAGE_TEXT_*`, and `ffmpeg` |
 | Scanned PDFs or complex handouts | Add `MINERU_API_TOKEN`; skip it if OCR output already exists |
 
-## Usage
-
-### 1. Ask Your Agent to Install This Skill
-
-Send this to your Agent:
-
-```text
-Please install this Skill:
-https://raw.githubusercontent.com/JuneYaooo/lineage-skill/main/docs/install.md
-
-After installation, tell me how I can turn my course materials into a course expert.
-```
-
-### 2. Tell the Agent Where Your Materials Are
+### 3. Tell the Agent Where Your Materials Are
 
 Example:
 
@@ -156,7 +156,7 @@ I already have course transcripts, OCR documents, and study notes.
 Skip fresh capture and package them directly into a source-backed, reviewable course Skill.
 ```
 
-### 3. Use Natural Language
+### 4. Use Natural Language
 
 After the Skill is generated, it behaves like a mentor focused on this course:
 

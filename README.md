@@ -62,11 +62,24 @@
 | 断点与进度记录 | 记录每个阶段状态、已有产物和下一步，可从已有产物继续 | `lineage_progress.json` |
 | 多课程目录索引 | 扫描多个课程工作区和已生成 Skill，形成总目录 | `course_catalog.json` |
 
-## 需要配置什么
+## 怎么使用
+
+### 1. 让 Agent 安装这个 Skill
+
+把这段话发给你的 Agent：
+
+```text
+请安装这个 Skill：
+https://raw.githubusercontent.com/JuneYaooo/lineage-skill/main/docs/install.md
+
+安装后请告诉我可以怎样把我的课程材料整理成课程专家。
+```
+
+### 2. 配置需要的材料、工具和模型接口
 
 你只需要先准备课程材料、本地基础工具和模型接口。常用配置直接看这一节即可；`docs/install.md` 只保留给 Agent 自动安装用。
 
-### 1. 课程材料
+#### 2.1 课程材料
 
 把材料放在一个本地目录里即可，不要求提前整理成固定格式：
 
@@ -77,7 +90,7 @@
 
 如果你已经有转录、OCR 文档或笔记，可以跳过重新转录和视觉分析，直接进入课程蒸馏和 Skill 生成。
 
-### 2. 本地工具
+#### 2.2 本地工具
 
 基础依赖：
 
@@ -109,7 +122,7 @@ sudo apt-get install -y ffmpeg
 
 只从已有转录、OCR 和笔记打包 Skill 时，可以暂时不装 `ffmpeg`。
 
-### 3. 模型接口
+#### 2.3 模型接口
 
 `lineage-skill` 默认按 OpenAI-compatible 接口读取环境变量。推荐通过当前 Agent 的环境变量配置、系统环境变量或私有 `.env` 注入，不要把真实 key 写进 README、示例文件或公开仓库。
 
@@ -161,20 +174,7 @@ MINERU_API_TOKEN=
 - 文本蒸馏模型建议选长上下文、中文理解好、结构化输出稳定的模型。
 - OCR 结果只是证据层，扫描质量差、公式、表格和关键图示建议人工抽查。
 
-## 怎么使用
-
-### 1. 让 Agent 安装这个 Skill
-
-把这段话发给你的 Agent：
-
-```text
-请安装这个 Skill：
-https://raw.githubusercontent.com/JuneYaooo/lineage-skill/main/docs/install.md
-
-安装后请告诉我可以怎样把我的课程材料整理成课程专家。
-```
-
-### 2. 告诉 Agent 你的材料在哪里
+### 3. 告诉 Agent 你的材料在哪里
 
 例如：
 
@@ -191,7 +191,7 @@ https://raw.githubusercontent.com/JuneYaooo/lineage-skill/main/docs/install.md
 请跳过重新采集，直接整理成可问答、可复习、可检索的课程 Skill。
 ```
 
-### 3. 用自然语言调用它
+### 4. 用自然语言调用它
 
 整理完成后，它就像一个只围绕这套课工作的专属导师。你可以这样问：
 
