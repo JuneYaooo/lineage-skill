@@ -15,16 +15,85 @@ import subprocess
 import sys
 from pathlib import Path
 
+from progress import write_progress
+
 
 ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_BASE_DIR = ROOT / ".lineage" / "courses"
+DEFAULT_OUTPUT_DIR = ROOT / "dist"
 
 
-def run(cmd: list[str], skip: bool) -> None:
+def run(
+    cmd: list[str],
+    skip: bool,
+    *,
+    stage: str,
+    args: argparse.Namespace,
+    base_dir: Path,
+    output_dir: Path,
+    course_dir: Path,
+) -> None:
     if skip:
         print(f"skip: {' '.join(cmd)}")
+        write_progress(
+            course_dir,
+            course_name=args.course_name,
+            skill_name=args.skill_name,
+            base_dir=base_dir,
+            output_dir=output_dir,
+            mode=args.mode,
+            input_dir=args.input_dir,
+            documents_input=args.documents_input or [],
+            stage=stage,
+            status="skipped",
+            command=cmd,
+        )
         return
     print(f"\n==> {' '.join(cmd)}", flush=True)
-    subprocess.run(cmd, check=True)
+    write_progress(
+        course_dir,
+        course_name=args.course_name,
+        skill_name=args.skill_name,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        mode=args.mode,
+        input_dir=args.input_dir,
+        documents_input=args.documents_input or [],
+        stage=stage,
+        status="running",
+        command=cmd,
+    )
+    try:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as exc:
+        write_progress(
+            course_dir,
+            course_name=args.course_name,
+            skill_name=args.skill_name,
+            base_dir=base_dir,
+            output_dir=output_dir,
+            mode=args.mode,
+            input_dir=args.input_dir,
+            documents_input=args.documents_input or [],
+            stage=stage,
+            status="failed",
+            command=cmd,
+            error=f"exit code {exc.returncode}",
+        )
+        raise
+    write_progress(
+        course_dir,
+        course_name=args.course_name,
+        skill_name=args.skill_name,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        mode=args.mode,
+        input_dir=args.input_dir,
+        documents_input=args.documents_input or [],
+        stage=stage,
+        status="completed",
+        command=cmd,
+    )
 
 
 def main() -> None:
@@ -34,8 +103,8 @@ def main() -> None:
     parser.add_argument("--course-name", required=True, help="Course output directory name.")
     parser.add_argument("--skill-name", required=True, help="Generated skill name.")
     parser.add_argument("--mode", default="course-expert", help="Skill mode or comma-separated modes passed to build_course_skill.py.")
-    parser.add_argument("--base-dir", default=str(ROOT), help="Course output root. Defaults to this repo.")
-    parser.add_argument("--output-dir", default=str(ROOT / "dist"), help="Generated skill output directory.")
+    parser.add_argument("--base-dir", default=str(DEFAULT_BASE_DIR), help="Course workspace root. Defaults to ./.lineage/courses.")
+    parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR), help="Generated skill output directory. Defaults to ./dist.")
     parser.add_argument("--chunk-minutes", type=int, default=12, help="Video analysis chunk size.")
     parser.add_argument("--force", action="store_true", help="Re-run stages that support overwrite.")
     parser.add_argument("--skip-transcribe", action="store_true")
@@ -48,8 +117,22 @@ def main() -> None:
     args = parser.parse_args()
 
     py = sys.executable
+    base_dir = Path(args.base_dir).expanduser().resolve()
+    output_dir = Path(args.output_dir).expanduser().resolve()
+    course_dir = base_dir / args.course_name
     force = ["--force"] if args.force else []
     limit = ["--limit", str(args.limit)] if args.limit > 0 else []
+
+    write_progress(
+        course_dir,
+        course_name=args.course_name,
+        skill_name=args.skill_name,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        mode=args.mode,
+        input_dir=args.input_dir,
+        documents_input=args.documents_input or [],
+    )
 
     run(
         [
@@ -60,11 +143,16 @@ def main() -> None:
             "--course-name",
             args.course_name,
             "--base-dir",
-            args.base_dir,
+            str(base_dir),
             *force,
             *limit,
         ],
         args.skip_transcribe,
+        stage="transcribe",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
     )
     run(
         [
@@ -75,13 +163,18 @@ def main() -> None:
             "--course-name",
             args.course_name,
             "--base-dir",
-            args.base_dir,
+            str(base_dir),
             "--chunk-minutes",
             str(args.chunk_minutes),
             *force,
             *limit,
         ],
         args.skip_analyze,
+        stage="analyze",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
     )
     if args.documents_input:
         doc_cmd = [
@@ -90,11 +183,33 @@ def main() -> None:
             "--course-name",
             args.course_name,
             "--base-dir",
-            args.base_dir,
+            str(base_dir),
         ]
         for item in args.documents_input:
             doc_cmd.extend(["--input", item])
-        run(doc_cmd, args.skip_documents)
+        run(
+            doc_cmd,
+            args.skip_documents,
+            stage="documents",
+            args=args,
+            base_dir=base_dir,
+            output_dir=output_dir,
+            course_dir=course_dir,
+        )
+    else:
+        write_progress(
+            course_dir,
+            course_name=args.course_name,
+            skill_name=args.skill_name,
+            base_dir=base_dir,
+            output_dir=output_dir,
+            mode=args.mode,
+            input_dir=args.input_dir,
+            documents_input=[],
+            stage="documents",
+            status="skipped",
+            command=[],
+        )
     run(
         [
             py,
@@ -102,9 +217,14 @@ def main() -> None:
             "--course-name",
             args.course_name,
             "--base-dir",
-            args.base_dir,
+            str(base_dir),
         ],
         args.skip_distill,
+        stage="distill",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
     )
     run(
         [
@@ -113,9 +233,14 @@ def main() -> None:
             "--course-name",
             args.course_name,
             "--source-dir",
-            str(Path(args.base_dir) / args.course_name),
+            str(course_dir),
         ],
         args.skip_package,
+        stage="package",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
     )
     run(
         [
@@ -128,14 +253,35 @@ def main() -> None:
             "--mode",
             args.mode,
             "--source-dir",
-            str(Path(args.base_dir) / args.course_name),
+            str(course_dir),
             "--output-dir",
-            args.output_dir,
+            str(output_dir),
             "--description",
             "Generated by the Lineage Skill full course pipeline.",
             *force,
         ],
         args.skip_build_skill,
+        stage="build_skill",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
+    )
+    run(
+        [
+            py,
+            str(ROOT / "scripts" / "build_course_catalog.py"),
+            "--base-dir",
+            str(base_dir),
+            "--output-dir",
+            str(output_dir),
+        ],
+        False,
+        stage="catalog",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
     )
 
 

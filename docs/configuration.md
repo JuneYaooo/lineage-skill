@@ -18,6 +18,12 @@ Used by `scripts/transcribe_video.py`.
 | `AUDIO_TRANSCRIBE_BASE_URL` | Yes | Base URL, for example `https://api.openai.com/v1` or a compatible relay. |
 | `AUDIO_TRANSCRIBE_MODEL` | Yes | Transcription model name. |
 
+Model notes:
+
+- Chinese courses: consider `SenseVoiceSmall` / FunASR-compatible services when local or Chinese-optimized ASR is preferred.
+- English or multilingual courses: consider Whisper-compatible models such as `whisper-1`, or newer OpenAI transcription models such as `gpt-4o-transcribe` / `gpt-4o-mini-transcribe` when available in your endpoint.
+- Pick ASR by domain vocabulary, punctuation quality, long-audio stability, timestamp support, and whether you need speaker diarization.
+
 ## Vision Analysis
 
 Used by `scripts/analyze_videos.py`.
@@ -28,6 +34,12 @@ Used by `scripts/analyze_videos.py`.
 | `LINEAGE_VISION_BASE_URL` | Yes | Base URL for the vision endpoint. |
 | `LINEAGE_VISION_MODEL` | Yes | Vision model name. |
 | `LINEAGE_VISION_TIMEOUT` | No | Request timeout in seconds. |
+
+Model notes:
+
+- Use a model that handles slides, boards, screenshots, software screens, tables, diagrams, and long video context well.
+- Gemini-class video understanding models can be strong for video courses, but the current scripts expect an OpenAI-compatible chat endpoint or an adapter/relay.
+- For screen-heavy courses, visual analysis should complement transcription instead of replacing it. The transcript captures speech; the vision model captures what is only visible on screen.
 
 ## Text Distillation
 
@@ -44,6 +56,12 @@ Used by `scripts/distill_course.py`.
 | `DISTILL_CHUNK_SIZE` | No | Text chunk size for distillation. |
 | `DISTILL_CHUNK_OVERLAP` | No | Chunk overlap size. |
 
+Model notes:
+
+- Prefer long-context text models that produce stable structured output.
+- The text model should be good at Chinese if the course is Chinese, and should handle terminology consistently.
+- You can use cheaper models for first-pass extraction and stronger models for final synthesis when quality matters.
+
 ## MinerU / OCR
 
 Used by `scripts/parse_mineru_documents.py`.
@@ -56,6 +74,12 @@ Used by `scripts/parse_mineru_documents.py`.
 | `MINERU_ENABLE_FORMULA` | No | `true` / `false`. |
 | `MINERU_ENABLE_TABLE` | No | `true` / `false`. |
 | `MINERU_LANGUAGE` | No | Defaults to `ch`. |
+
+OCR notes:
+
+- Use direct text extraction for clean text PDFs when possible.
+- Use MinerU or another OCR/document parser for scanned PDFs, image PDFs, slide exports, formulas, tables, and complex layouts.
+- OCR output is evidence, not guaranteed truth. Review poor scans, formulas, tables, and diagrams before relying on them for final course conclusions.
 
 ## Local Tool Overrides
 
@@ -71,4 +95,3 @@ Used by `scripts/parse_mineru_documents.py`.
 - Do not hardcode private local paths.
 - Do not commit generated transcripts, screenshots, OCR outputs, or course distillation artifacts unless they are intentionally public.
 - Use `.env.example` only for variable names and safe placeholders.
-

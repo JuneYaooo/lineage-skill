@@ -29,13 +29,19 @@ course materials
 | Capability | Script | Status |
 | --- | --- | --- |
 | Video transcription | `scripts/transcribe_video.py` | Supported |
+| Long-audio segmentation | `scripts/transcribe_video.py` | Supported |
 | Video visual analysis | `scripts/analyze_videos.py` | Supported |
+| Large-video compression and chunking | `scripts/analyze_videos.py` | Supported |
 | Key screenshot extraction | `scripts/analyze_videos.py` | Supported |
+| Screenshot de-duplication | `scripts/analyze_videos.py` | Supported |
 | MinerU PDF OCR collection | `scripts/parse_mineru_documents.py` | Supported |
 | Course distillation | `scripts/distill_course.py` | Supported |
 | CoursePackage construction | `scripts/build_course_package.py` | Supported |
+| Multi-course CoursePackage merge | `scripts/build_multi_course_package.py` | Supported |
 | Skill generation | `scripts/build_course_skill.py` | Supported |
 | Full pipeline orchestration | `scripts/run_course_pipeline.py` | Supported |
+| Per-course progress record | `scripts/progress.py` | Supported |
+| Multi-course workspace catalog | `scripts/build_course_catalog.py` | Supported |
 | Local keyword search | generated `scripts/search_course_notes.py` | Supported |
 
 ## Skill Modes
@@ -78,5 +84,5 @@ Still limited:
 - timestamp-level evidence
 - stronger OCR-to-CoursePackage mapping
 - semantic retrieval / vector index
-- multi-course merge workflow
+- semantic cross-course merge and conflict analysis
 - feedback loop from Skill usage back into CoursePackage

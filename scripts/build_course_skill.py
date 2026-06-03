@@ -357,6 +357,25 @@ def parse_modes(raw_modes: str) -> list[str]:
     return modes
 
 
+def default_skill_name(course_name: str, modes: list[str]) -> str:
+    slug = slugify(course_name)
+    if "domain-expert" in modes:
+        suffix = "domain-expert"
+    elif "knowledge-base" in modes:
+        suffix = "knowledge-base"
+    elif "practitioner" in modes:
+        suffix = "practitioner"
+    elif "study-coach" in modes:
+        suffix = "study-coach"
+    elif "citation-archive" in modes:
+        suffix = "citation-archive"
+    else:
+        suffix = "course-expert"
+    if slug.endswith(f"-{suffix}"):
+        return slug
+    return f"{slug}-{suffix}"
+
+
 def build_skill_md(course_name: str, skill_name: str, description: str, modes: list[str], destination: Path) -> None:
     mode_specs = [MODE_SPECS[mode] for mode in modes]
     mode_labels = ", ".join(spec["label"] for spec in mode_specs)
@@ -579,8 +598,8 @@ def main() -> None:
     args = parse_args()
     source_dir = Path(args.source_dir).expanduser().resolve()
     output_dir = Path(args.output_dir).expanduser().resolve()
-    skill_name = args.skill_name or slugify(args.course_name)
     modes = parse_modes(args.mode)
+    skill_name = args.skill_name or default_skill_name(args.course_name, modes)
     skill_dir = output_dir / skill_name
 
     if not source_dir.exists() or not source_dir.is_dir():
