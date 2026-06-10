@@ -287,6 +287,10 @@ MINERU_API_TOKEN=
 ## 致谢
 
 - [Datawhale](https://github.com/datawhalechina) — 感谢 Datawhale 开源社区长期在 AI 教育、开源课程和学习者社区建设上的投入与启发。
+- 马老师 — 感谢马老师组织和推动开源学习，持续连接学习者、开源项目与实践交流。也欢迎关注他的公众号：LSGOGROUP。
+
+  <img src="./docs/img/lsgogroup-wechat-public-code.jpg" alt="LSGOGROUP 公众号二维码" width="160">
+
 - [LINUX DO — 中文开发者社区](https://linux.do/) — 感谢 LINUX DO 社区的讨论、反馈和传播支持，也欢迎大家在社区里交流课程蒸馏与 Agent Skill 实践。
 
 ## License
