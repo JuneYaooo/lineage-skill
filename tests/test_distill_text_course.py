@@ -47,6 +47,40 @@ def test_build_local_cards_extracts_structured_course_evidence() -> None:
     assert quote["quote"] == "慢就是快。"
 
 
+def test_build_local_cards_extracts_capability_evidence() -> None:
+    chunk = {
+        "chunk_id": "chunk-1",
+        "source_id": "source-1",
+        "source_path": "book.md",
+        "source_ref": "book.md",
+        "chunk_index": 0,
+        "char_start": 0,
+        "char_end": 120,
+        "content_sha256": "a" * 64,
+        "text": "\n".join(
+            [
+                "诊断：先定位目标、资源、反馈哪一处断裂。",
+                "工作流：界定目标、拆动作、按结果复盘。",
+                "标准：产出必须具体、可检查、能复用。",
+                "模板：事实、判断、动作、下次检查。",
+                "迁移：先找相同约束，再替换领域变量。",
+                "误用：脱离适用条件直接套用结论。",
+            ]
+        ),
+    }
+
+    cards = build_local_cards(chunk)
+
+    assert {card["card_type"] for card in cards} >= {
+        "diagnostic",
+        "workflow",
+        "rubric",
+        "template",
+        "transfer",
+        "failure_mode",
+    }
+
+
 def test_distill_text_course_writes_cards_synthesis_and_quality(tmp_path: Path) -> None:
     material = tmp_path / "notes.md"
     material.write_text(

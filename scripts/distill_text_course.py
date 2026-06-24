@@ -22,6 +22,12 @@ CARD_PREFIXES = {
     "quote": ["金句", "原话", "引用", "quote"],
     "task": ["任务", "练习", "作业", "行动", "清单", "task", "exercise", "action"],
     "open_question": ["问题", "疑问", "待确认", "question"],
+    "diagnostic": ["诊断", "判断", "辨别", "定位", "diagnostic", "diagnosis"],
+    "workflow": ["工作流", "执行流程", "操作流程", "作业流程", "workflow"],
+    "rubric": ["标准", "评分", "质检", "评价", "rubric", "criteria"],
+    "template": ["模板", "话术", "表格", "worksheet", "template"],
+    "transfer": ["迁移", "应用", "套用", "转化", "transfer", "application"],
+    "failure_mode": ["失效", "误用", "反例", "失败", "failure", "anti-pattern"],
 }
 
 SECTION_TITLES = {
@@ -32,6 +38,12 @@ SECTION_TITLES = {
     "quote": "核心引用",
     "task": "练习与行动",
     "open_question": "待确认问题",
+    "diagnostic": "诊断判断",
+    "workflow": "执行流程",
+    "rubric": "质量标准",
+    "template": "模板资产",
+    "transfer": "迁移规则",
+    "failure_mode": "失效与误用",
 }
 
 
@@ -128,7 +140,7 @@ def build_llm_cards(chunk: dict[str, Any]) -> list[dict[str, Any]]:
     prompt = f"""请从以下课程文字片段中抽取证据卡片。只返回 JSON，不要 Markdown。
 
 每张卡片字段：
-- card_type: concept/method/case/boundary/quote/task/open_question
+- card_type: concept/method/case/boundary/quote/task/open_question/diagnostic/workflow/rubric/template/transfer/failure_mode
 - title
 - summary
 - quote: 仅 quote 类型需要
@@ -136,7 +148,7 @@ def build_llm_cards(chunk: dict[str, Any]) -> list[dict[str, Any]]:
 
 要求：
 - 只抽取片段明确支持的内容，不要扩展。
-- 方法、案例、边界、原话要优先保留。
+- 方法、诊断、流程、质量标准、模板、迁移规则、案例、边界、原话要优先保留。
 - 最多 12 张。
 
 来源：{chunk['source_ref']} chunk {chunk['chunk_index']}
@@ -230,7 +242,21 @@ def write_synthesis(course_name: str, cards: list[dict[str, Any]], output: Path)
         "This synthesis is generated from pure-text sources and OCR/notes artifacts.",
         "",
     ]
-    for card_type in ["concept", "method", "case", "boundary", "quote", "task", "open_question"]:
+    for card_type in [
+        "concept",
+        "method",
+        "diagnostic",
+        "workflow",
+        "rubric",
+        "template",
+        "transfer",
+        "failure_mode",
+        "case",
+        "boundary",
+        "quote",
+        "task",
+        "open_question",
+    ]:
         rows = by_type.get(card_type, [])
         if not rows:
             continue

@@ -16,6 +16,8 @@ import re
 import shutil
 from pathlib import Path
 
+from build_okf_bundle import build_okf_bundle
+
 
 REFERENCE_FILES = [
     "course_digest.md",
@@ -417,6 +419,12 @@ def copy_course_package(source_dir: Path, destination: Path) -> str:
         "topics": [],
         "cases": [],
         "methods": [],
+        "diagnostics": [],
+        "workflows": [],
+        "rubrics": [],
+        "templates": [],
+        "transfer_rules": [],
+        "failure_modes": [],
         "learning_checks": [],
         "quotes": [],
         "evidence": [],
@@ -555,18 +563,30 @@ Active role(s): {mode_labels}.
 
 ## Reference Priority
 
-1. `references/course_digest.md` for the course-level framework.
-2. `references/lesson_index.json` for lesson lookup and sequencing.
-3. `references/concept_glossary.md` for terms and definitions.
-4. `references/evidence_map.json` for source files, screenshots, transcripts, and confidence notes.
-5. `references/quote_index.md` for memorable course statements.
-6. `references/study_paths.md` for review plans and learning routes.
-7. `references/course_package.json` for normalized package objects when structured lookup is needed.
-8. `references/full_transcript.md` for original wording when detailed citation is required.
-9. `references/keyframe_selection/model_keyframe_summary.md` for model-selected visual evidence when present.
-10. `references/keyframe_selection/` and `references/keyframes_model_selected/` for image manifests and selected frame files when present.
-11. `references/text_distillation/evidence_cards.jsonl` and `references/text_sources/chunks.jsonl` for pure-text evidence cards and source chunks when present.
-12. `references/transcripts/`, `references/analysis/`, and `references/documents/` for packaged source evidence directories when present.
+1. `references/okf/index.md` for progressive reading, human-readable concept files, and cross-linked capability navigation.
+2. `references/course_digest.md` for the course-level framework.
+3. `references/lesson_index.json` for lesson lookup and sequencing.
+4. `references/concept_glossary.md` for terms and definitions.
+5. `references/evidence_map.json` for source files, screenshots, transcripts, and confidence notes.
+6. `references/quote_index.md` for memorable course statements.
+7. `references/study_paths.md` for review plans and learning routes.
+8. `references/course_package.json` for normalized package objects when structured lookup is needed.
+9. `references/full_transcript.md` for original wording when detailed citation is required.
+10. `references/keyframe_selection/model_keyframe_summary.md` for model-selected visual evidence when present.
+11. `references/keyframe_selection/` and `references/keyframes_model_selected/` for image manifests and selected frame files when present.
+12. `references/text_distillation/evidence_cards.jsonl` and `references/text_sources/chunks.jsonl` for pure-text evidence cards and source chunks when present.
+13. `references/transcripts/`, `references/analysis/`, and `references/documents/` for packaged source evidence directories when present.
+
+## Capability Reading Strategy
+
+- For progressive reading, start with `references/okf/index.md`, open only the relevant OKF section index, then read individual concept files.
+- For factual questions, start with `references/course_package.json`, then use `references/evidence_map.json` and `scripts/search_course_notes.py` to locate supporting lessons, cards, transcripts, documents, or chunks.
+- For application, consulting, or output-producing requests, prioritize `methods`, `diagnostics`, `workflows`, `rubrics`, `templates`, `transfer_rules`, and `failure_modes` from `references/course_package.json`.
+- Use `references/text_distillation/evidence_cards.jsonl` to separate direct source cards from your own synthesis.
+- Use OKF `# Citations` links for readable provenance, and use JSON/script lookup when exact source spans are required.
+- Use `scripts/fetch_course_evidence.py --chunk-id <chunk_id>` or `--card-id <card_id>` when the answer depends on exact source wording, controversial claims, or high-impact recommendations.
+- In multi-course packages, preserve `source_course` and `source_course_id` distinctions. If sources disagree, report the disagreement instead of flattening it into one claim.
+- Label adapted recommendations as inference. Do not present generic model knowledge or unsupported extrapolation as course content.
 
 ## Response Rules
 
@@ -587,26 +607,59 @@ Active role(s): {mode_labels}.
 
 def build_search_script(destination: Path) -> None:
     content = '''#!/usr/bin/env python3
-"""Tiny keyword search over packaged course references."""
+"""Keyword search over packaged course references and evidence cards."""
 
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
+
+
+def read_jsonl(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+    rows = []
+    for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        if not line.strip():
+            continue
+        item = json.loads(line)
+        if isinstance(item, dict):
+            rows.append(item)
+    return rows
+
+
+def card_text(card: dict) -> str:
+    return " ".join(str(card.get(key) or "") for key in ["card_type", "title", "summary", "quote", "source_ref", "chunk_id"])
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Search course reference files.")
     parser.add_argument("query", help="Keyword to search for.")
     parser.add_argument("--references-dir", default="../references", help="Reference directory relative to this script.")
+    parser.add_argument("--type", dest="card_type", help="Filter evidence cards by card_type, e.g. method, diagnostic, rubric.")
     args = parser.parse_args()
 
     base = (Path(__file__).resolve().parent / args.references_dir).resolve()
     query = args.query.lower()
     matches = []
 
+    cards = read_jsonl(base / "text_distillation" / "evidence_cards.jsonl")
+    for card in cards:
+        if args.card_type and card.get("card_type") != args.card_type:
+            continue
+        text = card_text(card)
+        if query in text.lower():
+            source = card.get("source_ref", "")
+            chunk = card.get("chunk_id", "")
+            title = card.get("title", "")
+            summary = card.get("quote") or card.get("summary", "")
+            print(f"card:{card.get('card_id', '')}:{card.get('card_type', '')}:{source}:{chunk}: {title} {summary}".strip())
+
     for path in sorted(base.rglob("*")):
         if not path.is_file():
+            continue
+        if path.name == "evidence_cards.jsonl" and args.card_type:
             continue
         try:
             text = path.read_text(encoding="utf-8")
@@ -627,6 +680,12 @@ if __name__ == "__main__":
     main()
 '''
     destination.write_text(content, encoding="utf-8")
+    destination.chmod(0o755)
+
+
+def build_fetch_evidence_script(destination: Path) -> None:
+    source = Path(__file__).resolve().parent / "fetch_course_evidence.py"
+    shutil.copy2(source, destination)
     destination.chmod(0o755)
 
 
@@ -812,8 +871,13 @@ def main() -> None:
     statuses.update(copy_optional_reference_dirs(source_dir, references_dir))
     statuses.update(copy_source_courses_from_package(source_dir, references_dir))
     statuses.update(write_mode_references(references_dir, modes))
+    okf_result = build_okf_bundle(course_dir=references_dir, output_dir=references_dir / "okf", course_name=args.course_name)
+    statuses["okf/"] = f"generated {okf_result['concept_count']} concepts, {okf_result['evidence_count']} evidence chunks"
 
     build_search_script(scripts_dir / "search_course_notes.py")
+    statuses["scripts/search_course_notes.py"] = "generated"
+    build_fetch_evidence_script(scripts_dir / "fetch_course_evidence.py")
+    statuses["scripts/fetch_course_evidence.py"] = "copied"
 
     manifest = build_lineage_manifest(args.course_name, skill_name, modes, source_dir, statuses, options)
     (skill_dir / "lineage_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")

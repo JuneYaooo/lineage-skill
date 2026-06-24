@@ -1,11 +1,11 @@
 ---
 name: lineage-skill
-description: Distills course materials into source-grounded AI agent skills. Use when the user wants to convert videos, audio, PDFs, slides, transcripts, OCR output, notes, or existing course distillation files into a CoursePackage and generated mentor, expert, consultant, practitioner, or custom Skill.
+description: Distills course, book, and long-form learning materials into source-grounded AI agent skills. Use when the user wants to convert videos, audio, PDFs, ebooks, books, slides, transcripts, OCR output, notes, or existing course/book distillation files into a CoursePackage and generated mentor, expert, consultant, practitioner, or custom Skill.
 ---
 
 # Lineage Skill
 
-Turn course materials into reusable, source-grounded AI Skills.
+Turn course, book, and long-form learning materials into reusable, source-grounded AI Skills.
 
 Core method: **Capture -> Cite -> Compress -> Connect -> Codify -> Evaluate**.
 Use this as an evidence-first workflow: preserve source material before summarizing, cite sources before synthesizing, and mark unsupported gaps.
@@ -22,10 +22,10 @@ content belongs only in that course workspace and generated course Skill.
 
 Use this skill when the user asks to:
 
-- Distill a course, lecture series, workshop, training program, curriculum, or long-form class.
-- Convert videos, audio, PDFs, slides, screenshots, notes, transcripts, OCR output, or course summaries into structured course knowledge.
-- Generate or update a course-backed Skill.
-- Build a course mentor, expert, consultant, practitioner, or custom course-backed Skill.
+- Distill a course, book, ebook, lecture series, workshop, training program, curriculum, long-form class, or method-heavy document collection.
+- Convert videos, audio, PDFs, ebooks, chaptered Markdown, slides, screenshots, notes, transcripts, OCR output, or course/book summaries into structured source-grounded knowledge.
+- Generate or update a course-backed or book-backed Skill.
+- Build a course/book mentor, expert, consultant, practitioner, or custom source-backed Skill.
 - Package existing `transcripts/`, `analysis/`, `documents/`, `lesson_summaries.json`, `course_distillation_*.md/json`, or `course_package.json`.
 
 ## Capabilities
@@ -44,7 +44,9 @@ Supported capabilities:
 - Collect MinerU/OCR Markdown outputs from PDFs or document directories.
 - Distill transcripts, visual analyses, screenshots, OCR documents, and user notes into structured course notes.
 - Distill pure text materials into source-grounded evidence cards before synthesis, including Markdown notes, TXT exports, handouts, and existing OCR Markdown.
+- Extract capability cards from books and courses: diagnostics, workflows, rubrics, templates, transfer rules, and failure modes in addition to concepts, methods, cases, quotes, tasks, and boundaries.
 - Build `course_package.json`, `evidence_map.json`, and `lesson_index.json`.
+- Build an OKF-style Markdown knowledge bundle under `references/okf/` for progressive reading, human review, cross-agent exchange, and concept graph navigation.
 - Merge multiple `course_package.json` files into one combined multi-course workspace.
 - Generate source-grounded course Skills in the requested role.
 - Record durable pipeline progress in `lineage_progress.json`.
@@ -79,7 +81,7 @@ Standalone audio files are transcribed by the capture stage, but they do not pro
 1. Identify source state:
    - **Videos/audio only**: run the full pipeline.
    - **Videos plus PDFs**: run the full pipeline with document OCR if configured.
-   - **Existing transcripts/OCR/notes**: skip capture; build package and Skill.
+   - **Existing transcripts/OCR/notes/books/text**: skip capture; build package and Skill.
    - **Existing CoursePackage**: skip distillation; build or update Skill.
 2. Choose role:
    - Default: `mentor`.
@@ -153,7 +155,7 @@ python scripts/run_course_pipeline.py \
 
 Before using PDFs, check `MINERU_API_TOKEN`. If it is missing, read [references/runtime.md](references/runtime.md) and explain the fallback.
 
-For pure text courses or notes-only courses:
+For books, ebooks, pure text courses, or notes-only sources:
 
 ```bash
 python scripts/run_course_pipeline.py \
@@ -165,7 +167,7 @@ python scripts/run_course_pipeline.py \
   --output-dir ./dist
 ```
 
-This skips media capture when `--input-dir` is absent. The text stage writes `text_sources/` and `text_distillation/`, then the package builder merges evidence cards into concepts, methods, cases, quotes, boundaries, and learning checks.
+This skips media capture when `--input-dir` is absent. The text stage writes `text_sources/` and `text_distillation/`, then the package builder merges evidence cards into concepts, methods, cases, quotes, boundaries, learning checks, diagnostics, workflows, rubrics, templates, transfer rules, and failure modes.
 
 ### Existing Materials
 
@@ -234,12 +236,16 @@ Check:
 - `lineage_manifest.json` exists and includes `generated_by.id: lineage-skill`.
 - `lineage_manifest.json` includes `roles`, `scope`, `evidence_strategy`, and `progress_strategy`.
 - `references/course_package.json` exists.
+- `references/okf/index.md` exists.
+- `references/okf/log.md` exists.
 - `references/evidence_map.json` exists.
 - If videos were present, `references/keyframe_selection/model_keyframe_summary.md` exists or the pipeline explicitly recorded that no video files were found.
 - If videos were present, selected images live under `references/keyframes_model_selected/`; raw candidate frames should not be required in the generated Skill.
 - `references/lesson_index.json` exists.
 - Role-specific reference files exist for requested roles.
 - `scripts/search_course_notes.py` is executable.
+- `scripts/fetch_course_evidence.py` is executable.
+- `references/course_package.json` includes capability fields when available: `diagnostics`, `workflows`, `rubrics`, `templates`, `transfer_rules`, and `failure_modes`.
 - `<course-dir>/lineage_progress.json` exists after a full pipeline run.
 - `lineage_progress.json` includes the `keyframes` stage and artifact counts for candidates, selected keyframes, manifests, and keyframe summaries.
 - `<base-dir>/course_catalog.json` is updated after a full pipeline run.

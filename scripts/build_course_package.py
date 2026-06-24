@@ -14,9 +14,28 @@ SECTION_ALIASES = {
     "concepts": ["关键概念", "概念词汇", "词汇表", "术语"],
     "topics": ["跨课程主题", "主题图谱", "课程体系", "体系图"],
     "methods": ["方法", "框架", "行动清单", "可执行行动"],
+    "diagnostics": ["诊断判断", "诊断", "判断标准", "问题定位"],
+    "workflows": ["执行流程", "工作流", "操作流程", "作业流程"],
+    "rubrics": ["质量标准", "评价标准", "评分标准", "质检规则"],
+    "templates": ["模板资产", "模板", "话术", "表格"],
+    "transfer_rules": ["迁移规则", "应用迁移", "场景迁移"],
+    "failure_modes": ["失效与误用", "失效", "误用", "反例"],
     "quotes": ["核心金句", "金句", "重要原话"],
     "study_paths": ["学习路径", "复习路径", "行动清单", "可执行行动"],
     "boundaries": ["边界", "风险", "注意事项", "限制"],
+}
+
+CARD_TYPE_TO_PACKAGE_FIELD = {
+    "concept": "concepts",
+    "method": "methods",
+    "diagnostic": "diagnostics",
+    "workflow": "workflows",
+    "rubric": "rubrics",
+    "template": "templates",
+    "transfer": "transfer_rules",
+    "failure_mode": "failure_modes",
+    "quote": "quotes",
+    "boundary": "boundaries",
 }
 
 
@@ -106,16 +125,11 @@ def merge_text_cards(package: dict, cards: list[dict]) -> None:
     for card in cards:
         card_type = card.get("card_type")
         value = card_value(card)
-        if card_type == "concept":
-            add_unique(package["concepts"], value)
-        elif card_type == "method":
-            add_unique(package["methods"], value)
+        target = CARD_TYPE_TO_PACKAGE_FIELD.get(card_type)
+        if target:
+            add_unique(package[target], value)
         elif card_type == "case":
             package["cases"].append(card)
-        elif card_type == "quote":
-            add_unique(package["quotes"], value)
-        elif card_type == "boundary":
-            add_unique(package["boundaries"], value)
         elif card_type in {"task", "open_question"}:
             package["learning_checks"].append(card)
 
@@ -191,6 +205,12 @@ def package_quality(package: dict) -> dict:
         "concepts": len(package["concepts"]),
         "topics": len(package["topics"]),
         "methods": len(package["methods"]),
+        "diagnostics": len(package["diagnostics"]),
+        "workflows": len(package["workflows"]),
+        "rubrics": len(package["rubrics"]),
+        "templates": len(package["templates"]),
+        "transfer_rules": len(package["transfer_rules"]),
+        "failure_modes": len(package["failure_modes"]),
         "quotes": len(package["quotes"]),
         "evidence": len(package["evidence"]),
         "study_paths": len(package["study_paths"]),
@@ -227,6 +247,12 @@ def build_package(course_name: str, source_dir: Path) -> dict:
         "topics": bullets(sections["topics"]),
         "cases": [],
         "methods": bullets(sections["methods"]),
+        "diagnostics": bullets(sections["diagnostics"]),
+        "workflows": bullets(sections["workflows"]),
+        "rubrics": bullets(sections["rubrics"]),
+        "templates": bullets(sections["templates"]),
+        "transfer_rules": bullets(sections["transfer_rules"]),
+        "failure_modes": bullets(sections["failure_modes"]),
         "learning_checks": [],
         "quotes": bullets(sections["quotes"]),
         "evidence": build_evidence(source_dir),

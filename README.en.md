@@ -2,11 +2,12 @@
 
 # Lineage Skill
 
-**Turn a dense course into a source-backed, transferable, output-producing private method system.**
+**Turn a dense course, book, or long-form learning source into a source-backed, transferable, output-producing private method system.**
 
 Extract judgment frameworks, case experience, operating processes, and quality
-standards from videos, handouts, whiteboards, transcripts, and notes, then let an
-Agent carry the teacher's method into your learning, decisions, and work output.
+standards from videos, books, handouts, whiteboards, transcripts, and notes, then
+let an Agent carry the teacher's or author's method into your learning,
+decisions, and work output.
 
 For Codex / Claude Code / OpenClaw / Hermes / custom Agents.
 
@@ -19,12 +20,30 @@ For Codex / Claude Code / OpenClaw / Hermes / custom Agents.
 
 ---
 
+## 2026-06-24 Update
+
+This update moves `lineage-skill` from a course mentor generator toward a
+course/book/long-form method system generator:
+
+- **Book and long-form source support**: books, chaptered Markdown, OCR text,
+  notes, and course materials can use the same distillation pipeline.
+- **Capability asset extraction**: in addition to concepts, methods, cases, and
+  quotes, packages now extract `diagnostics`, `workflows`, `rubrics`,
+  `templates`, `transfer_rules`, and `failure_modes`.
+- **OKF-compatible knowledge bundle**: generated Skills now include
+  `references/okf/`, a Markdown + frontmatter bundle for progressive reading,
+  human review, cross-tool exchange, and concept graph navigation.
+- **Stronger provenance lookup**: `scripts/fetch_course_evidence.py` can fetch
+  source chunks and related evidence cards by `chunk_id` or `card_id`.
+- **Multi-course capability preservation**: merged packages keep capability
+  fields and source-course boundaries instead of flattening disagreements.
+
 ## What Is This?
 
-`lineage-skill` is a course distillation Skill for Agents. It turns a complete
-set of videos, bootcamps, lectures, PDF handouts, whiteboards, screenshots,
-transcripts, and learning notes into an installable, callable, source-backed
-course mentor Skill.
+`lineage-skill` is a course and book distillation Skill for Agents. It turns a
+complete set of videos, books, bootcamps, lectures, PDF handouts, whiteboards,
+screenshots, transcripts, and learning notes into an installable, callable,
+source-backed mentor or method Skill.
 
 It is not "summarize this course." It turns the course into a long-lived
 knowledge asset:
@@ -38,14 +57,14 @@ knowledge asset:
 - Produce work assets: turn the teacher's method into checklists, playbooks,
   templates, drafts, and quality criteria.
 
-In one sentence: turn "I bought, watched, or studied a course" into "I have a
-course mentor I can call on at any time."
+In one sentence: turn "I bought, watched, or studied a course/book" into "I have
+a private method system I can call on at any time."
 
 ## Core Value After Distillation
 
-The expensive part of a serious course is usually not the list of facts. It is
-the teacher's judgment framework, way of decomposing problems, case experience,
-and implicit quality standards.
+The expensive part of a serious course or book is usually not the list of facts.
+It is the teacher's or author's judgment framework, way of decomposing problems,
+case experience, and implicit quality standards.
 
 `lineage-skill` extracts those from tens or hundreds of hours of material and
 turns them into Agent-callable capabilities:
@@ -133,9 +152,9 @@ steps, templates, and mentor capabilities.
 
 ## Capabilities
 
-This Skill includes the main pipeline needed for course distillation. You do not
-need to design the whole "video course to mentor" workflow yourself. Provide the
-course materials and configure suitable model interfaces.
+This Skill includes the main pipeline needed for course and book distillation.
+You do not need to design the whole "video course/book to method Skill" workflow
+yourself. Provide the source materials and configure suitable model interfaces.
 
 | Capability | What It Does | Output |
 | --- | --- | --- |
@@ -144,8 +163,11 @@ course materials and configure suitable model interfaces.
 | Large video handling | Compresses and chunks large videos to reduce upload and analysis pressure | Chunked analysis results |
 | Model-selected keyframes | Builds a dense candidate pool, then asks a multimodal vision model to choose evidence-worthy keyframes from labeled contact sheets; equal intervals are only candidates, not the final evidence rule | `keyframe_selection/`, `keyframes_model_selected/` |
 | PDF / document parsing | Integrates MinerU or other OCR/document parsing outputs for scanned PDFs, image PDFs, and handouts | `documents/`, `mineru_supplement.md` |
+| Pure text / book distillation | Chunks Markdown, TXT, OCR Markdown, notes, book chapters, and handouts into source-backed evidence cards | `text_sources/`, `text_distillation/evidence_cards.jsonl` |
+| Capability asset extraction | Extracts diagnostics, workflows, rubrics, templates, transfer rules, and failure modes from courses and books | capability fields in `course_package.json` |
 | Course distillation | Combines transcripts, visual analysis, model-selected keyframes, OCR, and notes into concepts, methods, cases, and citations | `course_distillation_*.md/json` |
 | CoursePackage build | Converts distillation results into a unified structure with evidence map, lesson index, and quality metadata | `course_package.json` |
+| OKF bundle export | Exports structured capability assets into a progressive Markdown + frontmatter knowledge bundle | `references/okf/` |
 | Multi-course merge | Combines multiple course packages into one cross-course Skill input | combined `course_package.json` |
 | Dedicated mentor Skill generation | Generates `mentor` by default; other roles are also supported | Installable/callable course Skill |
 | Resume and progress tracking | Records stage state, existing artifacts, and next steps so runs can resume | `lineage_progress.json` |
@@ -168,7 +190,7 @@ After installation, tell me how I can turn my course materials into a course exp
 
 Everything commonly needed is listed here. `docs/install.md` is kept only for Agent-driven installation.
 
-- **Course materials**: videos, audio, PDFs, handouts, screenshots, transcripts, OCR output, and notes.
+- **Course/book materials**: videos, audio, books or chaptered Markdown, PDFs, handouts, screenshots, transcripts, OCR output, and notes.
 - **Local tools**: `git`, `python3`, `pip`, plus `ffmpeg` / `ffprobe` when processing videos or raw audio.
 - **Model interfaces**: OpenAI-compatible speech-to-text, vision, text distillation, and optional MinerU OCR.
 

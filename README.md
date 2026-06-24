@@ -2,9 +2,9 @@
 
 # 师承.skill / Lineage Skill
 
-**把一整套高密度课程，蒸馏成可溯源、可迁移、可产出的私人方法系统。**
+**把一整套高密度课程、书籍或长文档，蒸馏成可溯源、可迁移、可产出的私人方法系统。**
 
-从视频、讲义、板书、转录和笔记里抽取判断框架、案例经验、操作流程和质量标准，
+从视频、书籍、讲义、板书、转录和笔记里抽取判断框架、案例经验、操作流程和质量标准，
 让 Agent 带着老师的方法参与你的学习、决策和工作产出。
 
 面向 Codex / Claude Code / OpenClaw / Hermes / 自定义 Agent。
@@ -18,22 +18,32 @@
 
 ---
 
+## 2026-06-24 更新
+
+这次更新把 `lineage-skill` 从“课程导师生成器”进一步补强为“课程/书籍/长文档方法系统生成器”：
+
+- **支持书籍和长文档**：书籍、章节 Markdown、OCR 文本和课程材料都可以走同一套蒸馏流程。
+- **新增能力资产抽取**：除了概念、方法、案例、引用，现在会抽取 `diagnostics`、`workflows`、`rubrics`、`templates`、`transfer_rules`、`failure_modes`。
+- **新增 OKF 兼容知识包**：生成 Skill 时会在 `references/okf/` 输出 Markdown + frontmatter 的渐进式知识目录，便于人读、Agent 逐层读取、跨工具交换和图谱化。
+- **增强溯源链路**：新增 `scripts/fetch_course_evidence.py`，可以通过 `chunk_id` 或 `card_id` 回到原始 source chunk 和相关证据卡。
+- **多课程合并保留能力字段**：跨课程包会继续保留来源边界，避免把不同课程/书籍的判断压平成一个无来源结论。
+
 ## 这是什么
 
-`lineage-skill` 是一个给 Agent 使用的课程蒸馏 Skill。它把一整套视频课、训练营、讲座、PDF 讲义、板书、截图、转录和学习笔记，转化成一个可安装、可调用、可溯源的课程导师 Skill。
+`lineage-skill` 是一个给 Agent 使用的课程/书籍蒸馏 Skill。它把一整套视频课、训练营、讲座、书籍、PDF 讲义、板书、截图、转录和学习笔记，转化成一个可安装、可调用、可溯源的导师或方法 Skill。
 
 它不是“把课总结一下”，而是把课程沉淀成一套能长期使用的知识资产：
 
 - 保留课程原意：重要结论尽量能回到课时、原文、截图或讲义。
 - 重建课程结构：把分散的视频、讲义、案例和笔记整理成概念、方法、课时索引和证据图谱。
 - 生成可用导师：让 Agent 基于这套课回答、追问、复习、演练、回查出处。
-- 产出工作资产：把老师的方法变成 checklist、playbook、template、方案初稿和质检规则。
+- 产出工作资产：把老师或作者的方法变成 checklist、playbook、template、方案初稿和质检规则。
 
-一句话：**把“我买过、看过、学过一套课”变成“我拥有一个能随时陪练和指导的课程导师”。**
+一句话：**把“我买过、看过、学过一套课/一本书”变成“我拥有一个能随时陪练、指导和产出的私人方法系统”。**
 
 ## 蒸馏后的核心价值
 
-一套课真正贵的地方，通常不在“知识点列表”，而在老师长期积累出来的判断框架、问题分解方式、案例经验和隐性标准。
+一套课或一本好书真正贵的地方，通常不在“知识点列表”，而在老师/作者长期积累出来的判断框架、问题分解方式、案例经验和隐性标准。
 
 `lineage-skill` 的目标是把这些东西从几十小时、上百小时的视频里抽出来，变成 Agent 可以反复调用的能力：
 
@@ -118,9 +128,11 @@
 | 大视频处理 | 对大视频压缩、按时间分片，降低模型上传和理解压力 | 分片分析结果 |
 | 模型精选关键帧 | 先生成密集候选帧，再让多模态视觉模型从 contact sheet 中选择真正有证据价值的关键帧；等间隔只作为候选池，不作为最终证据规则 | `keyframe_selection/`、`keyframes_model_selected/` |
 | PDF / 文档解析 | 接入 MinerU 等 OCR / 文档解析结果，把扫描 PDF、图片 PDF、讲义纳入证据 | `documents/`、`mineru_supplement.md` |
-| 纯文字课程蒸馏 | 把 Markdown、TXT、OCR Markdown、手工笔记和讲义分块成可溯源证据卡片，再合并进课程结构 | `text_sources/`、`text_distillation/evidence_cards.jsonl` |
+| 纯文字/书籍蒸馏 | 把 Markdown、TXT、OCR Markdown、手工笔记、书籍章节和讲义分块成可溯源证据卡片，再合并进课程/书籍结构 | `text_sources/`、`text_distillation/evidence_cards.jsonl` |
+| 能力资产抽取 | 从书和课中抽取诊断规则、执行流程、质量标准、模板、迁移规则和失效条件 | `course_package.json` 中的 capability fields |
 | 课程蒸馏 | 整合转录、画面分析、模型精选关键帧、OCR 和笔记，提炼概念、方法、案例、引用 | `course_distillation_*.md/json` |
 | CoursePackage 构建 | 把课程蒸馏结果变成统一结构，保留 evidence map、lesson index 和质量信息 | `course_package.json` |
+| OKF 知识包导出 | 把结构化能力资产导出成 Markdown + frontmatter 的渐进式知识目录 | `references/okf/` |
 | 多课程合并 | 把多个课程包合成一个跨课程 Skill 的输入 | combined `course_package.json` |
 | 专属导师 Skill 生成 | 默认生成 `mentor`，也可按用途生成其他角色 | 可安装/调用的课程 Skill |
 | 断点与进度记录 | 记录每个阶段状态、已有产物和下一步，可从已有产物继续 | `lineage_progress.json` |
@@ -150,7 +162,7 @@ https://raw.githubusercontent.com/JuneYaooo/lineage-skill/main/docs/install.md
 - 视频：`.mp4`
 - 音频：`.mp3`、`.wav`、`.m4a`、`.aac`、`.flac`、`.ogg`、`.opus`
 - 文档：PDF、讲义、截图、OCR Markdown
-- 已有文本：转录、课程笔记、学习总结、案例整理
+- 已有文本：转录、课程笔记、书籍章节 Markdown、学习总结、案例整理
 
 如果你已经有转录、OCR 文档或笔记，可以跳过重新转录和视觉分析，直接进入课程蒸馏和 Skill 生成。
 
