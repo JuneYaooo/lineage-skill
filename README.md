@@ -338,6 +338,8 @@ MINERU_API_TOKEN=
 - [rfeng1016](https://github.com/rfeng1016) — 感谢他对 OKF 的提醒和推荐，促成了本项目加入 OKF 兼容知识包。
 - [LINUX DO — 中文开发者社区](https://linux.do/) — 感谢 LINUX DO 社区的讨论、反馈和传播支持，也欢迎大家在社区里交流课程/书籍蒸馏与 Agent Skill 实践。
 
+[![Listed on BundleDex](https://bundledex.net/badge.svg)](https://bundledex.net) — Discovered via [BundleDex](https://bundledex.net), a directory of OKF bundles.
+
 ## License
 
 本项目采用 [PolyForm Noncommercial License 1.0.0](./LICENSE) 授权。
