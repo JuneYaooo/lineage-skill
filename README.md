@@ -11,6 +11,7 @@
 
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-orange.svg)](./LICENSE)
 [![Skill](https://img.shields.io/badge/AI%20Agent-Skill-orange.svg)](./SKILL.md)
+[![BundleDex](https://bundledex.net/badge/lineage-skill.svg)](https://bundledex.net/bundles/lineage-skill/)
 
 [English](./README.en.md)
 
