@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lineage-skill.local/schemas/capability-graph-1.0.json",
+  "title": "Lineage CapabilityGraph 1.0",
+  "type": "object",
+  "required": ["schema_version", "course_package_id", "nodes", "edges", "quality"],
+  "properties": {
+    "schema_version": {"const": "1.0", "type": "string"},
+    "course_package_id": {"type": "string"},
+    "nodes": {"type": "array", "items": {"type": "object", "required": ["id", "name", "type", "description", "observable_outputs", "prerequisites", "success_rubrics", "practice_tasks", "assessment_items", "source_evidence", "difficulty_band"]}},
+    "edges": {"type": "array", "items": {"type": "object", "required": ["id", "from", "to", "type"]}},
+    "quality": {"type": "object", "required": ["status", "cycle_count", "dangling_reference_count"]}
+  }
+}

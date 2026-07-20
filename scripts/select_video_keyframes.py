@@ -26,6 +26,7 @@ from llm_client import analyze_images_with_vision_model
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BASE_DIR = ROOT / ".lineage" / "courses"
 FFMPEG = os.getenv("FFMPEG") or shutil.which("ffmpeg") or "ffmpeg"
+FFPROBE = os.getenv("FFPROBE") or shutil.which("ffprobe") or "ffprobe"
 
 VIDEO_SUFFIXES = {".mp4", ".mov", ".mkv", ".webm"}
 
@@ -62,22 +63,67 @@ def frame_count(path: Path) -> int:
     return len(list(path.glob("*.jpg"))) if path.is_dir() else 0
 
 
-def timestamp_for_frame(path: Path, interval_seconds: int) -> str:
-    match = re.search(r"frame_(\d+)\.jpg$", path.name)
-    index = int(match.group(1)) - 1 if match else 0
-    seconds = index * interval_seconds
-    return f"{seconds // 60:02d}:{seconds % 60:02d}"
+def parse_fps(value: str, default: float = 25.0) -> float:
+    value = (value or "").strip()
+    try:
+        if "/" in value:
+            numerator, denominator = value.split("/", 1)
+            den = float(denominator)
+            return float(numerator) / den if den else default
+        return float(value)
+    except (TypeError, ValueError, ZeroDivisionError):
+        return default
 
 
-def extract_candidates(video: Path, output_dir: Path, interval_seconds: int, width: int, force: bool) -> int:
-    existing = frame_count(output_dir)
-    if existing and not force:
-        return existing
-    output_dir.mkdir(parents=True, exist_ok=True)
-    if force:
-        for old in output_dir.glob("*.jpg"):
-            old.unlink()
+def video_fps(video: Path) -> float:
     command = [
+        FFPROBE,
+        "-v",
+        "error",
+        "-select_streams",
+        "v:0",
+        "-show_entries",
+        "stream=avg_frame_rate",
+        "-of",
+        "default=nw=1:nk=1",
+        str(video),
+    ]
+    try:
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
+    except (OSError, subprocess.CalledProcessError):
+        return 25.0
+    return parse_fps(result.stdout, 25.0)
+
+
+def build_extract_command(
+    video: Path,
+    output_pattern: Path,
+    *,
+    mode: str,
+    fps: float,
+    interval_seconds: int,
+    width: int,
+    scene_threshold: float,
+) -> list[str]:
+    if mode == "scene":
+        every_n = max(1, round(fps * interval_seconds))
+        vf = f"select='gt(scene,{scene_threshold})+not(mod(n,{every_n}))',showinfo,scale={width}:-1"
+        return [
+            FFMPEG,
+            "-hide_banner",
+            "-loglevel",
+            "info",
+            "-i",
+            str(video),
+            "-vf",
+            vf,
+            "-vsync",
+            "vfr",
+            "-q:v",
+            "3",
+            str(output_pattern),
+        ]
+    return [
         FFMPEG,
         "-hide_banner",
         "-loglevel",
@@ -88,13 +134,189 @@ def extract_candidates(video: Path, output_dir: Path, interval_seconds: int, wid
         f"fps=1/{interval_seconds},scale={width}:-1",
         "-q:v",
         "3",
-        str(output_dir / "frame_%04d.jpg"),
+        str(output_pattern),
     ]
-    subprocess.run(command, check=True)
-    return frame_count(output_dir)
 
 
-def make_sheet(frames: list[Path], output: Path, interval_seconds: int, columns: int, thumb_width: int) -> None:
+def map_showinfo_timestamps(frames: list[Path], stderr: str) -> dict[str, float]:
+    values = [float(match.group(1)) for match in re.finditer(r"pts_time:([0-9.]+)", stderr or "")]
+    return {frame.name: values[index] for index, frame in enumerate(frames) if index < len(values)}
+
+
+def fixed_interval_timestamps(frames: list[Path], interval_seconds: int) -> dict[str, float]:
+    return {frame.name: float(index * interval_seconds) for index, frame in enumerate(frames)}
+
+
+def write_timestamp_map(output_dir: Path, timestamp_map: dict[str, float]) -> None:
+    (output_dir / "frame_timestamps.json").write_text(
+        json.dumps(timestamp_map, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def read_timestamp_map(output_dir: Path, interval_seconds: int) -> dict[str, float]:
+    path = output_dir / "frame_timestamps.json"
+    if path.exists():
+        return json.loads(path.read_text(encoding="utf-8"))
+    return fixed_interval_timestamps(sorted(output_dir.glob("*.jpg")), interval_seconds)
+
+
+def timestamp_for_frame(path: Path, interval_seconds: int, timestamp_map: dict[str, float] | None = None) -> str:
+    if timestamp_map and path.name in timestamp_map:
+        seconds = int(round(float(timestamp_map[path.name])))
+        return f"{seconds // 60:02d}:{seconds % 60:02d}"
+    match = re.search(r"frame_(\d+)\.jpg$", path.name)
+    index = int(match.group(1)) - 1 if match else 0
+    seconds = index * interval_seconds
+    return f"{seconds // 60:02d}:{seconds % 60:02d}"
+
+
+def _image_signature(path: Path, size: int = 16) -> list[tuple[int, int, int]]:
+    with Image.open(path) as image:
+        return list(image.convert("RGB").resize((size, size), Image.Resampling.BILINEAR).getdata())
+
+
+def _pct_diff(a: list[tuple[int, int, int]], b: list[tuple[int, int, int]], tolerance: int = 25) -> float:
+    changed = sum(
+        max(abs(left[0] - right[0]), abs(left[1] - right[1]), abs(left[2] - right[2])) > tolerance
+        for left, right in zip(a, b)
+    )
+    return 100.0 * changed / len(a)
+
+
+def deduplicate_candidates(
+    output_dir: Path,
+    timestamp_map: dict[str, float],
+    *,
+    threshold: float,
+    window: int,
+    max_candidates: int,
+) -> dict[str, Any]:
+    frames = sorted(output_dir.glob("*.jpg"))
+    raw_count = len(frames)
+    kept: list[Path] = []
+    recent: list[list[tuple[int, int, int]]] = []
+    records: list[dict[str, Any]] = []
+
+    for frame in frames:
+        signature = _image_signature(frame)
+        distance = min((_pct_diff(signature, item) for item in recent), default=None)
+        if distance is None or distance > threshold:
+            kept.append(frame)
+            recent.append(signature)
+            if len(recent) > max(1, window):
+                recent.pop(0)
+            records.append({"name": frame.name, "distance": distance, "kept": True})
+        else:
+            frame.unlink()
+            records.append({"name": frame.name, "distance": distance, "kept": False})
+
+    if max_candidates > 0 and len(kept) > max_candidates:
+        step = len(kept) / max_candidates
+        keep_indexes = {int(index * step) for index in range(max_candidates)}
+        capped = []
+        for index, frame in enumerate(kept):
+            if index in keep_indexes:
+                capped.append(frame)
+            else:
+                if frame.exists():
+                    frame.unlink()
+                for record in records:
+                    if record["name"] == frame.name:
+                        record["kept"] = False
+                        record["capped"] = True
+        kept = capped
+
+    new_timestamp_map: dict[str, float] = {}
+    rename_pairs: list[tuple[Path, Path, str]] = []
+    for index, frame in enumerate(kept, 1):
+        final_name = f"frame_{index:04d}.jpg"
+        tmp = output_dir / f"tmp_{index:04d}.jpg"
+        frame.rename(tmp)
+        rename_pairs.append((tmp, output_dir / final_name, frame.name))
+
+    for tmp, final, original_name in rename_pairs:
+        tmp.rename(final)
+        new_timestamp_map[final.name] = float(timestamp_map.get(original_name, 0.0))
+        for record in records:
+            if record["name"] == original_name and record.get("kept"):
+                record["name"] = final.name
+
+    write_timestamp_map(output_dir, new_timestamp_map)
+    return {
+        "raw_candidate_count": raw_count,
+        "candidate_count": len(kept),
+        "timestamp_map": new_timestamp_map,
+        "dedup_records": records,
+    }
+
+
+def extract_candidates(
+    video: Path,
+    output_dir: Path,
+    interval_seconds: int,
+    width: int,
+    force: bool,
+    *,
+    mode: str = "scene",
+    scene_threshold: float = 0.3,
+    dedup_threshold: float = 8.0,
+    dedup_window: int = 4,
+    max_candidates: int = 300,
+) -> dict[str, Any]:
+    existing = frame_count(output_dir)
+    if existing and not force:
+        timestamp_map = read_timestamp_map(output_dir, interval_seconds)
+        return {
+            "raw_candidate_count": existing,
+            "candidate_count": existing,
+            "timestamp_map": timestamp_map,
+            "dedup_records": [],
+        }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    if force:
+        for old in output_dir.glob("*.jpg"):
+            old.unlink()
+        timestamp_file = output_dir / "frame_timestamps.json"
+        if timestamp_file.exists():
+            timestamp_file.unlink()
+
+    fps = video_fps(video)
+    command = build_extract_command(
+        video,
+        output_dir / "frame_%04d.jpg",
+        mode=mode,
+        fps=fps,
+        interval_seconds=interval_seconds,
+        width=width,
+        scene_threshold=scene_threshold,
+    )
+    result = subprocess.run(command, check=True, capture_output=True, text=True)
+    frames = sorted(output_dir.glob("*.jpg"))
+    if mode == "scene":
+        timestamp_map = map_showinfo_timestamps(frames, result.stderr)
+        if len(timestamp_map) != len(frames):
+            timestamp_map = fixed_interval_timestamps(frames, interval_seconds)
+    else:
+        timestamp_map = fixed_interval_timestamps(frames, interval_seconds)
+    write_timestamp_map(output_dir, timestamp_map)
+    return deduplicate_candidates(
+        output_dir,
+        timestamp_map,
+        threshold=dedup_threshold,
+        window=dedup_window,
+        max_candidates=max_candidates,
+    )
+
+
+def make_sheet(
+    frames: list[Path],
+    output: Path,
+    interval_seconds: int,
+    columns: int,
+    thumb_width: int,
+    timestamp_map: dict[str, float] | None = None,
+) -> None:
     thumbs = []
     label_height = 26
     for frame in frames:
@@ -106,7 +328,7 @@ def make_sheet(frames: list[Path], output: Path, interval_seconds: int, columns:
         canvas = Image.new("RGB", (thumb_width, thumb.height + label_height), "white")
         canvas.paste(thumb, (0, label_height))
         draw = ImageDraw.Draw(canvas)
-        draw.text((4, 6), f"{frame.name} {timestamp_for_frame(frame, interval_seconds)}", fill=(0, 0, 0))
+        draw.text((4, 6), f"{frame.name} {timestamp_for_frame(frame, interval_seconds, timestamp_map)}", fill=(0, 0, 0))
         thumbs.append(canvas)
 
     rows = (len(thumbs) + columns - 1) // columns
@@ -140,6 +362,11 @@ def select_video(
     *,
     interval_seconds: int,
     width: int,
+    candidate_mode: str,
+    scene_threshold: float,
+    dedup_threshold: float,
+    dedup_window: int,
+    max_candidates: int,
     frames_per_sheet: int,
     columns: int,
     thumb_width: int,
@@ -160,7 +387,20 @@ def select_video(
         print(f"skip {name}: selected {manifest.get('selected_count', 0)} keyframes")
         return manifest
 
-    count = extract_candidates(video, candidate_dir, interval_seconds, width, force)
+    candidate_stats = extract_candidates(
+        video,
+        candidate_dir,
+        interval_seconds,
+        width,
+        force,
+        mode=candidate_mode,
+        scene_threshold=scene_threshold,
+        dedup_threshold=dedup_threshold,
+        dedup_window=dedup_window,
+        max_candidates=max_candidates,
+    )
+    count = int(candidate_stats["candidate_count"])
+    timestamp_map = candidate_stats["timestamp_map"]
     frames = sorted(candidate_dir.glob("*.jpg"))
     selected_dir.mkdir(parents=True, exist_ok=True)
     if force:
@@ -177,7 +417,7 @@ def select_video(
         if result_path.exists() and not force:
             data = json.loads(result_path.read_text(encoding="utf-8"))
         else:
-            make_sheet(chunk, sheet, interval_seconds, columns, thumb_width)
+            make_sheet(chunk, sheet, interval_seconds, columns, thumb_width, timestamp_map)
             print(f"select {name} sheet {sheet_index}: {len(chunk)} candidates", flush=True)
             result = analyze_images_with_vision_model([str(sheet)], PROMPT)
             data = parse_json_response(result.get("content") or "")
@@ -197,7 +437,7 @@ def select_video(
             if frame_name in valid_names:
                 selected_by_name[frame_name] = {
                     "frame": frame_name,
-                    "timestamp": timestamp_for_frame(candidate_dir / frame_name, interval_seconds),
+                    "timestamp": timestamp_for_frame(candidate_dir / frame_name, interval_seconds, timestamp_map),
                     "reason": item.get("reason", ""),
                     "keywords": item.get("keywords") or [],
                     "candidate_source": str((candidate_dir / frame_name).relative_to(course_dir)),
@@ -216,13 +456,21 @@ def select_video(
     manifest = {
         "media": name,
         "video_path": str(video),
+        "candidate_extraction_mode": candidate_mode,
         "candidate_interval_seconds": interval_seconds,
+        "candidate_width": width,
+        "scene_threshold": scene_threshold if candidate_mode == "scene" else None,
+        "dedup_threshold": dedup_threshold,
+        "dedup_window": dedup_window,
+        "max_candidates": max_candidates,
+        "raw_candidate_count": candidate_stats["raw_candidate_count"],
         "candidate_count": count,
         "candidate_dir": str(candidate_dir.relative_to(course_dir)),
         "selected_count": len(selected),
         "selected_dir": str(selected_dir.relative_to(course_dir)),
         "selected": selected,
         "sheets": sheet_results,
+        "dedup_records": candidate_stats["dedup_records"],
     }
     selection_root.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -238,7 +486,8 @@ def write_summary(course_dir: Path, manifests: list[dict[str, Any]]) -> None:
         "# Model-Selected Keyframe Summary",
         "",
         "## Method",
-        "- Dense candidate frames are extracted at a fixed interval only to create a candidate pool.",
+        "- Dense candidate frames are extracted as a candidate pool, using scene-change detection plus a density floor by default.",
+        "- Near-duplicate candidate frames are removed before contact-sheet review.",
         "- A vision model reviews labeled contact sheets and selects the final keyframes.",
         "- Selection favors meaningful teaching visuals and drops duplicate, blank, blurred, blocked, or lecturer-only frames.",
         "",
@@ -250,6 +499,10 @@ def write_summary(course_dir: Path, manifests: list[dict[str, Any]]) -> None:
     ]
     for manifest in manifests:
         lines.append(f"### {manifest['media']}")
+        if manifest.get("candidate_extraction_mode"):
+            lines.append(f"- Candidate mode: {manifest['candidate_extraction_mode']}")
+        if manifest.get("raw_candidate_count") is not None:
+            lines.append(f"- Raw candidates before dedup/cap: {manifest['raw_candidate_count']}")
         lines.append(f"- Candidates: {manifest['candidate_count']}")
         lines.append(f"- Selected: {manifest['selected_count']}")
         lines.append(f"- Selected dir: `{manifest['selected_dir']}`")
@@ -262,6 +515,8 @@ def write_summary(course_dir: Path, manifests: list[dict[str, Any]]) -> None:
     index = [
         {
             "media": item["media"],
+            "candidate_extraction_mode": item.get("candidate_extraction_mode"),
+            "raw_candidate_count": item.get("raw_candidate_count"),
             "candidate_count": item["candidate_count"],
             "selected_count": item["selected_count"],
             "selected_dir": item["selected_dir"],
@@ -278,6 +533,11 @@ def main() -> None:
     parser.add_argument("--base-dir", default=str(DEFAULT_BASE_DIR))
     parser.add_argument("--interval-seconds", type=int, default=60)
     parser.add_argument("--width", type=int, default=768)
+    parser.add_argument("--candidate-mode", choices=["scene", "fixed"], default="scene")
+    parser.add_argument("--scene-threshold", type=float, default=0.3)
+    parser.add_argument("--dedup-threshold", type=float, default=8.0)
+    parser.add_argument("--dedup-window", type=int, default=4)
+    parser.add_argument("--max-candidates", type=int, default=300, help="Cap deduplicated candidate frames per video; use 0 for no cap.")
     parser.add_argument("--frames-per-sheet", type=int, default=48)
     parser.add_argument("--columns", type=int, default=6)
     parser.add_argument("--thumb-width", type=int, default=300)
@@ -306,6 +566,11 @@ def main() -> None:
                 course_dir,
                 interval_seconds=args.interval_seconds,
                 width=args.width,
+                candidate_mode=args.candidate_mode,
+                scene_threshold=args.scene_threshold,
+                dedup_threshold=args.dedup_threshold,
+                dedup_window=args.dedup_window,
+                max_candidates=args.max_candidates,
                 frames_per_sheet=args.frames_per_sheet,
                 columns=args.columns,
                 thumb_width=args.thumb_width,

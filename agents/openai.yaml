@@ -1,4 +1,4 @@
 interface:
-  display_name: "Lineage Course Skill"
-  short_description: "Turn course materials into source-grounded AI skills with model-selected visual evidence."
-  default_prompt: "Use $lineage-skill to turn my course videos, PDFs, and notes into a source-grounded course expert skill with transcripts, documents, and model-selected keyframes."
+  display_name: "Lineage Skill"
+  short_description: "Compile sources into evidence-grounded apprenticeships."
+  default_prompt: "Use $lineage-skill to compile my course, book, or media into a source-grounded cognitive-apprenticeship Skill with external learner state and graduation evidence."

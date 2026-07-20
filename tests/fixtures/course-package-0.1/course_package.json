@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1",
+  "manifest": {
+    "course_name": "Legacy Evidence Course",
+    "source_dir": "tests/fixtures/course-package-0.1"
+  },
+  "lessons": [
+    {"id": "lesson-001", "title": "Evidence before synthesis", "summary": "Preserve source spans before abstraction."}
+  ],
+  "concepts": ["Evidence first: preserve source before synthesis."],
+  "methods": ["Attempt first: collect an observable attempt before feedback."],
+  "diagnostics": ["Check whether the gap is cue detection, method selection, execution, or transfer."],
+  "workflows": ["Collect attempt, evaluate with criteria, give minimum hint, require revision."],
+  "rubrics": ["The output is concrete, inspectable, sourced, and bounded."],
+  "templates": [],
+  "transfer_rules": ["Change one major constraint and preserve structural invariants."],
+  "failure_modes": ["Fluent recall is mistaken for independent capability."],
+  "learning_checks": [
+    {"task": "Apply the method to a real project and submit an artifact."}
+  ],
+  "quotes": [],
+  "evidence": [
+    {"type": "text", "path": "lesson.md", "summary": "Evidence-first source", "confidence": "high"}
+  ],
+  "study_paths": [],
+  "boundaries": ["Course capability is not professional licensure."],
+  "quality": {"status": "usable"}
+}

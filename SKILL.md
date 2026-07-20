@@ -1,271 +1,227 @@
 ---
 name: lineage-skill
-description: Distills course, book, and long-form learning materials into source-grounded AI agent skills. Use when the user wants to convert videos, audio, PDFs, ebooks, books, slides, transcripts, OCR output, notes, or existing course/book distillation files into a CoursePackage and generated mentor, expert, consultant, practitioner, or custom Skill.
+description: Compile courses, books, video, audio, PDFs, slides, transcripts, OCR, notes, and long-form learning materials into source-grounded cognitive-apprenticeship Skills. Use when distilling learning sources, migrating or merging CoursePackages, reconstructing a TeacherModel, building a CapabilityGraph, PracticeBank, AssessmentBank, or MentorPackage, generating mentor/expert/consultant/practitioner/custom Skills, running attempt-first training, external learner-state workflows, retrieval and transfer practice, Personal Skill candidates, or graduation evaluation.
 ---
 
 # Lineage Skill
 
-Turn course, book, and long-form learning materials into reusable, source-grounded AI Skills.
+Compile source material into traceable teacher assets and an attempt-first Mentor Runtime that reduces learner dependence over time.
 
-Core method: **Capture -> Cite -> Compress -> Connect -> Codify -> Evaluate**.
-Use this as an evidence-first workflow: preserve source material before summarizing, cite sources before synthesizing, and mark unsupported gaps.
+Use this method:
 
-This is a generic methodology Skill. Do not put any specific course's concepts,
-lesson names, keyframes, summaries, or domain content into this Skill. Course
-content belongs only in that course workspace and generated course Skill.
+**Capture → Cite → Compress → Connect → Codify → Coach → Practice → Consolidate → Transfer → Graduate**
 
-## Read When Needed
+Preserve evidence before synthesis. Require observable learner work before mastery. Keep immutable teacher assets separate from private learner state.
 
-- Runtime reference: [references/runtime.md](references/runtime.md)
+## Read when needed
 
-## Trigger Conditions
+- Pipeline, providers, schemas, recovery, and output layouts: [references/runtime.md](references/runtime.md)
+- Session routing, attempt-first, feedback, and fading: [references/apprenticeship-protocol.md](references/apprenticeship-protocol.md)
+- Claim and feedback provenance: [references/provenance-policy.md](references/provenance-policy.md)
+- Mastery transitions and review scheduling: [references/mastery-policy.md](references/mastery-policy.md)
+- Graduation evidence: [references/graduation-policy.md](references/graduation-policy.md)
+- External learner-state boundary: [references/external-learner-store-contract.md](references/external-learner-store-contract.md)
 
-Use this skill when the user asks to:
+## Product invariants
 
-- Distill a course, book, ebook, lecture series, workshop, training program, curriculum, long-form class, or method-heavy document collection.
-- Convert videos, audio, PDFs, ebooks, chaptered Markdown, slides, screenshots, notes, transcripts, OCR output, or course/book summaries into structured source-grounded knowledge.
-- Generate or update a course-backed or book-backed Skill.
-- Build a course/book mentor, expert, consultant, practitioner, or custom source-backed Skill.
-- Package existing `transcripts/`, `analysis/`, `documents/`, `lesson_summaries.json`, `course_distillation_*.md/json`, or `course_package.json`.
+- Trace teacher claims to source, lesson, timestamp, chunk, card, keyframe, or page.
+- Distinguish `direct_source`, `source_grounded_synthesis`, `cross_source_synthesis`, `mentor_inference`, learner evidence, external knowledge, and unsupported content.
+- Preserve conflicting sources and their conditions; never flatten disagreement into false consensus.
+- Treat TeacherModel as source-supported domain behavior, not a personality or consciousness clone.
+- Treat recognition, fluency, lesson completion, and one success as insufficient mastery evidence.
+- Require an observable attempt before updating capability state.
+- Advance at most one mastery state per successful episode.
+- Require changed-context H0 performance for transfer and delayed parallel-form success for retention.
+- Keep PracticeEpisodes append-only and rebuild MasteryState from events.
+- Store real learner data only in a host-provided external private directory.
+- Require explicit learner approval before promoting or installing a Personal Skill.
+- Keep high-risk learning educational, source-bounded, and distinct from professional qualification.
 
-## Capabilities
+## Detect source state
 
-This Skill owns the course/book-distillation pipeline. Do not describe transcription, visual analysis, screenshot extraction, OCR collection, distillation, packaging, or generated-Skill creation as work the user must perform manually when suitable source files and configured providers are available.
+Choose the smallest workflow that preserves the requested evidence:
 
-Supported capabilities:
+1. Raw video/audio: run capture, visual analysis for video, model-selected keyframes, distillation, audit, compilation, generation, and validation.
+2. Video plus PDFs: include document parsing or reuse existing OCR.
+3. Markdown/TXT/books/notes/OCR: skip media capture; build text chunks and evidence cards before compilation.
+4. Existing transcripts, analyses, documents, or distillation: resume from the narrowest missing stage.
+5. Existing CoursePackage 0.x: migrate to 1.0 before building teacher/runtime assets.
+6. Existing CoursePackage 1.0: compile missing TeacherModel, graph, banks, MentorPackage, and Skill.
+7. Multiple CoursePackages: migrate each, merge with namespaced IDs, preserve conflicts, then compile.
 
-- Extract audio from `.mp4` course videos and transcribe it through an OpenAI-compatible `/audio/transcriptions` endpoint.
-- Directly transcribe standalone `.mp3`, `.wav`, `.m4a`, `.aac`, `.flac`, `.ogg`, and `.opus` course audio files.
-- Split long audio into segments before transcription.
-- Analyze video content through a vision-capable model, including PPT, board writing, software screens, diagrams, tables, demonstrations, and other visual teaching material.
-- Compress and chunk large videos before visual analysis.
-- Select keyframes with a multimodal vision model: first create a dense candidate pool, then have the model choose keyframes from labeled contact sheets. Fixed intervals are allowed only as candidate generation, not as the final evidence selection rule.
-- Parse vision-model `[SCREENSHOT MM:SS]` markers when produced by video analysis, but treat them as supplemental to model-selected keyframes.
-- Collect MinerU/OCR Markdown outputs from PDFs or document directories.
-- Distill transcripts, visual analyses, screenshots, OCR documents, and user notes into structured course notes.
-- Distill pure text materials into source-grounded evidence cards before synthesis, including Markdown notes, TXT exports, handouts, and existing OCR Markdown.
-- Extract capability cards from books and courses: diagnostics, workflows, rubrics, templates, transfer rules, and failure modes in addition to concepts, methods, cases, quotes, tasks, and boundaries.
-- Build final distillation audit reports that record transcript quality, multimodal/video analysis coverage, courseware/OCR/text extraction status, audit policy, cross-source validation when applicable, missing evidence under the selected mode, terminology risks, and human proofreading recommendations.
-- Build `course_package.json`, `evidence_map.json`, and `lesson_index.json`.
-- Build an OKF-style Markdown knowledge bundle under `references/okf/` for progressive reading, human review, cross-agent exchange, and concept graph navigation.
-- Merge multiple `course_package.json` files into one combined multi-course workspace.
-- Generate source-grounded course Skills in the requested role.
-- Record durable pipeline progress in `lineage_progress.json`.
-- Build a multi-course workspace catalog with `scripts/build_course_catalog.py`.
+Do not rerun expensive capture when stable artifacts already exist and inputs have not changed.
 
-## Provider Requirements
+## Configure providers
 
-Capability is separate from configuration. If a provider is missing, report the missing configuration and the smallest viable fallback; do not imply the Skill lacks the capability.
+Separate capability from configuration. Report missing configuration and the smallest viable fallback.
 
-- Audio transcription requires `AUDIO_TRANSCRIBE_API_KEY`, `AUDIO_TRANSCRIBE_BASE_URL`, and `AUDIO_TRANSCRIBE_MODEL`.
-  - Chinese courses can use SenseVoiceSmall/FunASR-compatible transcription services.
-  - English or multilingual courses can use Whisper-compatible or OpenAI transcription models when the endpoint supports them.
-- Vision analysis requires `LINEAGE_VISION_API_KEY`, `LINEAGE_VISION_BASE_URL`, and `LINEAGE_VISION_MODEL`.
-  - Prefer strong video/vision models for long videos, slides, boards, screenshots, diagrams, and software screens.
-  - Gemini-class video models are appropriate when exposed through a compatible endpoint or adapter.
-- Text distillation requires `LINEAGE_TEXT_API_KEY`, `LINEAGE_TEXT_BASE_URL`, and `LINEAGE_TEXT_MODEL` when `DISTILL_USE_LLM=1`.
-  - Prefer long-context models with stable structured output and good support for the source language.
-- PDF/OCR submission requires `MINERU_API_TOKEN` unless reusing existing MinerU output with `--skip-submit`.
-- Local media handling requires installed `ffmpeg` and `ffprobe`.
+- Audio transcription: `AUDIO_TRANSCRIBE_API_KEY`, `AUDIO_TRANSCRIBE_BASE_URL`, `AUDIO_TRANSCRIBE_MODEL`.
+- Video/vision: `LINEAGE_VISION_API_KEY`, `LINEAGE_VISION_BASE_URL`, `LINEAGE_VISION_MODEL`.
+- Text distillation: `LINEAGE_TEXT_API_KEY`, `LINEAGE_TEXT_BASE_URL`, `LINEAGE_TEXT_MODEL` when LLM distillation is enabled.
+- PDF/OCR submission: `MINERU_API_TOKEN`, unless existing OCR is reused.
+- Local media: `ffmpeg` and `ffprobe`.
 
-When configuration is absent:
+If raw media needs an unavailable provider, stop before that capture stage. If transcripts, OCR, notes, or packages already exist, continue from them and report excluded modalities. Never store secrets in the repository or commit `.env`.
 
-- If transcripts, OCR, notes, or previous distillation files already exist, skip the missing capture stage and continue with the smallest viable workflow.
-- If raw audio or videos need transcription and ASR is missing, stop before transcription and tell the user exactly which variables or tools are missing.
-- If raw videos need visual analysis and vision configuration is missing, stop before visual analysis or skip it only when the user accepts transcript-only processing.
-- If PDFs are present but MinerU is not configured, continue with non-PDF sources and explain that scanned/image PDF evidence was not included unless existing OCR output is available.
+## Run the full compiler
 
-Standalone audio files are transcribed by the capture stage, but they do not produce visual analysis or screenshots.
-
-## Decision Flow
-
-1. Identify source state:
-   - **Videos/audio only**: run the full pipeline.
-   - **Videos plus PDFs**: run the full pipeline with document OCR if configured.
-   - **Existing transcripts/OCR/notes/books/text**: skip capture; build package and Skill.
-   - **Existing CoursePackage**: skip distillation; build or update Skill.
-2. Choose role:
-   - Default: `mentor`.
-   - Use `expert` when the user specifically wants narrow course Q&A, concept explanation, or lesson lookup.
-   - Use `consultant` when the user wants private consulting, diagnosis, or advice based on the course/book methods.
-   - Use `practitioner` when the user wants checklists, playbooks, templates, workflows, or concrete work outputs.
-   - Use `custom` when the user describes a specific role or workflow that does not fit the defaults.
-   - Treat single-course, multi-course, and fused/domain packages as scope metadata, not role names.
-   - Treat strict citation as an evidence strategy, not a role name.
-   - Treat learning progress and daily study planning as a progress strategy, usually attached to `mentor`, not a separate role.
-3. Preserve evidence before summarizing.
-4. For videos, run visual analysis and model-selected keyframes. Do not present equal-interval frames as final keyframes unless a vision model has selected or validated them.
-5. Before rerunning expensive stages, check existing outputs and resume from the smallest viable stage.
-6. Generate outputs.
-7. Verify expected files exist and report paths.
-
-## Workflows
-
-Default paths:
-
-- Use `.lineage/courses/<course-name>/` for course build state unless the user provides `--base-dir` or a target directory.
-- Use `dist/<skill-name>/` for generated Skills unless the user provides `--output-dir`.
-- Keep one source course per course workspace.
-- Use stable stage directories so interruption can resume without mixing artifacts:
-  - `transcripts/` for ASR outputs.
-  - `analysis/` for video visual analysis and optional screenshot markers.
-  - `keyframe_candidates/` for dense candidate frames; this is an intermediate cache and should not be packaged by default.
-  - `keyframe_selection/` for model selection manifests, contact-sheet decisions, and `model_keyframe_summary.md`.
-  - `keyframes_model_selected/` for final selected image evidence.
-  - `documents/` for OCR, handouts, slides, and document manifests.
-  - `text_sources/` for stable source manifests and text chunks.
-  - `text_distillation/` for evidence cards, text-source synthesis, source summaries, and quality audits.
-  - `distillation_audit.json` and `distillation_audit.md` for final per-lesson capture quality, audit policy, cross-source validation when applicable, traceability, and manual-review guidance.
-  - `index/` for coverage audits, evidence path guides, and searchable inventories when available.
-- If the user does not provide `--skill-name`, use the builder default:
-  - `<course-slug>-mentor-lineage` for `mentor`.
-  - `<course-slug>-expert-lineage` for `expert`.
-  - `<course-slug>-consultant-lineage` for `consultant`.
-  - `<course-slug>-practitioner-lineage` for `practitioner`.
-  - `<course-slug>-custom-lineage` for `custom`.
-
-### Full Course Pipeline
-
-Use when raw course videos and/or audio files need transcription, visual analysis where video exists, distillation, packaging, and Skill generation.
+For media and documents:
 
 ```bash
 python scripts/run_course_pipeline.py \
-  --input-dir <course-media-dir> \
+  --input-dir <course-media> \
+  --documents-input <pdf-or-directory> \
+  --notes-input <notes> \
   --course-name <course-name> \
   --skill-name <skill-name> \
   --mode mentor \
-  --scope auto \
-  --progress auto \
+  --apprenticeship full \
+  --practice-depth deep \
+  --learner-state external \
   --output-dir ./dist
 ```
 
-The full pipeline now includes `select_video_keyframes.py` after video analysis. It writes resumable manifests under `keyframe_selection/` and copies only model-selected keyframes into `keyframes_model_selected/`.
-
-With PDFs/OCR:
+For text or books:
 
 ```bash
 python scripts/run_course_pipeline.py \
-  --input-dir <course-media-dir> \
-  --documents-input <pdf-or-pdf-dir> \
+  --text-input <markdown-txt-or-directory> \
   --course-name <course-name> \
-  --skill-name <skill-name> \
-  --mode mentor,practitioner \
-  --scope auto \
-  --progress tracked \
+  --mode mentor \
+  --apprenticeship full \
   --output-dir ./dist
 ```
 
-Before using PDFs, check `MINERU_API_TOKEN`. If it is missing, read [references/runtime.md](references/runtime.md) and explain the fallback.
+Use `--text-no-llm` for deterministic explicit-label extraction. Treat implicit teacher cognition from ordinary exposition as medium/low confidence and require review.
 
-For books, ebooks, pure text courses, or notes-only sources:
+## Compile existing materials
 
-```bash
-python scripts/run_course_pipeline.py \
-  --text-input <markdown-or-text-file-or-dir> \
-  --notes-input <optional-notes-dir> \
-  --course-name <course-name> \
-  --skill-name <skill-name> \
-  --mode mentor,expert \
-  --output-dir ./dist
-```
-
-This skips media capture when `--input-dir` is absent. The text stage writes `text_sources/` and `text_distillation/`, then the package builder merges evidence cards into concepts, methods, cases, quotes, boundaries, learning checks, diagnostics, workflows, rubrics, templates, transfer rules, and failure modes.
-
-### Existing Materials
-
-Use when the user already has transcripts, OCR, notes, summaries, or distillation outputs.
+Build or migrate CoursePackage:
 
 ```bash
 python scripts/build_course_package.py \
   --course-name <course-name> \
-  --source-dir <course-dir>
+  --source-dir <course-workspace>
 
+python scripts/migrate_course_package.py \
+  <legacy-course-package.json>
+```
+
+Compile the apprenticeship assets in dependency order:
+
+```bash
+python scripts/build_teacher_model.py --source-dir <course-workspace>
+python scripts/build_capability_graph.py --source-dir <course-workspace>
+python scripts/build_practice_bank.py --source-dir <course-workspace> --practice-depth deep
+python scripts/build_assessment_bank.py --source-dir <course-workspace>
+python scripts/build_mentor_package.py --source-dir <course-workspace> --apprenticeship full
+python scripts/build_mentor_readiness_audit.py --source-dir <course-workspace>
+```
+
+Then generate and validate:
+
+```bash
 python scripts/build_course_skill.py \
   --course-name <course-name> \
   --skill-name <skill-name> \
-  --mode <mode> \
-  --scope auto \
-  --source-dir <course-dir> \
+  --mode mentor \
+  --apprenticeship full \
+  --learner-state external \
+  --source-dir <course-workspace> \
   --output-dir ./dist
 ```
 
-### Existing CoursePackage
+The builder uses a temporary directory and installs the target only after validation.
 
-If `<course-dir>/course_package.json` already exists, run only `build_course_skill.py` unless the user asks to rebuild the package.
-
-### Multi-Course Skill
-
-Use when the user wants one generated Skill from multiple distilled courses.
-
-First merge course packages:
+## Merge courses
 
 ```bash
 python scripts/build_multi_course_package.py \
-  --course <course-a-dir-or-package> \
-  --course <course-b-dir-or-package> \
-  --combined-name <combined-course-name> \
-  --output-dir .lineage/courses/<combined-course-slug>
+  --course <course-a-package-or-dir> \
+  --course <course-b-package-or-dir> \
+  --combined-name <combined-name> \
+  --output-dir <combined-workspace>
 ```
 
-Then build one Skill:
+Migrate each package to an in-memory 1.0 form, namespace colliding IDs, keep source-course identity, record semantic conflicts, and route those conflicts into comparison rather than consensus.
 
-```bash
-python scripts/build_course_skill.py \
-  --course-name <combined-course-name> \
-  --source-dir .lineage/courses/<combined-course-slug> \
-  --mode expert \
-  --scope multi-course \
-  --output-dir ./dist
-```
+## Choose role and apprenticeship
 
-Use `mentor`, `expert`, `consultant`, `practitioner`, or `custom` according to the user's goal. Preserve source-course distinctions when courses disagree.
+- Default to `mentor` when the user wants capability formation.
+- Use `expert` for source lookup, course Q&A, explanation, and citations.
+- Use `consultant` for course-grounded diagnosis, option comparison, and advice.
+- Use `practitioner` for playbooks, checklists, templates, workflows, and artifacts.
+- Use `custom` for a user-defined source-bounded role.
 
-## Validation Loop
+Treat role, scope, evidence strategy, apprenticeship mode, and learner-state strategy as separate dimensions. Mentor requests default to full apprenticeship; downgrade to guided or none when readiness is insufficient and report every blocker.
 
-After generation, verify:
+## Validate readiness
+
+Require the following for full apprenticeship:
+
+- valid TeacherModel with source-supported cues, decisions, demonstrations, feedback, and graduation signals;
+- acyclic CapabilityGraph with complete references and prerequisites;
+- at least one practice task and one assessment for each target capability;
+- behaviorally anchored rubrics and ordered H0–H4 hints;
+- retrieval, transfer, boundary, production, and graduation assessment coverage;
+- a complete Mentor protocol and graduation policy;
+- source audit that does not block core capabilities;
+- no duplicate IDs, dangling references, private learner data, or empty runtime files.
+
+Use guided mode when useful training assets exist but full teacher evidence does not. Do not hide gaps.
+
+## Run Mentor Runtime
+
+First route the request as source lookup, direct explanation, diagnostic learning, guided practice, artifact feedback, real-world application, retrieval review, transfer test, or graduation test.
+
+- Answer explicit lookup directly; do not update mastery.
+- Honor explicit quick answers but label them as non-mastery evidence.
+- For learning, review, transfer, and graduation, collect a prediction or attempt first.
+- Evaluate criterion-level rubric evidence, name one primary bottleneck, give the minimum effective hint, and request one concrete revision.
+- Record prediction, confidence, attempts, hints, rubric results, source evidence, inference, errors, outcome, reflection, mastery events, and next actions.
+- Explain why the next task was selected.
+- Fade only one support dimension after repeated success.
+
+Read the detailed protocol and policies before operating a generated Mentor Skill.
+
+## Keep learner state external
+
+Resolve the host-provided store as:
 
 ```text
-<generated-skill>/
-├── SKILL.md
-├── agents/
-├── references/
-│   └── okf/
-├── scripts/search_course_notes.py
-├── scripts/fetch_course_evidence.py
-└── lineage_manifest.json
+{learner_store_root}/apprenticeships/{mentor_package_id}/
 ```
 
-Check:
+Initialize, append, rebuild, schedule, select, validate, and build candidates with the generated runtime scripts. If the host cannot write, return a complete state patch and say it was not persisted. Never generate real `learner_progress.json` or apprenticeship state under Skill `references/`.
 
-- `lineage_manifest.json` exists and includes `generated_by.id: lineage-skill`.
-- `lineage_manifest.json` includes `roles`, `scope`, `evidence_strategy`, and `progress_strategy`.
-- `references/course_package.json` exists.
-- `references/okf/index.md` exists.
-- `references/okf/log.md` exists.
-- `references/evidence_map.json` exists.
-- `references/distillation_audit.json` and `references/distillation_audit.md` exist after a full pipeline run, unless the audit stage was explicitly skipped.
-- If videos were present, `references/keyframe_selection/model_keyframe_summary.md` exists or the pipeline explicitly recorded that no video files were found.
-- If videos were present, selected images live under `references/keyframes_model_selected/`; raw candidate frames should not be required in the generated Skill.
-- `references/lesson_index.json` exists.
-- Role-specific reference files exist for requested roles.
-- `scripts/search_course_notes.py` is executable.
-- `scripts/fetch_course_evidence.py` is executable.
-- `references/course_package.json` includes capability fields when available: `diagnostics`, `workflows`, `rubrics`, `templates`, `transfer_rules`, and `failure_modes`.
-- `references/course_package.json` includes `quality.distillation_audit` when `distillation_audit.json` was present before package building.
-- `<course-dir>/lineage_progress.json` exists after a full pipeline run.
-- `lineage_progress.json` includes the `keyframes` and `audit` stages, artifact counts for candidates, selected keyframes, manifests, and keyframe summaries, plus audit artifact flags.
-- `<base-dir>/course_catalog.json` is updated after a full pipeline run.
+## Build Personal Skills and graduate
 
-If validation fails, fix the missing artifact and rerun the smallest necessary command.
+Generate a candidate only after:
 
-## Response Rules
+- three successful practices;
+- two distinct contexts;
+- one H0 execution;
+- one failure, error, or counterexample;
+- clear trigger, preconditions, procedure, output, evaluator, and failure modes;
+- separable teacher lineage and personal adaptation.
 
-- State which source state was detected and which workflow you used.
-- Prefer the smallest pipeline that fits the user's materials.
-- Name the generated Skill path and important reference files.
-- Report whether visual evidence came from model-selected keyframes, supplemental screenshot markers, or transcript-only fallback.
-- Distinguish direct course content, course-grounded synthesis, and your own inference.
-- If support is missing, say what evidence is missing.
-- Never write real API keys into repository files or commit `.env`.
-- Do not commit private transcripts, screenshots, OCR output, or course distillation artifacts unless the user explicitly wants to publish them.
-- For medical, legal, financial, investment, or other high-stakes courses, keep answers educational and source-bounded.
+Promote only after regression tests, a new-context success, no material capability regression, copyright/privacy review, Skill validation, and explicit learner approval.
+
+Graduate only with delayed retention, unseen-case diagnosis, independent production, changed-context transfer, boundary recognition, critical comparison, personal adaptation evidence, and Personal Skill regression. After graduation, reduce Mentor behavior to source consultant, counterexample provider, advanced sparring partner, and source-update notifier.
+
+## Verify outputs
+
+Run:
+
+```bash
+python -m pytest -q -c /dev/null --rootdir=. -o cache_dir=.pytest_cache tests
+python scripts/validate_lineage_package.py --package <course_package.json>
+python scripts/validate_mentor_package.py --package <mentor_package.json>
+python scripts/validate_generated_skill.py --skill-dir <generated-skill>
+python "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" .
+git diff --check
+```
+
+Report source state, workflow, generated path, visual evidence mode, source readiness, mentor readiness, runtime readiness, apprenticeship downgrade, human-review needs, test results, and remaining risks.
+
+Do not commit private transcripts, images, OCR, learner state, or copyrighted bodies unless the user explicitly authorizes publication.

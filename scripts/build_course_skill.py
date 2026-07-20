@@ -16,7 +16,16 @@ import re
 import shutil
 from pathlib import Path
 
+from build_assessment_bank import build_assessment_bank
+from build_capability_graph import build_capability_graph
+from build_course_package import build_package
+from build_mentor_package import build_mentor_package
+from build_practice_bank import build_practice_bank
+from build_teacher_model import build_teacher_model, load_course_package
 from build_okf_bundle import build_okf_bundle
+from schema_utils import load_json as load_schema_json, write_json
+from stable_ids import content_hash
+from validate_generated_skill import validate_skill
 
 
 REFERENCE_FILES = [
@@ -43,29 +52,26 @@ BASE_REFERENCES = [
 GENERATOR_ID = "lineage-skill"
 GENERATOR_REPOSITORY = "https://github.com/JuneYaooo/lineage-skill"
 GENERATOR_SCRIPT = "scripts/build_course_skill.py"
-GENERATOR_SCHEMA_VERSION = "0.1"
-PROVENANCE_WATERMARK = "lineage-skill:course-skill-builder:v0.1"
+GENERATOR_SCHEMA_VERSION = "1.0"
+PROVENANCE_WATERMARK = "lineage-skill:cognitive-apprenticeship-builder:v1.0"
 
 MODE_SPECS = {
     "mentor": {
         "label": "Mentor",
-        "description": "a source-grounded course mentor that guides learning, practice, review, and application",
+        "description": "a source-grounded cognitive apprenticeship mentor for diagnosis, attempt-first practice, feedback, retrieval, transfer, and graduation",
         "focus": [
             "Act as a course-specific mentor grounded in the packaged course materials.",
-            "Guide the user through learning plans, practice, review, weak-point diagnosis, and course-backed application.",
+            "Guide the learner from baseline diagnosis through modeling, coached practice, independent transfer, retention, and graduation.",
             "Ask clarifying or diagnostic questions when the user's goal, level, schedule, or application context is unclear.",
         ],
         "rules": [
             "Use course references first, and distinguish direct course content from mentor-style synthesis.",
-            "Guide the learner toward understanding, recall, application, and review instead of only giving summaries.",
-            "When progress tracking is available, update plans based on completed lessons, weak areas, and review needs.",
+            "Route explicit source lookup directly; use attempt-first for learning and training.",
+            "Use the lowest effective hint, require revision, and record a PracticeEpisode after every training attempt.",
+            "Treat learner state as external private data; never store real learner state in this Skill.",
             "If the course materials do not support a claim, say what is missing.",
         ],
-        "extra_refs": {
-            "mentor_playbook.md": "Add mentor behaviors, coaching patterns, diagnostic questions, planning rules, and review routines derived from the course.",
-            "mentor_sessions.md": "Add reusable session flows for daily study, review, application, and source lookup.",
-            "learner_progress.json": {"profile": {}, "completed": [], "weak_points": [], "review_queue": [], "notes": "Optional learner progress state when the host workflow supports persistent updates."},
-        },
+        "extra_refs": {},
     },
     "expert": {
         "label": "Expert",
@@ -97,8 +103,8 @@ MODE_SPECS = {
             "Respect professional boundaries in high-stakes domains.",
         ],
         "extra_refs": {
-            "consulting_playbook.md": "Add diagnostic prompts, intake questions, decision frames, and advisory workflows derived from course methods.",
-            "scenario_templates.md": "Add reusable templates for user situation analysis, option comparison, and recommendation memos.",
+            "consulting_playbook.md": "Use CoursePackage diagnostics and decision rules to collect context, name assumptions, compare source-supported options, label adaptations as inference, and request evidence before high-impact recommendations.",
+            "scenario_templates.md": "Structure each analysis as situation, observable evidence, constraints, source-grounded diagnosis, options, trade-offs, recommendation, uncertainty, and next verification action.",
         },
     },
     "practitioner": {
@@ -115,9 +121,9 @@ MODE_SPECS = {
             "Do not present generic advice as if it came from the course.",
         ],
         "extra_refs": {
-            "playbooks.md": "Add reusable workflows and operating procedures derived from course methods.",
-            "checklists.md": "Add checklists for common course-backed tasks.",
-            "templates.md": "Add reusable templates, scripts, tables, or worksheets.",
+            "playbooks.md": "Derive each operating procedure from CoursePackage workflows: trigger, inputs, ordered decisions/actions, output, evaluator, evidence, applicability conditions, and failure modes.",
+            "checklists.md": "Build checklists only from packaged rubrics and workflows. Keep source evidence and mark every adapted item as inference.",
+            "templates.md": "Use packaged templates when available. Otherwise derive the smallest structure needed for an observable output and label it as a course-grounded adaptation.",
             "case_index.json": {"cases": [], "notes": "Index examples, demos, stories, and practical applications."},
         },
     },
@@ -135,8 +141,8 @@ MODE_SPECS = {
             "If the custom behavior needs information not present in the course package, say what is missing.",
         ],
         "extra_refs": {
-            "custom_role.md": "Define the custom Skill role, use cases, output formats, and boundaries requested by the user.",
-            "custom_workflows.md": "Add workflow steps and reusable prompts for the custom role.",
+            "custom_role.md": "Follow the user-defined role only within packaged evidence and explicit professional boundaries. Record its use cases, outputs, and limits in the current response when they are supplied.",
+            "custom_workflows.md": "Compose custom workflows from packaged capabilities while keeping teacher rules, cross-source synthesis, and custom adaptation visibly separate.",
         },
     },
 }
@@ -159,6 +165,28 @@ ALIAS_OPTIONS = {
 VALID_SCOPES = {"single-course", "multi-course", "fused", "auto"}
 VALID_EVIDENCE = {"standard", "strict"}
 VALID_PROGRESS = {"none", "tracked", "auto"}
+VALID_APPRENTICESHIP = {"none", "guided", "full"}
+RUNTIME_SCRIPTS = [
+    "runtime_state.py",
+    "initialize_apprenticeship.py",
+    "record_practice_episode.py",
+    "rebuild_mastery_state.py",
+    "select_next_practice.py",
+    "schedule_retrieval.py",
+    "validate_learner_state.py",
+    "build_personal_skill_candidate.py",
+]
+MENTOR_ARTIFACTS = [
+    "teacher_model.json",
+    "capability_graph.json",
+    "practice_bank.json",
+    "assessment_bank.json",
+    "mentor_package.json",
+    "mentor_protocol.md",
+    "graduation_policy.json",
+    "mentor_readiness_audit.json",
+    "mentor_readiness_audit.md",
+]
 
 
 def newest_match(source_dir: Path, pattern: str) -> Path | None:
@@ -207,7 +235,7 @@ def copy_or_stub(source: Path | None, destination: Path, title: str, body: str) 
         shutil.copy2(source, destination)
         return "copied"
     destination.write_text(f"# {title}\n\n{body}\n", encoding="utf-8")
-    return "stubbed"
+    return "generated-fallback"
 
 
 def normalize_lessons(data: object | None) -> list[dict[str, object]]:
@@ -270,7 +298,7 @@ def write_derived_markdown(
         return "derived"
 
     destination.write_text(f"# {title}\n\n{fallback}\n", encoding="utf-8")
-    return "stubbed"
+    return "generated-fallback"
 
 
 def build_lesson_index(source_dir: Path, destination: Path) -> str:
@@ -287,12 +315,12 @@ def build_lesson_index(source_dir: Path, destination: Path) -> str:
         "lessons": lessons,
     }
     destination.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    return "generated" if lessons else "stubbed"
+    return "generated" if lessons else "generated-empty-index"
 
 
-def build_evidence_map(source_dir: Path, destination: Path) -> str:
+def build_evidence_map(source_dir: Path, destination: Path, *, include_source_artifacts: bool = False) -> str:
     existing = find_first_existing(source_dir, ["evidence_map.json"])
-    if existing:
+    if existing and include_source_artifacts:
         shutil.copy2(existing, destination)
         return "copied"
 
@@ -306,22 +334,36 @@ def build_evidence_map(source_dir: Path, destination: Path) -> str:
     document_files = sorted(str(p.relative_to(source_dir)) for p in source_dir.glob("documents/**/*") if p.is_file())
     text_source_files = sorted(str(p.relative_to(source_dir)) for p in source_dir.glob("text_sources/**/*") if p.is_file())
     text_distillation_files = sorted(str(p.relative_to(source_dir)) for p in source_dir.glob("text_distillation/**/*") if p.is_file())
+    package = load_json_if_exists(source_dir / "course_package.json")
+    packaged_evidence = []
+    if isinstance(package, dict):
+        for item in package.get("evidence", []):
+            if not isinstance(item, dict):
+                continue
+            packaged_evidence.append(
+                {
+                    key: value
+                    for key, value in item.items()
+                    if key not in {"path", "source_dir", "local_path"}
+                }
+            )
     payload = {
         "generated_at": dt.datetime.now().isoformat(timespec="seconds"),
-        "source_dir": str(source_dir),
-        "transcripts": transcript_files,
-        "analysis_files": analysis_files,
-        "screenshots": screenshot_files,
-        "model_keyframe_manifests": keyframe_manifests,
-        "model_keyframe_summaries": keyframe_summaries,
-        "model_selected_keyframes": selected_keyframes,
-        "course_distillations": course_distillations,
-        "documents": document_files,
-        "text_sources": text_source_files,
-        "text_distillation": text_distillation_files,
+        "privacy_mode": "source-artifacts-included" if include_source_artifacts else "paths-withheld",
+        "transcripts": transcript_files if include_source_artifacts else [],
+        "analysis_files": analysis_files if include_source_artifacts else [],
+        "screenshots": screenshot_files if include_source_artifacts else [],
+        "model_keyframe_manifests": keyframe_manifests if include_source_artifacts else [],
+        "model_keyframe_summaries": keyframe_summaries if include_source_artifacts else [],
+        "model_selected_keyframes": selected_keyframes if include_source_artifacts else [],
+        "course_distillations": course_distillations if include_source_artifacts else [],
+        "documents": document_files if include_source_artifacts else [],
+        "text_sources": text_source_files if include_source_artifacts else [],
+        "text_distillation": text_distillation_files if include_source_artifacts else [],
+        "packaged_evidence": packaged_evidence,
         "notes": [
-            "Evidence entries are file-level by default.",
-            "Add timestamps and topic labels after deeper course distillation.",
+            "Raw local paths and source bodies are withheld by default.",
+            "Use stable evidence IDs for traceability; opt in to source artifacts only with authorization.",
         ],
     }
     destination.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -369,7 +411,18 @@ def copy_optional_reference_files(source_dir: Path, references_dir: Path) -> dic
         src = source_dir / filename
         if not src.exists():
             continue
-        shutil.copy2(src, references_dir / filename)
+        destination = references_dir / filename
+        if src.suffix == ".json":
+            payload = load_schema_json(src)
+            if isinstance(payload, dict):
+                for key in ["source_dir", "course_dir", "base_dir", "output_dir"]:
+                    if key in payload:
+                        payload[key] = "<withheld-local-path>"
+            write_json(destination, payload)
+        else:
+            text = src.read_text(encoding="utf-8", errors="ignore")
+            text = text.replace(str(source_dir), "<withheld-local-path>")
+            destination.write_text(text, encoding="utf-8")
         statuses[filename] = "copied"
     return statuses
 
@@ -413,11 +466,34 @@ def copy_source_courses_from_package(source_dir: Path, references_dir: Path) -> 
     return statuses
 
 
-def copy_course_package(source_dir: Path, destination: Path) -> str:
+def sanitize_course_package(package: dict[str, object]) -> dict[str, object]:
+    """Remove host-local paths while preserving stable evidence identity."""
+    payload = json.loads(json.dumps(package, ensure_ascii=False))
+    manifest = payload.get("manifest", {}) if isinstance(payload.get("manifest"), dict) else {}
+    for key in ["source_dir", "package_path", "source_path"]:
+        manifest.pop(key, None)
+    for course in manifest.get("source_courses", []) if isinstance(manifest.get("source_courses"), list) else []:
+        if isinstance(course, dict):
+            for key in ["source_dir", "package_path", "source_path"]:
+                course.pop(key, None)
+    for item in payload.get("sources", []) if isinstance(payload.get("sources"), list) else []:
+        if isinstance(item, dict) and item.get("id"):
+            item["path"] = f"withheld://source/{item['id']}"
+    for item in payload.get("evidence", []) if isinstance(payload.get("evidence"), list) else []:
+        if isinstance(item, dict) and item.get("id"):
+            item["path"] = f"withheld://evidence/{item['id']}"
+    for item in payload.get("lessons", []) if isinstance(payload.get("lessons"), list) else []:
+        if isinstance(item, dict) and item.get("source"):
+            item["source"] = f"withheld://lesson/{item.get('id', 'unknown')}"
+    return payload
+
+
+def copy_course_package(source_dir: Path, destination: Path, *, include_source_artifacts: bool = False) -> str:
     existing = find_first_existing(source_dir, ["course_package.json"])
     if existing:
-        shutil.copy2(existing, destination)
-        return "copied"
+        package = load_schema_json(existing)
+        write_json(destination, package if include_source_artifacts else sanitize_course_package(package))
+        return "copied" if include_source_artifacts else "copied-paths-withheld"
     payload = {
         "schema_version": "0.1",
         "manifest": {
@@ -443,7 +519,7 @@ def copy_course_package(source_dir: Path, destination: Path) -> str:
         "boundaries": [],
     }
     destination.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return "stubbed"
+    return "generated-empty-package"
 
 
 def parse_modes(raw_modes: str) -> list[str]:
@@ -534,7 +610,15 @@ def default_skill_name(course_name: str, modes: list[str]) -> str:
     return f"{slug}-{lineage_suffix}"
 
 
-def build_skill_md(course_name: str, skill_name: str, description: str, modes: list[str], destination: Path) -> None:
+def build_skill_md(
+    course_name: str,
+    skill_name: str,
+    description: str,
+    modes: list[str],
+    destination: Path,
+    *,
+    apprenticeship_mode: str = "none",
+) -> None:
     mode_specs = [MODE_SPECS[mode] for mode in modes]
     mode_labels = ", ".join(spec["label"] for spec in mode_specs)
     mode_descriptions = "; ".join(spec["description"] for spec in mode_specs)
@@ -548,6 +632,28 @@ def build_skill_md(course_name: str, skill_name: str, description: str, modes: l
         rule_lines.extend(f"- {rule}" for rule in spec["rules"])
         rule_lines.append("")
     rules = "\n".join(rule_lines).rstrip()
+
+    mentor_runtime = ""
+    if "mentor" in modes:
+        mentor_runtime = f"""
+## Mentor Runtime
+
+This package runs in `{apprenticeship_mode}` apprenticeship mode. Read `references/mentor_package.json`, `references/mentor_protocol.md`, `references/capability_graph.json`, `references/practice_bank.json`, `references/assessment_bank.json`, and `references/graduation_policy.json` before training.
+
+Route each request as source lookup, direct explanation, diagnostic learning, guided practice, artifact feedback, real-world application, retrieval review, transfer test, or graduation test.
+
+- Answer explicit source lookup directly and do not count it as mastery evidence.
+- Honor an explicit direct-answer request, but say that it creates no mastery evidence.
+- For learning, review, transfer, and graduation, collect a prediction or observable attempt before explanation.
+- Evaluate the artifact against criterion-level rubrics; give the lowest effective H0-H4 hint and require a concrete revision.
+- Advance a capability by at most one evidence state. Transfer requires H0 success in a changed context; retention requires delayed parallel-form retrieval.
+- Fade templates, hints, and intervention timing one dimension at a time as independent success accumulates.
+- Keep `[Teacher source]`, `[Source-grounded synthesis]`, `[Mentor inference]`, `[Learner hypothesis]`, and `[Learner real-world evidence]` distinct.
+
+Learner state is external and private. Resolve the host-provided learner store as `{{learner_store_root}}/apprenticeships/{{mentor_package_id}}/`. Never write real learner data under `references/`. Initialize it with `scripts/initialize_apprenticeship.py`; append attempts with `scripts/record_practice_episode.py`; rebuild derived mastery with `scripts/rebuild_mastery_state.py`; schedule reviews and choose next practice with the provided runtime scripts. If the host cannot write state, return a complete JSON patch and state clearly that it was not persisted.
+
+For high-risk medical, legal, financial, investment, or safety-sensitive materials, keep practice educational and source-bounded. Graduation shows competence with the packaged method, not professional licensure.
+"""
 
     content = f"""---
 name: {skill_name}
@@ -575,19 +681,12 @@ Active role(s): {mode_labels}.
 ## Reference Priority
 
 1. `references/okf/index.md` for progressive reading, human-readable concept files, and cross-linked capability navigation.
-2. `references/course_digest.md` for the course-level framework.
-3. `references/lesson_index.json` for lesson lookup and sequencing.
-4. `references/concept_glossary.md` for terms and definitions.
-5. `references/evidence_map.json` for source files, screenshots, transcripts, and confidence notes.
-6. `references/quote_index.md` for memorable course statements.
-7. `references/study_paths.md` for review plans and learning routes.
-8. `references/distillation_audit.md` and `references/distillation_audit.json` for capture quality, audit policy, cross-source validation when applicable, missing evidence under the selected audit mode, and human-review notes when present.
-9. `references/course_package.json` for normalized package objects when structured lookup is needed.
-10. `references/full_transcript.md` for original wording when detailed citation is required.
-11. `references/keyframe_selection/model_keyframe_summary.md` for model-selected visual evidence when present.
-12. `references/keyframe_selection/` and `references/keyframes_model_selected/` for image manifests and selected frame files when present.
-13. `references/text_distillation/evidence_cards.jsonl` and `references/text_sources/chunks.jsonl` for pure-text evidence cards and source chunks when present.
-14. `references/transcripts/`, `references/analysis/`, and `references/documents/` for packaged source evidence directories when present.
+2. `references/course_package.json` for normalized claims, capabilities, sources, and evidence pointers.
+3. `references/teacher_model.json` for source-supported teacher cues, decisions, demonstrations, feedback, and boundaries.
+4. `references/capability_graph.json`, `references/practice_bank.json`, and `references/assessment_bank.json` for observable training and assessment.
+5. `references/course_digest.md`, `references/lesson_index.json`, `references/concept_glossary.md`, and `references/evidence_map.json` for human-readable navigation.
+6. `references/distillation_audit.*` and `references/mentor_readiness_audit.*` for missing evidence, conflicts, and allowed apprenticeship mode.
+7. `references/text_distillation/`, `references/text_sources/`, `references/transcripts/`, `references/analysis/`, `references/documents/`, and model-selected keyframes for exact evidence when present.
 
 ## Capability Reading Strategy
 
@@ -597,13 +696,15 @@ Active role(s): {mode_labels}.
 - For application, consulting, or output-producing requests, prioritize `methods`, `diagnostics`, `workflows`, `rubrics`, `templates`, `transfer_rules`, and `failure_modes` from `references/course_package.json`.
 - Use `references/text_distillation/evidence_cards.jsonl` to separate direct source cards from your own synthesis.
 - Use OKF `# Citations` links for readable provenance, and use JSON/script lookup when exact source spans are required.
-- Use `scripts/fetch_course_evidence.py --chunk-id <chunk_id>` or `--card-id <card_id>` when the answer depends on exact source wording, controversial claims, or high-impact recommendations.
+- Use `scripts/fetch_course_evidence.py` with a chunk, card, claim, capability, rule, task, rubric, or assessment ID when exact provenance matters.
 - In multi-course packages, preserve `source_course` and `source_course_id` distinctions. If sources disagree, report the disagreement instead of flattening it into one claim.
 - Label adapted recommendations as inference. Do not present generic model knowledge or unsupported extrapolation as course content.
 
 ## Response Rules
 
 {rules}
+
+{mentor_runtime}
 
 ## General Boundaries
 
@@ -702,6 +803,103 @@ def build_fetch_evidence_script(destination: Path) -> None:
     destination.chmod(0o755)
 
 
+def ensure_mentor_artifacts(
+    source_dir: Path,
+    *,
+    apprenticeship: str,
+    evidence: str,
+    practice_depth: str,
+) -> dict[str, object]:
+    package = load_course_package(source_dir / "course_package.json")
+    write_json(source_dir / "course_package.json", package)
+    teacher = build_teacher_model(package)
+    graph = build_capability_graph(package)
+    practice = build_practice_bank(package, graph, depth=practice_depth)
+    assessment = build_assessment_bank(package, graph)
+    write_json(source_dir / "teacher_model.json", teacher)
+    write_json(source_dir / "capability_graph.json", graph)
+    write_json(source_dir / "practice_bank.json", practice)
+    write_json(source_dir / "assessment_bank.json", assessment)
+    mentor = build_mentor_package(source_dir, requested_mode=apprenticeship, evidence_strategy=evidence)
+    audit = load_schema_json(source_dir / "mentor_readiness_audit.json")
+    package["quality"]["coverage"]["teacher_model_coverage"] = teacher["quality"]["record_count"]
+    package["quality"]["coverage"]["practice_coverage"] = practice["quality"]["capability_coverage"]
+    package["quality"]["coverage"]["assessment_coverage"] = assessment["quality"]["capability_coverage"]
+    package["quality"]["mentor_readiness"] = {
+        "status": audit["status"],
+        "missing_requirements": audit["blockers"],
+        "human_review_required": audit["human_review_required"],
+    }
+    write_json(source_dir / "course_package.json", package)
+    return {"mentor_package": mentor, "readiness": audit}
+
+
+def copy_mentor_runtime(source_dir: Path, references_dir: Path, scripts_dir: Path, assets_dir: Path) -> dict[str, str]:
+    statuses: dict[str, str] = {}
+    for filename in MENTOR_ARTIFACTS:
+        source = source_dir / filename
+        if source.exists():
+            shutil.copy2(source, references_dir / filename)
+            statuses[filename] = "copied"
+    packaged_mentor_path = references_dir / "mentor_package.json"
+    packaged_course_path = references_dir / "course_package.json"
+    if packaged_mentor_path.exists() and packaged_course_path.exists():
+        packaged_mentor = load_schema_json(packaged_mentor_path)
+        packaged_mentor.setdefault("manifest", {}).setdefault("package_hashes", {})["course_package.json"] = content_hash(
+            load_schema_json(packaged_course_path)
+        )
+        write_json(packaged_mentor_path, packaged_mentor)
+    schema_dir = references_dir / "schemas"
+    schema_dir.mkdir(parents=True, exist_ok=True)
+    for filename in [
+        "apprenticeship_state.schema.json",
+        "practice_episode.schema.json",
+        "mastery_state.schema.json",
+        "personal_skill_candidate.schema.json",
+    ]:
+        shutil.copy2(Path(__file__).resolve().parents[1] / "references" / "schemas" / filename, schema_dir / filename)
+        statuses[f"schemas/{filename}"] = "copied"
+    for filename in RUNTIME_SCRIPTS:
+        shutil.copy2(Path(__file__).resolve().parent / filename, scripts_dir / filename)
+        (scripts_dir / filename).chmod(0o755)
+        statuses[f"scripts/{filename}"] = "copied"
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    mentor = load_schema_json(packaged_mentor_path)
+    templates = {
+        "learning_contract.template.json": mentor["learning_contract_template"],
+        "practice_episode.template.json": {
+            "schema_version": "1.0",
+            "episode_id": "episode_<stable-id>",
+            "mentor_package_id": mentor["manifest"]["mentor_package_id"],
+            "learner_id": "<host-private-id>",
+            "timestamp_start": "<ISO-8601>",
+            "timestamp_end": None,
+            "stage": "coached_practice",
+            "task_id": "<task-id>",
+            "capability_ids": ["<capability-id>"],
+            "context": {"project": "", "environment": "", "constraints": []},
+            "prediction": {"learner_prediction": "", "confidence_before": None},
+            "attempts": [{"attempt_number": 1, "artifact_ref": "", "content_summary": "", "timestamp": "<ISO-8601>"}],
+            "hints": [],
+            "feedback": {"rubric_results": [], "source_evidence": [], "mentor_inference": "", "next_revision": ""},
+            "outcome": {"task_result": "insufficient_evidence", "real_world_result": None, "confidence_after": None, "learner_reflection": ""},
+            "errors": [],
+            "mastery_events": [],
+            "next_actions": [],
+            "provenance": "learner_observation",
+        },
+    }
+    for filename, payload in templates.items():
+        write_json(assets_dir / filename, payload)
+        statuses[f"assets/{filename}"] = "generated"
+    (assets_dir / "graduation_report.template.md").write_text(
+        "# Graduation Record\n\n## Capabilities\n\n## Delayed retention evidence\n\n## Transfer contexts\n\n## Independent artifacts\n\n## Boundaries and remaining gaps\n\n## Personal Skill candidates\n\n## Differences from teacher methods\n\n## Continuing practice\n",
+        encoding="utf-8",
+    )
+    statuses["assets/graduation_report.template.md"] = "generated"
+    return statuses
+
+
 def yaml_quote(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 
@@ -710,8 +908,8 @@ def build_agent_metadata(course_name: str, skill_name: str, modes: list[str], ag
     agents_dir.mkdir(parents=True, exist_ok=True)
     mode_labels = ", ".join(MODE_SPECS[mode]["label"] for mode in modes)
     display_name = f"{course_name} Course Skill"
-    short_description = "Source-grounded course Q&A, review, and workflows."
-    default_prompt = f"Use ${skill_name} to answer questions about {course_name} and cite the course sources."
+    short_description = "Source-grounded cognitive apprenticeship and course evidence."
+    default_prompt = f"Use ${skill_name} to help me form an independent capability from {course_name} through source-grounded practice, feedback, retrieval, and transfer."
 
     openai_yaml = "\n".join(
         [
@@ -737,6 +935,8 @@ def build_agent_metadata(course_name: str, skill_name: str, modes: list[str], ag
             "# Trust surface:",
             "#   - Reads packaged course reference files under references/.",
             "#   - Runs local scripts/search_course_notes.py for lightweight keyword lookup.",
+            "#   - Reads and writes learner state only in a host-provided external private directory.",
+            "#   - Never treats learner evidence as a mutation of the immutable teacher package.",
             "#   - Does not call external services unless the host agent chooses to enrich or rebuild materials.",
             f"#   - Active role(s): {mode_labels}.",
             "",
@@ -753,7 +953,7 @@ def write_extra_reference(destination: Path, value: object) -> str:
     else:
         title = destination.stem.replace("_", " ").replace("-", " ").title()
         destination.write_text(f"# {title}\n\n{value}\n", encoding="utf-8")
-    return "stubbed"
+    return "generated"
 
 
 def write_mode_references(references_dir: Path, modes: list[str]) -> dict[str, str]:
@@ -771,8 +971,21 @@ def build_lineage_manifest(
     source_dir: Path,
     statuses: dict[str, str],
     options: dict[str, str],
+    mentor_package: dict[str, object] | None = None,
 ) -> dict[str, object]:
     generated_at = dt.datetime.now().isoformat(timespec="seconds")
+    package_hashes = {
+        name: content_hash(load_schema_json(source_dir / name))
+        for name in [
+            "course_package.json",
+            "teacher_model.json",
+            "capability_graph.json",
+            "practice_bank.json",
+            "assessment_bank.json",
+            "mentor_package.json",
+        ]
+        if (source_dir / name).exists()
+    }
     return {
         "schema_version": GENERATOR_SCHEMA_VERSION,
         "course_name": course_name,
@@ -782,7 +995,11 @@ def build_lineage_manifest(
         "scope": options["scope"],
         "evidence_strategy": options["evidence"],
         "progress_strategy": options["progress"],
-        "source_dir": str(source_dir),
+        "pipeline_progress_strategy": options["progress"],
+        "learner_state_strategy": options.get("learner_state", "external" if "mentor" in modes else "none"),
+        "source_artifacts_included": options.get("include_source_artifacts") == "true",
+        "apprenticeship_mode": (mentor_package or {}).get("manifest", {}).get("apprenticeship_mode", "none"),
+        "source_dir": "<withheld-local-path>",
         "generated_at": generated_at,
         "generated_by": {
             "id": GENERATOR_ID,
@@ -792,10 +1009,19 @@ def build_lineage_manifest(
         "provenance": {
             "watermark": PROVENANCE_WATERMARK,
             "watermark_visibility": "manifest-only",
-            "source_package": str(source_dir / "course_package.json"),
+            "source_package": "references/course_package.json",
             "note": "This packaged course Skill was generated from course materials by lineage-skill.",
         },
         "reference_status": statuses,
+        "package_schemas": {
+            "course_package": "1.0",
+            "teacher_model": "1.0" if mentor_package else None,
+            "capability_graph": "1.0" if mentor_package else None,
+            "practice_bank": "1.0" if mentor_package else None,
+            "assessment_bank": "1.0" if mentor_package else None,
+            "mentor_package": "1.0" if mentor_package else None,
+        },
+        "package_hashes": package_hashes,
     }
 
 
@@ -811,6 +1037,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--scope", default="auto", help="Course scope metadata. Valid: auto, single-course, multi-course, fused.")
     parser.add_argument("--evidence", default="standard", help="Evidence strategy metadata. Valid: standard, strict.")
     parser.add_argument("--progress", default="auto", help="Progress strategy metadata. Valid: auto, none, tracked.")
+    parser.add_argument("--apprenticeship", choices=sorted(VALID_APPRENTICESHIP), default="full", help="Requested apprenticeship mode for mentor roles.")
+    parser.add_argument("--practice-depth", choices=["standard", "deep"], default="standard")
+    parser.add_argument("--learner-state", choices=["external", "none"], default="external")
+    parser.add_argument(
+        "--include-source-artifacts",
+        action="store_true",
+        help="Opt in to copying transcripts, OCR, analyses, text sources, selected keyframes, and source-course directories.",
+    )
+    parser.add_argument(
+        "--mentor-audit-mode",
+        choices=["auto", "strict"],
+        default="auto",
+        help="Strict mode refuses a requested full apprenticeship when readiness would require a downgrade.",
+    )
+    parser.add_argument("--skip-validate-skill", action="store_true")
+    parser.add_argument("--reuse-mentor-artifacts", action="store_true", help="Package existing mentor artifacts without rebuilding compiler stages.")
     parser.add_argument("--source-dir", required=True, help="Directory containing prepared course notes and indexes.")
     parser.add_argument("--output-dir", required=True, help="Directory where the generated skill should be written.")
     parser.add_argument("--description", default="Packaged from prepared course distillation materials.", help="Short note added to SKILL.md.")
@@ -824,67 +1066,132 @@ def main() -> None:
     output_dir = Path(args.output_dir).expanduser().resolve()
     modes = parse_modes(args.mode)
     options = resolve_options(source_dir, modes, args.mode, args.scope, args.evidence, args.progress)
+    options["learner_state"] = args.learner_state
+    options["include_source_artifacts"] = "true" if args.include_source_artifacts else "false"
     skill_name = args.skill_name or default_skill_name(args.course_name, modes)
-    skill_dir = output_dir / skill_name
+    final_skill_dir = output_dir / skill_name
 
     if not source_dir.exists() or not source_dir.is_dir():
         raise SystemExit(f"source dir does not exist: {source_dir}")
 
-    if skill_dir.exists():
+    if final_skill_dir.exists():
         if not args.force:
-            raise SystemExit(f"skill dir already exists: {skill_dir} (use --force to overwrite)")
+            raise SystemExit(f"skill dir already exists: {final_skill_dir} (use --force to overwrite)")
+
+    package_path = source_dir / "course_package.json"
+    if not package_path.exists():
+        write_json(package_path, build_package(args.course_name, source_dir))
+    else:
+        write_json(package_path, load_course_package(package_path))
+
+    mentor_info: dict[str, object] | None = None
+    requested_apprenticeship = args.apprenticeship if "mentor" in modes else "none"
+    if "mentor" in modes:
+        if args.reuse_mentor_artifacts:
+            missing = [name for name in MENTOR_ARTIFACTS if not (source_dir / name).exists()]
+            if missing:
+                raise SystemExit(f"cannot reuse mentor artifacts; missing: {', '.join(missing)}")
+            mentor_info = {
+                "mentor_package": load_schema_json(source_dir / "mentor_package.json"),
+                "readiness": load_schema_json(source_dir / "mentor_readiness_audit.json"),
+            }
+        else:
+            mentor_info = ensure_mentor_artifacts(
+                source_dir,
+                apprenticeship=requested_apprenticeship,
+                evidence=args.evidence,
+                practice_depth=args.practice_depth,
+            )
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    skill_dir = output_dir / f".{skill_name}.lineage-build"
+    if skill_dir.exists():
         shutil.rmtree(skill_dir)
 
     references_dir = skill_dir / "references"
     scripts_dir = skill_dir / "scripts"
     agents_dir = skill_dir / "agents"
+    assets_dir = skill_dir / "assets"
     references_dir.mkdir(parents=True, exist_ok=True)
     scripts_dir.mkdir(parents=True, exist_ok=True)
 
-    build_skill_md(args.course_name, skill_name, args.description, modes, skill_dir / "SKILL.md")
+    actual_apprenticeship = (
+        mentor_info.get("mentor_package", {}).get("manifest", {}).get("apprenticeship_mode", "none")
+        if mentor_info
+        else "none"
+    )
+    if (
+        args.mentor_audit_mode == "strict"
+        and requested_apprenticeship == "full"
+        and actual_apprenticeship != "full"
+    ):
+        readiness = mentor_info.get("readiness", {}) if mentor_info else {}
+        raise SystemExit(
+            "strict mentor audit refused full apprenticeship: "
+            + "; ".join(readiness.get("blockers", []) or ["mentor readiness is not ready"])
+        )
+    build_skill_md(
+        args.course_name,
+        skill_name,
+        args.description,
+        modes,
+        skill_dir / "SKILL.md",
+        apprenticeship_mode=str(actual_apprenticeship),
+    )
     build_agent_metadata(args.course_name, skill_name, modes, agents_dir)
 
     statuses = {}
-    statuses["course_package.json"] = copy_course_package(source_dir, references_dir / "course_package.json")
+    statuses["course_package.json"] = copy_course_package(
+        source_dir,
+        references_dir / "course_package.json",
+        include_source_artifacts=args.include_source_artifacts,
+    )
     statuses["course_digest.md"] = copy_or_stub(
         find_course_distillation_md(source_dir),
         references_dir / "course_digest.md",
         "Course Digest",
-        "Add the course-level framework, key principles, and module summary here.",
+        "No standalone digest was present. Use course_package.json and the evidence indexes; do not infer missing course structure.",
     )
     statuses["full_transcript.md"] = copy_or_stub(
-        find_first_existing(source_dir, ["full_transcript.md"]),
+        find_first_existing(source_dir, ["full_transcript.md"]) if args.include_source_artifacts else None,
         references_dir / "full_transcript.md",
         "Full Transcript",
-        "Add transcript text here, or keep transcript JSON files linked from evidence_map.json.",
+        "No combined transcript was present. Use transcript files and evidence_map.json when available.",
     )
     statuses["concept_glossary.md"] = write_derived_markdown(
         source_dir,
         references_dir / "concept_glossary.md",
         "Concept Glossary",
         ["关键概念", "概念词汇", "词汇表"],
-        "Add course terms, definitions, aliases, and source lessons here.",
+        "No glossary section was extracted. Resolve terms through CoursePackage claims and source evidence.",
     )
     statuses["quote_index.md"] = write_derived_markdown(
         source_dir,
         references_dir / "quote_index.md",
         "Quote Index",
         ["核心金句", "金句"],
-        "Add memorable statements with lesson/source references here.",
+        "No quote index was extracted. Do not invent teacher quotations.",
     )
     statuses["study_paths.md"] = write_derived_markdown(
         source_dir,
         references_dir / "study_paths.md",
         "Study Paths",
         ["可执行行动", "学习路径", "行动清单"],
-        "Add beginner, review, exam, and topical learning paths here.",
+        "No source-specific study path was extracted. Use the capability graph and practice bank for sequencing.",
     )
     statuses["lesson_index.json"] = build_lesson_index(source_dir, references_dir / "lesson_index.json")
-    statuses["evidence_map.json"] = build_evidence_map(source_dir, references_dir / "evidence_map.json")
+    statuses["evidence_map.json"] = build_evidence_map(
+        source_dir,
+        references_dir / "evidence_map.json",
+        include_source_artifacts=args.include_source_artifacts,
+    )
     statuses.update(copy_optional_reference_files(source_dir, references_dir))
-    statuses.update(copy_optional_reference_dirs(source_dir, references_dir))
-    statuses.update(copy_source_courses_from_package(source_dir, references_dir))
+    if args.include_source_artifacts:
+        statuses.update(copy_optional_reference_dirs(source_dir, references_dir))
+        statuses.update(copy_source_courses_from_package(source_dir, references_dir))
     statuses.update(write_mode_references(references_dir, modes))
+    if mentor_info:
+        statuses.update(copy_mentor_runtime(source_dir, references_dir, scripts_dir, assets_dir))
     okf_result = build_okf_bundle(course_dir=references_dir, output_dir=references_dir / "okf", course_name=args.course_name)
     statuses["okf/"] = f"generated {okf_result['concept_count']} concepts, {okf_result['evidence_count']} evidence chunks"
 
@@ -893,10 +1200,50 @@ def main() -> None:
     build_fetch_evidence_script(scripts_dir / "fetch_course_evidence.py")
     statuses["scripts/fetch_course_evidence.py"] = "copied"
 
-    manifest = build_lineage_manifest(args.course_name, skill_name, modes, source_dir, statuses, options)
-    (skill_dir / "lineage_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    mentor_package = mentor_info.get("mentor_package") if mentor_info else None
+    manifest = build_lineage_manifest(args.course_name, skill_name, modes, source_dir, statuses, options, mentor_package)
+    manifest["package_hashes"] = {
+        name: content_hash(load_schema_json(path))
+        for name in [
+            "course_package.json",
+            "teacher_model.json",
+            "capability_graph.json",
+            "practice_bank.json",
+            "assessment_bank.json",
+            "mentor_package.json",
+        ]
+        if (path := references_dir / name).exists()
+    }
+    write_json(skill_dir / "lineage_manifest.json", manifest)
+    if mentor_package:
+        write_json(
+            skill_dir / "mentor_manifest.json",
+            {
+                "schema_version": "1.0",
+                "mentor_package_id": mentor_package["manifest"]["mentor_package_id"],
+                "apprenticeship_mode": mentor_package["manifest"]["apprenticeship_mode"],
+                "requested_apprenticeship_mode": mentor_package["manifest"]["requested_apprenticeship_mode"],
+                "learner_state": "external",
+                "state_contract": "references/schemas/apprenticeship_state.schema.json",
+                "episode_contract": "references/schemas/practice_episode.schema.json",
+            },
+        )
 
-    print(f"Generated skill: {skill_dir}")
+    if not args.skip_validate_skill:
+        validation = validate_skill(skill_dir)
+        validation["skill_dir"] = "."
+        write_json(skill_dir / "validation_report.json", validation)
+        if not validation["valid"]:
+            raise SystemExit("generated Skill validation failed:\n" + json.dumps(validation, ensure_ascii=False, indent=2))
+
+    if final_skill_dir.exists():
+        shutil.rmtree(final_skill_dir)
+    skill_dir.rename(final_skill_dir)
+
+    print(f"Generated skill: {final_skill_dir}")
+    if mentor_info:
+        print(f"- mentor readiness: {mentor_info['readiness']['status']}")
+        print(f"- apprenticeship requested/actual: {requested_apprenticeship}/{actual_apprenticeship}")
     for name, status in statuses.items():
         print(f"- {name}: {status}")
 

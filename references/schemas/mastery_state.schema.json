@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lineage-skill.local/schemas/mastery-state-1.0.json",
+  "title": "Derived MasteryState 1.0",
+  "type": "object",
+  "required": ["schema_version", "mentor_package_id", "learner_id", "rebuilt_at", "capabilities"],
+  "properties": {
+    "schema_version": {"const": "1.0", "type": "string"},
+    "mentor_package_id": {"type": "string"},
+    "learner_id": {"type": "string"},
+    "rebuilt_at": {"type": "string"},
+    "capabilities": {"type": "array", "items": {"type": "object", "required": ["capability_id", "state", "evidence_for", "evidence_against", "highest_independent_stage", "lowest_hint_level_success", "transfer_contexts", "retention_checks", "confidence_calibration"]}}
+  }
+}

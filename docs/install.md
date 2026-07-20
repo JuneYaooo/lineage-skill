@@ -4,7 +4,7 @@
 
 ## 项目一句话介绍
 
-`lineage-skill` 是一个把课程视频、音频、PDF、讲义、转录文本和课程笔记整理成可追问、可检索、可溯源 AI Skill 的工具型 Skill。
+`lineage-skill` 是一个把课程、书籍、视频、音频、PDF、讲义、转录和笔记编译成可追溯认知师承 Skill 的工具型 Skill。它生成 TeacherModel、CapabilityGraph、练习/评测库和 attempt-first Mentor Runtime，并把真实学习者状态保存在 Skill 外部。
 
 仓库：https://github.com/JuneYaooo/lineage-skill
 
@@ -45,6 +45,8 @@ bash install_as_skill.sh --target openclaw
 - 安装 `requirements.txt` 中的 Python 依赖
 - 如果目标目录已有 `.env`，覆盖安装前会先备份并恢复
 
+生成课程 Skill 时默认排除原始转录、OCR、分析、文本源和关键帧。只有在用户明确确认拥有分发权限并要求离线打包原料时，才传入 `--include-source-artifacts`。
+
 脚本是交互式的：如果目标目录已存在，会询问是否覆盖。Agent 可以先检查目录状态；需要自动覆盖时可使用 `yes | bash install_as_skill.sh --target codex`。
 
 ## 配置环境变量
@@ -79,7 +81,7 @@ MINERU_API_TOKEN=
 
 安装完成后告诉用户：
 
-> 已安装完成。请重启当前 Agent，让它重新加载 skills。重启后可以直接说：“用 lineage-skill 把我的课程视频和 PDF 整理成课程专家 Skill。”
+> 已安装完成。请重启当前 Agent，让它重新加载 skills。重启后可以直接说：“用 lineage-skill 把我的课程视频和 PDF 编译成完整的认知师承 Skill，学习状态放在外部私有目录。”
 
 ## 冒烟测试
 
@@ -92,7 +94,7 @@ MINERU_API_TOKEN=
 如果用户已经有课程材料：
 
 ```text
-用 lineage-skill 把这个课程目录整理成 mentor,practitioner 角色的 Skill，回答时要保留来源。
+用 lineage-skill 把这个课程目录编译成 mentor,practitioner 角色的 Skill。启用 full apprenticeship 和外部 learner state，保留来源并生成 readiness audit。
 ```
 
 ## 完成标志
@@ -103,3 +105,4 @@ MINERU_API_TOKEN=
 2. `scripts/` 和 `requirements.txt` 已复制到安装目录
 3. 依赖安装完成
 4. Agent 重启后，用户自然语言请求整理课程时能触发 `lineage-skill`
+5. 根 Skill 通过 quick validator，生成 Mentor Skill 能通过 `scripts/validate_generated_skill.py`

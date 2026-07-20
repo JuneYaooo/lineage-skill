@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lineage-skill.local/schemas/mentor-package-1.0.json",
+  "title": "Lineage MentorPackage 1.0",
+  "type": "object",
+  "required": ["schema_version", "manifest", "learning_contract_template", "capability_graph_ref", "teacher_model_ref", "practice_bank_ref", "assessment_bank_ref", "mentor_protocol_ref", "graduation_policy_ref", "learner_state_schema_ref", "episode_schema_ref", "personal_skill_schema_ref", "quality"],
+  "properties": {
+    "schema_version": {"const": "1.0", "type": "string"},
+    "manifest": {"type": "object", "required": ["mentor_package_id", "course_package_id", "teacher_model_id", "generator_version", "evidence_strategy", "apprenticeship_mode"]},
+    "learning_contract_template": {"type": "object"},
+    "capability_graph_ref": {"type": "string"},
+    "teacher_model_ref": {"type": "string"},
+    "practice_bank_ref": {"type": "string"},
+    "assessment_bank_ref": {"type": "string"},
+    "mentor_protocol_ref": {"type": "string"},
+    "graduation_policy_ref": {"type": "string"},
+    "learner_state_schema_ref": {"type": "string"},
+    "episode_schema_ref": {"type": "string"},
+    "personal_skill_schema_ref": {"type": "string"},
+    "quality": {"type": "object", "required": ["mentor_readiness", "runtime_readiness"]}
+  }
+}

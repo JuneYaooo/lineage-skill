@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lineage-skill.local/schemas/teacher-model-1.0.json",
+  "title": "Lineage TeacherModel 1.0",
+  "type": "object",
+  "required": ["schema_version", "teacher_id", "course_ids", "identity", "epistemic_model", "practice_model", "boundaries", "evidence_index", "quality"],
+  "properties": {
+    "schema_version": {"const": "1.0", "type": "string"},
+    "teacher_id": {"type": "string", "minLength": 8},
+    "course_ids": {"type": "array", "minItems": 1},
+    "identity": {"type": "object", "required": ["domain", "source_boundary"]},
+    "epistemic_model": {"type": "object", "required": ["attention_cues", "problem_frames", "diagnostic_questions", "decision_rules", "tradeoff_rules", "uncertainty_rules"]},
+    "practice_model": {"type": "object", "required": ["demonstrations", "coaching_patterns", "feedback_patterns", "progression_rules", "correction_sequences", "graduation_signals"]},
+    "boundaries": {"type": "object", "required": ["applicability_conditions", "non_copyable_context", "contraindications", "controversies", "source_conflicts"]},
+    "evidence_index": {"type": "array"},
+    "quality": {"type": "object", "required": ["status", "missing_teacher_evidence"]}
+  }
+}

@@ -6,12 +6,14 @@ Stages:
 2. analyze video content and optional supplemental screenshot markers
 3. select model-reviewed keyframes from dense candidates
 4. distill course notes
-5. package the result as a Codex skill
+5. compile teacher, capability, practice, assessment, and Mentor packages
+6. package and validate the generated cognitive-apprenticeship Skill
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -180,6 +182,35 @@ def run(
     )
 
 
+def readiness_summary(course_dir: Path, skill_dir: Path) -> dict[str, str]:
+    """Return the three independent readiness conclusions promised by the CLI."""
+    source = {}
+    mentor = {}
+    validation = {}
+    for path, target in [
+        (course_dir / "mentor_readiness_audit.json", source),
+        (course_dir / "mentor_package.json", mentor),
+        (skill_dir / "validation_report.json", validation),
+    ]:
+        if path.exists():
+            try:
+                target.update(json.loads(path.read_text(encoding="utf-8")))
+            except (OSError, json.JSONDecodeError):
+                pass
+    runtime_status = (
+        "ready"
+        if validation.get("valid") is True
+        else "blocked"
+        if validation.get("valid") is False
+        else mentor.get("quality", {}).get("runtime_readiness", "missing")
+    )
+    return {
+        "source_readiness": source.get("source_readiness", {}).get("status", "missing"),
+        "mentor_readiness": source.get("status", mentor.get("quality", {}).get("mentor_readiness", "missing")),
+        "runtime_readiness": runtime_status,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run transcription, visual analysis, distillation, and skill packaging.")
     parser.add_argument("--input-dir", help="Directory containing course .mp4 video files and/or supported audio files.")
@@ -193,6 +224,12 @@ def main() -> None:
     parser.add_argument("--scope", default="auto", help="Course scope metadata passed to build_course_skill.py.")
     parser.add_argument("--evidence", default="standard", help="Evidence strategy metadata passed to build_course_skill.py.")
     parser.add_argument("--progress", default="auto", help="Progress strategy metadata passed to build_course_skill.py.")
+    parser.add_argument("--apprenticeship", choices=["none", "guided", "full"], default="full")
+    parser.add_argument("--teacher-model", choices=["auto", "strict", "off"], default="auto")
+    parser.add_argument("--practice-depth", choices=["standard", "deep"], default="standard")
+    parser.add_argument("--learner-state", choices=["external", "none"], default="external")
+    parser.add_argument("--include-source-artifacts", action="store_true", help="Opt in to packaging raw transcripts, OCR, analyses, and selected keyframes.")
+    parser.add_argument("--mentor-audit-mode", choices=["auto", "strict"], default="auto")
     parser.add_argument("--base-dir", default=str(DEFAULT_BASE_DIR), help="Course workspace root. Defaults to ./.lineage/courses.")
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR), help="Generated skill output directory. Defaults to ./dist.")
     parser.add_argument("--chunk-minutes", type=int, default=12, help="Video analysis chunk size.")
@@ -211,6 +248,12 @@ def main() -> None:
     parser.add_argument("--skip-summaries", action="store_true", help="Pass through to distill_course.py to reuse lesson_summaries.json.")
     parser.add_argument("--skip-package", action="store_true")
     parser.add_argument("--skip-audit", action="store_true")
+    parser.add_argument("--skip-teacher-model", action="store_true")
+    parser.add_argument("--skip-capability-graph", action="store_true")
+    parser.add_argument("--skip-practice-bank", action="store_true")
+    parser.add_argument("--skip-assessment-bank", action="store_true")
+    parser.add_argument("--skip-mentor-package", action="store_true")
+    parser.add_argument("--skip-mentor-audit", action="store_true")
     parser.add_argument(
         "--audit-mode",
         choices=["auto", "strict", "off"],
@@ -218,6 +261,7 @@ def main() -> None:
         help="Audit cross-validation policy. auto validates only when comparable sources exist; strict requires missing-source review; off records inventory only. With --evidence strict, auto resolves to strict.",
     )
     parser.add_argument("--skip-build-skill", action="store_true")
+    parser.add_argument("--skip-validate-skill", action="store_true")
     parser.add_argument("--limit", type=int, default=0, help="Limit media count for transcribe/analyze smoke runs.")
     args = parser.parse_args()
 
@@ -229,6 +273,10 @@ def main() -> None:
     output_dir = Path(args.output_dir).expanduser().resolve()
     course_dir = base_dir / args.course_name
     args.skill_name = args.skill_name or default_skill_name(args.course_name, parse_modes(args.mode))
+    mentor_requested = "mentor" in parse_modes(args.mode) and args.apprenticeship != "none"
+    if args.progress == "tracked":
+        print("deprecation: --progress tracked now maps to --learner-state external; compiler progress remains in lineage_progress.json", flush=True)
+        args.learner_state = "external"
     audit_mode = resolve_audit_mode(args)
     force = ["--force"] if args.force else []
     limit = ["--limit", str(args.limit)] if args.limit > 0 else []
@@ -435,6 +483,82 @@ def main() -> None:
     run(
         [
             py,
+            str(ROOT / "scripts" / "build_teacher_model.py"),
+            "--source-dir",
+            str(course_dir),
+            *(["--strict"] if args.teacher_model == "strict" else []),
+        ],
+        args.skip_teacher_model or not mentor_requested or args.teacher_model == "off",
+        stage="teacher_model",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
+    )
+    run(
+        [py, str(ROOT / "scripts" / "build_capability_graph.py"), "--source-dir", str(course_dir)],
+        args.skip_capability_graph or not mentor_requested,
+        stage="capability_graph",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
+    )
+    run(
+        [py, str(ROOT / "scripts" / "build_practice_bank.py"), "--source-dir", str(course_dir), "--practice-depth", args.practice_depth],
+        args.skip_practice_bank or not mentor_requested,
+        stage="practice_bank",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
+    )
+    run(
+        [py, str(ROOT / "scripts" / "build_assessment_bank.py"), "--source-dir", str(course_dir)],
+        args.skip_assessment_bank or not mentor_requested,
+        stage="assessment_bank",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
+    )
+    run(
+        [
+            py,
+            str(ROOT / "scripts" / "build_mentor_package.py"),
+            "--source-dir",
+            str(course_dir),
+            "--apprenticeship",
+            args.apprenticeship,
+            "--evidence",
+            args.evidence,
+        ],
+        args.skip_mentor_package or not mentor_requested,
+        stage="mentor_package",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
+    )
+    run(
+        [
+            py,
+            str(ROOT / "scripts" / "build_mentor_readiness_audit.py"),
+            "--source-dir",
+            str(course_dir),
+            "--mode",
+            args.mentor_audit_mode,
+        ],
+        args.skip_mentor_audit or not mentor_requested,
+        stage="mentor_audit",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
+    )
+    run(
+        [
+            py,
             str(ROOT / "scripts" / "build_course_skill.py"),
             "--course-name",
             args.course_name,
@@ -448,16 +572,41 @@ def main() -> None:
             args.evidence,
             "--progress",
             args.progress,
+            "--apprenticeship",
+            args.apprenticeship if mentor_requested else "none",
+            "--practice-depth",
+            args.practice_depth,
+            "--learner-state",
+            args.learner_state if mentor_requested else "none",
+            "--mentor-audit-mode",
+            args.mentor_audit_mode,
+            *(["--include-source-artifacts"] if args.include_source_artifacts else []),
             "--source-dir",
             str(course_dir),
             "--output-dir",
             str(output_dir),
             "--description",
             "Generated by the Lineage Skill full course pipeline.",
+            *(["--reuse-mentor-artifacts"] if mentor_requested else []),
+            *(["--skip-validate-skill"] if args.skip_validate_skill else []),
             *force,
         ],
         args.skip_build_skill,
         stage="build_skill",
+        args=args,
+        base_dir=base_dir,
+        output_dir=output_dir,
+        course_dir=course_dir,
+    )
+    run(
+        [
+            py,
+            str(ROOT / "scripts" / "validate_generated_skill.py"),
+            "--skill-dir",
+            str(output_dir / args.skill_name),
+        ],
+        args.skip_validate_skill or args.skip_build_skill,
+        stage="validate_skill",
         args=args,
         base_dir=base_dir,
         output_dir=output_dir,
@@ -479,6 +628,8 @@ def main() -> None:
         output_dir=output_dir,
         course_dir=course_dir,
     )
+    print("\n==> Lineage readiness", flush=True)
+    print(json.dumps(readiness_summary(course_dir, output_dir / args.skill_name), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

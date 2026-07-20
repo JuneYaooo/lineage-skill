@@ -25,6 +25,12 @@ FIELD_SPECS = {
     "quotes": ("Quote", "quotes", "Quotes", ["quote"]),
     "boundaries": ("Boundary", "boundaries", "Boundaries", ["boundary"]),
     "study_paths": ("Study Path", "study-paths", "Study Paths", ["study-path"]),
+    "attention_cues": ("Attention Cue", "attention-cues", "Attention Cues", ["teacher-model", "attention"]),
+    "decision_rules": ("Decision Rule", "decision-rules", "Decision Rules", ["teacher-model", "decision"]),
+    "demonstrations": ("Demonstration", "demonstrations", "Demonstrations", ["teacher-model", "demonstration"]),
+    "feedback_patterns": ("Feedback Pattern", "feedback-patterns", "Feedback Patterns", ["teacher-model", "feedback"]),
+    "capability_nodes": ("Capability", "capabilities", "Capability Graph", ["capability"]),
+    "practice_tasks": ("Practice Task", "practice-tasks", "Practice Tasks", ["practice"]),
 }
 
 
@@ -83,8 +89,8 @@ def frontmatter(fields: dict[str, Any]) -> str:
 
 def split_title_summary(item: Any, fallback_title: str) -> tuple[str, str, dict[str, Any]]:
     if isinstance(item, dict):
-        title = str(item.get("title") or item.get("name") or item.get("id") or fallback_title).strip()
-        summary = str(item.get("summary") or item.get("quote") or item.get("description") or "").strip()
+        title = str(item.get("title") or item.get("name") or item.get("signal") or item.get("id") or fallback_title).strip()
+        summary = str(item.get("summary") or item.get("quote") or item.get("description") or item.get("because") or item.get("frame") or item.get("learner_prompt") or item.get("interpretation") or "").strip()
         return title, summary, item
     text = str(item).strip()
     for sep in ["：", ":", " - ", "——", "。"]:
@@ -262,6 +268,20 @@ def build_okf_bundle(*, course_dir: str | Path, output_dir: str | Path, course_n
     source = Path(course_dir).expanduser().resolve()
     output = Path(output_dir).expanduser().resolve()
     package = load_json(source / "course_package.json")
+    teacher_path = source / "teacher_model.json"
+    if teacher_path.exists():
+        teacher = load_json(teacher_path)
+        package["attention_cues"] = teacher.get("epistemic_model", {}).get("attention_cues", [])
+        package["decision_rules"] = teacher.get("epistemic_model", {}).get("decision_rules", [])
+        package["demonstrations"] = teacher.get("practice_model", {}).get("demonstrations", [])
+        package["feedback_patterns"] = teacher.get("practice_model", {}).get("feedback_patterns", [])
+    graph_path = source / "capability_graph.json"
+    if graph_path.exists():
+        package["capability_nodes"] = load_json(graph_path).get("nodes", [])
+    practice_path = source / "practice_bank.json"
+    if practice_path.exists():
+        practice = load_json(practice_path)
+        package["practice_tasks"] = practice.get("tasks", [])
     manifest = package.get("manifest") if isinstance(package.get("manifest"), dict) else {}
     resolved_name = course_name or manifest.get("course_name") or source.name
     generated_at = dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")

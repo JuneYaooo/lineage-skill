@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="470" viewBox="0 0 1440 470" role="img" aria-labelledby="title desc">
+  <title id="title">Eight stages of a Lineage apprenticeship</title>
+  <desc id="desc">Orientation, modeling, imitation, coached practice, independent practice, transfer, graduation, and alumni progression with fading support.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FCFCF9"/><stop offset="1" stop-color="#F0F4F5"/></linearGradient>
+    <linearGradient id="track" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#3E9D91"/><stop offset="0.5" stop-color="#607FC5"/><stop offset="1" stop-color="#9271B8"/></linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#728496" flood-opacity="0.18"/></filter>
+  </defs>
+  <rect width="1440" height="470" rx="28" fill="url(#bg)"/>
+  <g font-family="Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="64" y="68" fill="#182A38" font-size="32" font-weight="720">师承生命周期：支架逐步撤去，独立能力逐步显现</text>
+    <text x="64" y="101" fill="#687C8D" font-size="16">Mastery is earned through observable attempts, delayed retrieval, changed-context transfer, and real-world results.</text>
+    <path d="M105 215C292 129 434 294 618 207C814 115 940 284 1125 202C1216 162 1280 171 1340 210" fill="none" stroke="#DCE5E8" stroke-width="18" stroke-linecap="round"/>
+    <path d="M105 215C292 129 434 294 618 207C814 115 940 284 1125 202C1216 162 1280 171 1340 210" fill="none" stroke="url(#track)" stroke-width="3" stroke-linecap="round" filter="url(#glow)"/>
+
+    <g text-anchor="middle">
+      <g transform="translate(105 215)"><circle r="18" fill="#FFFFFF" stroke="#3E9D91" stroke-width="3"/><text y="6" fill="#2C756D" font-size="16" font-weight="750">1</text><text y="61" fill="#263B42" font-size="17" font-weight="650">拜师定向</text><text y="84" fill="#65817F" font-size="13">目标 · 基线 · 契约</text></g>
+      <g transform="translate(277 177)"><circle r="18" fill="#FFFFFF" stroke="#52A4A3" stroke-width="3"/><text y="6" fill="#367B7A" font-size="16" font-weight="750">2</text><text y="-48" fill="#263B42" font-size="17" font-weight="650">师傅示范</text><text y="-25" fill="#667F86" font-size="13">观察 · 定性 · 选择</text></g>
+      <g transform="translate(449 235)"><circle r="18" fill="#FFFFFF" stroke="#5C91B8" stroke-width="3"/><text y="6" fill="#476F91" font-size="16" font-weight="750">3</text><text y="61" fill="#2B3D4A" font-size="17" font-weight="650">临帖模仿</text><text y="84" fill="#6B7D8D" font-size="13">模板 · 提示 · 修订</text></g>
+      <g transform="translate(621 206)"><circle r="18" fill="#FFFFFF" stroke="#607FC5" stroke-width="3"/><text y="6" fill="#4B66A1" font-size="16" font-weight="750">4</text><text y="-48" fill="#2D3B51" font-size="17" font-weight="650">对练纠偏</text><text y="-25" fill="#6D7894" font-size="13">最小提示 · 主瓶颈</text></g>
+      <g transform="translate(793 170)"><circle r="18" fill="#FFFFFF" stroke="#766FBE" stroke-width="3"/><text y="6" fill="#5F599A" font-size="16" font-weight="750">5</text><text y="61" fill="#37384F" font-size="17" font-weight="650">独立实战</text><text y="84" fill="#77758E" font-size="13">自主定义 · 真实产物</text></g>
+      <g transform="translate(965 240)"><circle r="18" fill="#FFFFFF" stroke="#866FBA" stroke-width="3"/><text y="6" fill="#685590" font-size="16" font-weight="750">6</text><text y="61" fill="#40384E" font-size="17" font-weight="650">跨境迁移</text><text y="84" fill="#7C7188" font-size="13">新约束 · 反例 · H0</text></g>
+      <g transform="translate(1137 198)"><circle r="18" fill="#FFFFFF" stroke="#9271B8" stroke-width="3"/><text y="6" fill="#73558F" font-size="16" font-weight="750">7</text><text y="-48" fill="#44374E" font-size="17" font-weight="650">出师评测</text><text y="-25" fill="#807185" font-size="13">延迟保持 · 边界 · 回归</text></g>
+      <g transform="translate(1310 194)"><circle r="22" fill="#FFFFFF" stroke="#9B77B8" stroke-width="3"/><path d="M-8 1L-2 8 10-8" fill="none" stroke="#76558F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text y="65" fill="#46394E" font-size="17" font-weight="650">持续精进</text><text y="88" fill="#817485" font-size="13">顾问 · 反例 · 高阶对练</text></g>
+    </g>
+
+    <g transform="translate(64 388)">
+      <text x="0" y="0" fill="#687C8D" font-size="13" font-weight="650" letter-spacing="1">SCAFFOLDING</text>
+      <rect x="118" y="-12" width="1070" height="9" rx="4.5" fill="#DCE5E8"/>
+      <rect x="118" y="-12" width="1070" height="9" rx="4.5" fill="url(#track)" opacity="0.85"/>
+      <path d="M118-18V3M118-7H1188M1188-18V3" fill="none" stroke="#8799A6"/>
+      <text x="118" y="30" fill="#718596" font-size="13">full template · H4 · synchronous coaching</text>
+      <text x="1188" y="30" fill="#856F94" font-size="13" text-anchor="end">learner-defined problem · H0 · final feedback only</text>
+    </g>
+  </g>
+</svg>

@@ -52,20 +52,41 @@ def normalize_stem(value: str) -> str:
     return text
 
 
+def media_lesson_stem(value: str) -> str:
+    """Return the actual media stem when capture names include a parent-folder prefix.
+
+    The media capture stage prefixes transcript/keyframe names with the parent
+    directory to avoid collisions, e.g. `4、需求采集与挖掘_需求挖掘...`.
+    Visual analysis files are named from the MP4 stem only. For audit purposes
+    these must resolve to the same lesson id.
+    """
+    text = Path(value).stem if value else ""
+    text = re.sub(r"(_transcript|_analysis|_model_keyframes_manifest)$", "", text)
+    if "_" in text:
+        prefix, suffix = text.rsplit("_", 1)
+        if "、" in prefix or "课" in prefix or re.match(r"^\d+", prefix):
+            return suffix
+    return text
+
+
+def lesson_id_from_media(value: str) -> str:
+    return normalize_stem(media_lesson_stem(value))
+
+
 def inventory(paths: list[Path], root: Path) -> dict[str, Any]:
     return {"count": len(paths), "paths": [rel(path, root) for path in paths]}
 
 
 def transcript_id(path: Path, data: dict[str, Any]) -> str:
-    return normalize_stem(str(data.get("video_name") or data.get("media") or path.name))
+    return lesson_id_from_media(str(data.get("video_name") or data.get("video") or data.get("media") or path.name))
 
 
 def analysis_id(path: Path) -> str:
-    return normalize_stem(path.name)
+    return lesson_id_from_media(path.name)
 
 
 def manifest_id(path: Path, data: dict[str, Any]) -> str:
-    return normalize_stem(str(data.get("media") or path.name))
+    return lesson_id_from_media(str(data.get("media") or path.name))
 
 
 def document_id(path: Path) -> str:
@@ -131,7 +152,7 @@ def collect_lesson_summaries(source_dir: Path) -> dict[str, dict[str, Any]]:
         if not isinstance(item, dict):
             continue
         raw_id = item.get("video") or item.get("source") or item.get("file") or item.get("id") or f"lesson-{idx:03d}"
-        rows[normalize_stem(str(raw_id))] = item
+        rows[lesson_id_from_media(str(raw_id))] = item
     return rows
 
 
@@ -374,9 +395,13 @@ def build_audit(course_name: str, source_dir: Path, audit_mode: str = "auto") ->
         for lesson in lessons
         if {"transcript_visual_mismatch", "slides_not_mentioned_in_transcript"} & set(lesson["cross_validation"]["flags"])
     ]
+    evidence_cards = load_jsonl(source_dir / "text_distillation" / "evidence_cards.jsonl")
+    teacher_card_types = ["attention_cue", "problem_frame", "decision_rule", "demonstration", "feedback_pattern", "progression_rule", "graduation_signal", "non_copyable_context"]
+    teacher_counts = {kind: sum(card.get("card_type") == kind for card in evidence_cards) for kind in teacher_card_types}
+    mentor_evidence_gaps = [kind for kind, count in teacher_counts.items() if count == 0]
 
     audit = {
-        "schema_version": "0.1",
+        "schema_version": "1.0",
         "generated_at": dt.datetime.now().isoformat(timespec="seconds"),
         "course_name": course_name,
         "source_dir": str(source_dir),
@@ -392,6 +417,12 @@ def build_audit(course_name: str, source_dir: Path, audit_mode: str = "auto") ->
             "missing_transcripts": sum(1 for lesson in lessons if not lesson["transcript_status"]["present"]),
             "missing_visual_analyses": sum(1 for lesson in lessons if not lesson["visual_status"]["present"]),
             "unmatched_documents": unmatched_documents,
+        },
+        "mentor_evidence": {
+            "card_counts": teacher_counts,
+            "missing_teacher_evidence": mentor_evidence_gaps,
+            "status": "ready" if not mentor_evidence_gaps else "partial",
+            "note": "A mentor-evidence gap is distinct from source-capture failure. Missing teacher behavior must not be synthesized as teacher fact.",
         },
         "cross_validation_summary": {
             "multi_source_lessons": len(multi_source_lessons),
@@ -420,6 +451,8 @@ def build_audit(course_name: str, source_dir: Path, audit_mode: str = "auto") ->
     }
     if unmatched_documents:
         audit["manual_review"].append(f"发现 {unmatched_documents} 组未匹配到具体课程的文档/文字稿，请人工确认归属。")
+    if mentor_evidence_gaps:
+        audit["manual_review"].append("师承证据缺口：" + "、".join(mentor_evidence_gaps) + "。这些字段不得伪装为老师原意。")
     return audit
 
 
@@ -437,6 +470,7 @@ def render_markdown(audit: dict[str, Any]) -> str:
         f"- Document groups: {coverage['available_document_groups']}",
         f"- Multi-source lessons: {cross['multi_source_lessons']}",
         f"- Manual review required: {cross['manual_review_required']}",
+        f"- Mentor evidence status: {audit.get('mentor_evidence', {}).get('status', 'unknown')}",
         "",
         "## Manual Review",
         "",

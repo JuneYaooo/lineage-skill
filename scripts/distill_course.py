@@ -121,6 +121,32 @@ def extract_keywords(text: str, limit: int = 18) -> list[str]:
     return [word for word, _ in scores.most_common(limit)]
 
 
+def media_lesson_stem(value: str) -> str:
+    text = os.path.splitext(os.path.basename(value or ""))[0]
+    text = re.sub(r"(_transcript|_analysis|_model_keyframes_manifest)$", "", text)
+    if "_" in text:
+        prefix, suffix = text.rsplit("_", 1)
+        if "、" in prefix or "课" in prefix or re.match(r"^\d+", prefix):
+            return suffix
+    return text
+
+
+def normalize_media_key(value: str) -> str:
+    text = media_lesson_stem(value)
+    return re.sub(r"[^0-9A-Za-z\u4e00-\u9fff]+", "", text).lower()
+
+
+def media_aliases(value: str) -> list[str]:
+    aliases = []
+    for candidate in (value, media_lesson_stem(value)):
+        if not candidate:
+            continue
+        key = normalize_media_key(candidate)
+        if key and key not in aliases:
+            aliases.append(key)
+    return aliases
+
+
 def local_lesson_summary(video: str, text: str, duration_minutes: float) -> str:
     sentences = split_sentences(text)
     keywords = extract_keywords(text, 12)
@@ -278,15 +304,59 @@ def load_text_synthesis(course_dir: str, max_chars: int = 30000) -> str:
 
 
 def load_keyframe_manifest(course_dir: str, video_name: str) -> dict:
-    path = os.path.join(course_dir, "keyframe_selection", f"{video_name}_model_keyframes_manifest.json")
-    if not os.path.exists(path):
-        return {}
-    try:
-        with open(path, encoding="utf-8") as fp:
-            data = json.load(fp)
-    except Exception:
-        return {}
-    return data if isinstance(data, dict) else {}
+    keyframe_dir = os.path.join(course_dir, "keyframe_selection")
+    candidates = [os.path.join(keyframe_dir, f"{video_name}_model_keyframes_manifest.json")]
+    if os.path.isdir(keyframe_dir):
+        aliases = set(media_aliases(video_name))
+        for filename in sorted(os.listdir(keyframe_dir)):
+            if filename.endswith("_model_keyframes_manifest.json") and aliases & set(media_aliases(filename)):
+                candidates.append(os.path.join(keyframe_dir, filename))
+    for path in candidates:
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path, encoding="utf-8") as fp:
+                data = json.load(fp)
+        except Exception:
+            continue
+        return data if isinstance(data, dict) else {}
+    return {}
+
+
+def build_analysis_lookup(analyses: list) -> dict[str, str]:
+    lookup: dict[str, str] = {}
+    for item in analyses:
+        video = item.get("video", "")
+        content = item.get("content", "")
+        for alias in media_aliases(video):
+            lookup.setdefault(alias, content)
+    return lookup
+
+
+def lookup_analysis(analysis_lookup: dict[str, str], video_name: str) -> str:
+    for alias in media_aliases(video_name):
+        if alias in analysis_lookup:
+            return analysis_lookup[alias]
+    return ""
+
+
+def screenshot_count_for_video(course_dir: str, video_name: str) -> int:
+    screenshot_root = os.path.join(course_dir, "analysis", "screenshots")
+    candidates = [os.path.join(screenshot_root, video_name)]
+    if os.path.isdir(screenshot_root):
+        aliases = set(media_aliases(video_name))
+        for dirname in sorted(os.listdir(screenshot_root)):
+            path = os.path.join(screenshot_root, dirname)
+            if os.path.isdir(path) and aliases & set(media_aliases(dirname)):
+                candidates.append(path)
+    seen = set()
+    count = 0
+    for directory in candidates:
+        if not os.path.isdir(directory) or directory in seen:
+            continue
+        seen.add(directory)
+        count += len([name for name in os.listdir(directory) if not name.startswith(".")])
+    return count
 
 
 def format_keyframe_manifest(manifest: dict, limit: int = 24) -> str:
@@ -322,7 +392,7 @@ def build_per_lesson_summaries(
     summary_path: str | None = None,
 ) -> list:
     print(f"\n📝 逐课摘要 ...")
-    amap = {a["video"]: a["content"] for a in analyses}
+    amap = build_analysis_lookup(analyses)
     summaries = []
     done: dict[str, dict] = {}
     if summary_path and os.path.exists(summary_path):
@@ -375,13 +445,12 @@ def build_per_lesson_summaries(
         else:
             snippet = text
             transcript_label = "讲话转录"
-        analysis = amap.get(vn, "")
+        analysis = lookup_analysis(amap, vn)
         if len(analysis) > 12000:
             analysis = analysis[:12000] + "\n\n[已截断]"
 
         # 截图数量
-        ss_dir = os.path.join(course_dir, "analysis", "screenshots", vn)
-        ss_count = len(os.listdir(ss_dir)) if os.path.isdir(ss_dir) else 0
+        ss_count = screenshot_count_for_video(course_dir, vn)
         keyframe_manifest = load_keyframe_manifest(course_dir, vn)
         keyframe_text = format_keyframe_manifest(keyframe_manifest)
         keyframe_count = keyframe_manifest.get("selected_count", 0) if keyframe_manifest else 0
@@ -498,7 +567,28 @@ def build_course_digest(transcripts: list, summaries: list, course_name: str, co
 ## 七、核心金句集
 10-15条金句或观点，标注出自哪一课
 
-请确保基于真实摘要内容和已列出的视觉证据，不要编造。涉及画面、板书、PPT、图表、软件界面的判断，优先引用模型精选关键帧路径或对应课时。"""
+## 八、老师首先关注的线索
+只整理摘要、问答、讲评或画面明确支持的观察线索、干扰因素与后续诊断问题；缺证据时写明缺口
+
+## 九、问题定性与诊断问题
+整理老师如何定义问题、先问什么、如何排除相邻问题
+
+## 十、决策规则与替代方法
+用“何时使用 / 为什么 / 何时不用 / 替代方法”整理来源支持的规则
+
+## 十一、完整示范与讲评案例
+保留情境、观察、问题框定、选择、推理步骤、执行、自检和边界；不能从普通讲解臆造完整示范
+
+## 十二、反馈纠错模式
+整理老师明确指出的典型错误、最小纠偏动作、修订要求和退回先修的条件
+
+## 十三、进阶与出师信号
+整理来源支持的练习递进、独立完成标准和质量信号
+
+## 十四、不可复制背景与边界
+区分方法的适用条件、老师个人经验或资源背景、争议、禁忌和不可照搬部分
+
+请确保基于真实摘要内容和已列出的视觉证据，不要编造。涉及画面、板书、PPT、图表、软件界面的判断，优先引用模型精选关键帧路径或对应课时。老师隐性判断若只能从普通讲解推断，必须明确标记为“课程证据综合/中低置信”，不得冒充老师直接表达；通用 Mentor 行为不能归到老师本人。"""
 
     digest = call_llm([{"role": "user", "content": prompt}])
 
