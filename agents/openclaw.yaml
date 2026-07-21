@@ -1,7 +1,7 @@
 interface:
   display_name: "Lineage Skill"
-  short_description: "Compile sources into evidence-grounded apprenticeships."
-  default_prompt: "Use lineage-skill to compile my course, book, or media into a source-grounded cognitive-apprenticeship Skill with external learner state and graduation evidence."
+  short_description: "Turn courses into Skills that teach and coach."
+  default_prompt: "Use lineage-skill to turn my course, book, or media into a source-backed learning Skill that demonstrates the method, guides practice, corrects mistakes, and helps me work independently."
 
 # Trust surface:
 #   - Reads only explicitly configured environment variables or explicit .env fallback files.

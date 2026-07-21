@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="760" viewBox="0 0 1440 760" role="img" aria-labelledby="title desc">
   <title id="title">Lineage Skill four-layer architecture</title>
-  <desc id="desc">Evidence, teacher lineage, mentor runtime, and learner evolution layers connected through stable versioned contracts.</desc>
+  <desc id="desc">Four layers show source evidence, the teacher's method, guided practice, and private personal progress.</desc>
   <defs>
     <linearGradient id="canvas" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F7F5F0"/><stop offset="1" stop-color="#EEF2F4"/></linearGradient>
     <linearGradient id="line" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#177E74"/><stop offset="0.52" stop-color="#486FB7"/><stop offset="1" stop-color="#7654A7"/></linearGradient>
@@ -10,7 +10,7 @@
   <rect width="1440" height="760" rx="28" fill="url(#canvas)"/>
   <g font-family="Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
     <text x="64" y="72" fill="#16283A" font-size="34" font-weight="720" letter-spacing="-1">从材料到独立能力：四层系统边界</text>
-    <text x="64" y="106" fill="#617284" font-size="16">Teacher assets remain immutable. Learner evidence evolves outside the generated Skill.</text>
+    <text x="64" y="106" fill="#617284" font-size="16">The source stays traceable. Personal practice stays private and grows over time.</text>
 
     <g transform="translate(64 142)" filter="url(#shadow)">
       <rect width="1312" height="118" rx="20" fill="#FFFFFF" stroke="#C9D8D5"/>
@@ -21,7 +21,7 @@
         <rect width="150" height="72" rx="14"/><rect x="166" width="150" height="72" rx="14"/><rect x="332" width="150" height="72" rx="14"/><rect x="498" width="150" height="72" rx="14"/><rect x="664" width="214" height="72" rx="14"/>
       </g>
       <g transform="translate(340 22)" fill="#31595B" font-size="15" font-weight="600" text-anchor="middle">
-        <text x="75" y="43">Transcripts</text><text x="241" y="43">OCR / Text</text><text x="407" y="43">Keyframes</text><text x="573" y="43">Evidence cards</text><text x="771" y="43">Source audit + pointers</text>
+        <text x="75" y="43">Transcripts</text><text x="241" y="43">Notes / text</text><text x="407" y="43">Key visuals</text><text x="573" y="43">Useful excerpts</text><text x="771" y="43">Source checks + links</text>
       </g>
     </g>
 
@@ -30,13 +30,13 @@
     <g transform="translate(64 306)" filter="url(#shadow)">
       <rect width="1312" height="118" rx="20" fill="#FFFFFF" stroke="#CCD7E9"/>
       <rect width="12" height="118" rx="6" fill="#486FB7"/>
-      <text x="36" y="39" fill="#486FB7" font-size="13" font-weight="750" letter-spacing="1.4">LAYER 02 · TEACHER LINEAGE</text>
-      <text x="36" y="76" fill="#23364D" font-size="24" font-weight="680">老师师承层</text>
+      <text x="36" y="39" fill="#486FB7" font-size="13" font-weight="750" letter-spacing="1.4">LAYER 02 · TEACHER'S METHOD</text>
+      <text x="36" y="76" fill="#23364D" font-size="24" font-weight="680">老师方法层</text>
       <g transform="translate(340 22)" fill="#F3F5FA" stroke="#D3DBEC">
         <rect width="174" height="72" rx="14"/><rect x="190" width="174" height="72" rx="14"/><rect x="380" width="174" height="72" rx="14"/><rect x="570" width="150" height="72" rx="14"/><rect x="736" width="142" height="72" rx="14"/>
       </g>
       <g transform="translate(340 22)" fill="#425673" font-size="15" font-weight="600" text-anchor="middle">
-        <text x="87" y="43">CoursePackage</text><text x="277" y="43">TeacherModel</text><text x="467" y="43">CapabilityGraph</text><text x="645" y="43">PracticeBank</text><text x="807" y="43">Assessment</text>
+        <text x="87" y="43">Source map</text><text x="277" y="43">How teacher judges</text><text x="467" y="43">Learning path</text><text x="645" y="43">Practice tasks</text><text x="807" y="43">Graduation checks</text>
       </g>
     </g>
 
@@ -45,13 +45,13 @@
     <g transform="translate(64 470)" filter="url(#shadow)">
       <rect width="1312" height="118" rx="20" fill="#FFFFFF" stroke="#DED2E8"/>
       <rect width="12" height="118" rx="6" fill="#7654A7"/>
-      <text x="36" y="39" fill="#7654A7" font-size="13" font-weight="750" letter-spacing="1.4">LAYER 03 · MENTOR RUNTIME</text>
-      <text x="36" y="76" fill="#3F3152" font-size="24" font-weight="680">认知学徒制运行时</text>
+      <text x="36" y="39" fill="#7654A7" font-size="13" font-weight="750" letter-spacing="1.4">LAYER 03 · GUIDED PRACTICE</text>
+      <text x="36" y="76" fill="#3F3152" font-size="24" font-weight="680">带教练习层</text>
       <g transform="translate(340 22)" fill="#F8F4FA" stroke="#E2D8E8">
         <rect width="134" height="72" rx="14"/><rect x="150" width="134" height="72" rx="14"/><rect x="300" width="134" height="72" rx="14"/><rect x="450" width="134" height="72" rx="14"/><rect x="600" width="134" height="72" rx="14"/><rect x="750" width="128" height="72" rx="14"/>
       </g>
       <g transform="translate(340 22)" fill="#654E75" font-size="14" font-weight="600" text-anchor="middle">
-        <text x="67" y="43">Diagnose</text><text x="217" y="43">Attempt first</text><text x="367" y="43">Min hint</text><text x="517" y="43">Rubric feedback</text><text x="667" y="43">Retrieve / transfer</text><text x="814" y="43">Graduate</text>
+        <text x="67" y="43">Baseline</text><text x="217" y="43">Try first</text><text x="367" y="43">Small hint</text><text x="517" y="43">Focused feedback</text><text x="667" y="43">Review / new cases</text><text x="814" y="43">Independent</text>
       </g>
     </g>
 
@@ -60,10 +60,10 @@
     <g transform="translate(64 634)" filter="url(#shadow)">
       <rect width="1312" height="86" rx="20" fill="#F3F8F5" stroke="#C9DDD2"/>
       <rect width="12" height="86" rx="6" fill="#6A9B7E"/>
-      <text x="36" y="32" fill="#47765D" font-size="13" font-weight="750" letter-spacing="1.4">LAYER 04 · LEARNER EVOLUTION · EXTERNAL + PRIVATE</text>
-      <text x="36" y="63" fill="#2D4437" font-size="20" font-weight="660">PracticeEpisodes → MasteryState → ReviewQueue → Real-world evidence → Personal Skill candidate</text>
+      <text x="36" y="32" fill="#47765D" font-size="13" font-weight="750" letter-spacing="1.4">LAYER 04 · PERSONAL PROGRESS · EXTERNAL + PRIVATE</text>
+      <text x="36" y="63" fill="#2D4437" font-size="20" font-weight="660">Attempts → Proven ability → Review plan → Real-world results → Personal method</text>
       <rect x="1100" y="21" width="176" height="44" rx="22" fill="#E4F1EA" stroke="#8BB9A0"/>
-      <text x="1188" y="49" fill="#3F7558" font-size="14" font-weight="700" text-anchor="middle">Learner-owned</text>
+      <text x="1188" y="49" fill="#3F7558" font-size="14" font-weight="700" text-anchor="middle">Private to learner</text>
     </g>
   </g>
 </svg>

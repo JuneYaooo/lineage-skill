@@ -4,13 +4,11 @@
 
 # Lineage Skill
 
-**A source-grounded lineage compiler and cognitive-apprenticeship runtime generator**
+**Turn long-form learning materials into a coach that helps you practice, improve, and become independent**
 
-Compile courses, books, video, handouts, and long-form learning materials into Agent Skills that can model, diagnose, coach, assess, transfer, and graduate—without replacing the learner's work.
+It does more than summarize: it keeps source links, reconstructs how the teacher solves problems, creates step-by-step practice, and checks whether the learner can use the method independently.
 
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-C46B35.svg)](./LICENSE)
-[![CoursePackage](https://img.shields.io/badge/CoursePackage-1.0-177E74.svg)](./references/schemas/course_package.schema.json)
-[![Apprenticeship](https://img.shields.io/badge/cognitive-apprenticeship-7654A7.svg)](./references/apprenticeship-protocol.md)
 
 [中文](./README.md) · [Installation](./docs/install.md) · [Changelog](./CHANGELOG.md) · [Skill entry](./SKILL.md)
 
@@ -20,25 +18,25 @@ Compile courses, books, video, handouts, and long-form learning materials into A
 
 A summary can tell you what a teacher said, but it cannot show that a learner can act. A generic AI tutor often makes this worse by doing the decisive cognitive work for the learner.
 
-Lineage Skill 1.0 connects evidence compilation with actual capability formation:
+Lineage Skill 1.0 turns “I have the material” into “I can use the method”:
 
-1. Preserve transcripts, OCR, text spans, model-selected keyframes, lesson structure, and source quality.
-2. Reconstruct only source-supported teacher attention cues, problem frames, decision rules, demonstrations, feedback patterns, and boundaries.
-3. Compile those assets into a capability graph, executable practice tasks, behaviorally anchored rubrics, blind assessments, and graduation criteria.
-4. Generate an attempt-first Mentor Skill that forms capability through observable artifacts, correction, delayed retrieval, changed-context transfer, and real-world results.
+1. Keep source locations, transcripts, handouts, and key visuals so important claims can be checked.
+2. Organize what the teacher notices first, how a problem is judged, and when a method should or should not be used.
+3. Turn the method into a learning path, practical exercises, clear feedback criteria, and graduation requirements.
+4. Ask the learner to try first, then give focused feedback and verify the skill again in a different situation.
 
-The goal is not permanent dependence on a tutor. It is an independent Personal Skill with visible teacher lineage, explicit personal adaptation, counterexamples, and real-world evidence.
+The goal is not permanent dependence on an AI tutor. It is a reusable personal method that remains linked to its sources and has been tested in real work.
 
 ## Four-layer architecture
 
 <img src="./docs/img/lineage-system-architecture.svg" alt="Lineage Skill four-layer architecture" width="100%">
 
-| Layer | First-class artifacts | Responsibility |
+| Layer | What it contains | Why it matters |
 | --- | --- | --- |
-| Evidence | transcripts, OCR, keyframes, evidence cards, audits | Preserve sources, locations, and evidence strength |
-| Teacher Lineage | CoursePackage, TeacherModel, CapabilityGraph, PracticeBank, AssessmentBank | Compile source-bounded methods, dependencies, practice, and measurement |
-| Mentor Runtime | MentorPackage, mentor protocol, graduation policy | Diagnose, require attempts, give minimum hints, schedule retrieval, test transfer, and graduate |
-| Learner Evolution | PracticeEpisodes, MasteryState, ReviewQueue, Personal Skill candidates | Keep private, evolving learner evidence in an external learner-state host |
+| Source evidence | source locations, transcripts, handouts, key visuals | Show where every important claim comes from |
+| Teacher's method | judgment cues, decision rules, demonstrations, boundaries | Teach how the teacher works, not only what the teacher said |
+| Coaching | baseline check, practice, hints, feedback, review, transfer | Turn understanding into independent performance |
+| Learner growth | attempts, recurring mistakes, review plans, real-world results | Keep private evidence of progress and form a personal method |
 
 Teacher packages and generated Skills are immutable, versioned assets. Learner state is private, external, and append-only. Regenerating or deleting a Skill never deletes learner attempts.
 
@@ -51,21 +49,21 @@ orientation → modeling → imitation → coached practice
 → independent practice → transfer → graduation → alumni
 ```
 
-Runtime behavior is concrete:
+The Skill coaches in a concrete way:
 
-- Source lookup is answered directly and creates no mastery evidence.
+- Source lookup is answered directly and is not counted as proof of mastery.
 - Learning and review collect a prediction, judgment, explanation, artifact, or experiment before showing an answer.
-- Feedback names one effective behavior and one primary bottleneck, ties both to a rubric and source, then gives the lowest useful H0–H4 hint.
+- Feedback identifies what worked, names the most important current problem, and gives only the hint needed for the next revision.
 - The learner revises; the system preserves attempt one, feedback, attempt two, reflection, and real-world outcome.
 - Parallel forms, delayed retrieval, interleaving, and changed constraints test retention and transfer.
-- Templates, hint strength, and intervention timing fade one dimension at a time.
+- Templates, hints, and tutor intervention gradually fade as the learner improves.
 - Graduation requires no-hint execution, delayed retention, changed-context transfer, boundary recognition, and a real artifact.
 
-## First-class packages
+## Core data structures for developers
 
-### CoursePackage 1.0
+### Course knowledge package (CoursePackage 1.0)
 
-CoursePackage is the normalized evidence and capability layer. Version 1.0 replaces loose string assets with stable-ID objects carrying provenance, evidence, conditions, inputs, outputs, steps, confidence, source courses, and human-review status.
+This file organizes sources, lessons, concepts, methods, cases, and exercises in one place. Version 1.0 gives each item a stable ID so updates can preserve old references and learner history.
 
 ```text
 course_package.json
@@ -86,9 +84,9 @@ python scripts/migrate_course_package.py path/to/course_package.json
 
 The migration report preserves an old-ID → stable-1.0-ID `id_map` for external learner state, review queues, and historical episodes.
 
-### TeacherModel 1.0
+### How the teacher approaches problems (TeacherModel 1.0)
 
-TeacherModel does not clone personality or consciousness. It represents source-supported domain behavior:
+This does not clone a teacher's personality or consciousness. It organizes only the working methods supported by the source:
 
 - what signals the teacher notices first;
 - how a problem is framed and diagnosed;
@@ -100,11 +98,11 @@ TeacherModel does not clone personality or consciousness. It represents source-s
 
 Implicit reasoning inferred from ordinary explanation is capped at medium confidence. Missing demonstrations, critiques, Q&A, or graduation signals are reported as `missing_teacher_evidence`.
 
-### CapabilityGraph, PracticeBank, and AssessmentBank
+### Learning path, practice library, and assessment library
 
-- CapabilityGraph uses stable `cap_` IDs, explicit prerequisites, and cycle/dangling-reference validation.
-- PracticeBank provides standalone prompts, expected artifacts, five hint levels, common errors, feedback rules, and behaviorally anchored rubrics.
-- AssessmentBank separates learning from measurement and covers retrieval, production, transfer, boundary, and graduation.
+- Learning path (CapabilityGraph): shows what to learn first, what comes next, and which abilities depend on others.
+- Practice library (PracticeBank): provides practical tasks, expected outputs, progressive hints, common mistakes, and clear feedback criteria.
+- Assessment library (AssessmentBank): checks recall, production, transfer to a new situation, boundary recognition, and graduation readiness.
 
 Mastery is evidence state, not a fake percentage:
 
@@ -115,9 +113,9 @@ unseen → recognized → reconstructed → applied_with_support
 
 One successful episode advances at most one state. Transfer requires H0 performance in a changed context; retention requires delayed success on a parallel form.
 
-### MentorPackage 1.0
+### Runnable coaching plan (MentorPackage 1.0)
 
-MentorPackage is the stable runtime contract between teacher assets and a generated Mentor Skill. `apprenticeship_mode: full` is allowed only when teacher evidence, prerequisites, practice coverage, anchored rubrics, assessments, protocols, and source audits pass readiness checks.
+This combines the teacher's method, learning order, exercises, feedback criteria, and graduation requirements into a runnable coaching plan. Full coaching is enabled only when the material supports complete demonstrations, practice, and assessment.
 
 Thin materials are explicitly downgraded to `guided` or `none`. `mentor_readiness_audit.json/.md` explains every blocker; the builder never emits an empty mentor playbook and calls it complete.
 
@@ -231,9 +229,9 @@ Generation happens in a temporary directory and replaces the target atomically o
 
 Use `--include-source-artifacts` only when source redistribution is authorized and offline source bodies are genuinely required. It opts in to transcripts, OCR, analyses, text sources, and model-selected keyframes. The default retains structured knowledge, stable evidence IDs, and redacted `withheld://` references only.
 
-## External learner state
+## Where personal learning records live
 
-The learner-selected external state host owns:
+Attempts, mistakes, review plans, and real-world results stay in a private external directory chosen by the learner, rather than inside the course Skill:
 
 ```text
 {learner_store_root}/apprenticeships/{mentor_package_id}/
@@ -247,7 +245,7 @@ The learner-selected external state host owns:
 └── personal_skill_candidates/
 ```
 
-PracticeEpisodes are append-only; MasteryState is rebuildable. A Personal Skill candidate requires at least three successes, two contexts, one H0 execution, and one failure or counterexample. Promotion or installation always requires explicit learner approval.
+Practice history is appended rather than overwritten, and progress can be recalculated from that history. The system suggests a reusable personal method only after repeated success, different contexts, an unaided attempt, and reflection on a failure or counterexample. Promotion always requires explicit learner approval.
 
 External hosts exchange only the necessary state through versioned JSON contracts. They do not import Lineage Python internals or mutate immutable teacher packages. See [the contract](./references/external-learner-store-contract.md).
 
@@ -274,7 +272,7 @@ python "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_v
 git diff --check
 ```
 
-The full pipeline reports `source_readiness`, `mentor_readiness`, and `runtime_readiness` separately. `--teacher-model strict` blocks a non-ready TeacherModel. `--mentor-audit-mode strict` refuses to present insufficient evidence as full apprenticeship; auto mode downgrades explicitly to guided or none.
+The full pipeline reports whether the material is complete enough, whether it can support full coaching, and whether the generated Skill can run. Strict mode rejects unsupported full coaching; automatic mode clearly downgrades to guided learning or source lookup only.
 
 ## Provenance, safety, and copyright
 

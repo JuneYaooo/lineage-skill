@@ -4,16 +4,16 @@
 
 ### Added
 
-- Courses, books, video, OCR, and long-form notes can now be compiled into a complete cognitive-apprenticeship Skill instead of only a searchable summary.
-- Generated Mentor Skills can diagnose a learner's baseline, require an attempt before feedback, give progressively smaller hints, schedule retrieval, test transfer, and evaluate graduation evidence.
-- Course-specific attention cues, decision rules, demonstrations, feedback patterns, capability dependencies, practice tasks, rubrics, and assessments are now first-class artifacts.
-- Learner attempts, mastery evidence, review queues, real-world results, and Personal Skill candidates can be maintained in an external private state store.
-- Existing CoursePackage 0.x data can be migrated to 1.0 with stable ID mapping for historical references and learner records.
+- Courses, books, video, OCR, and long-form notes can now become a learning Skill that cites its sources, demonstrates the teacher's method, guides practice, and helps the learner become independent.
+- The generated Skill checks the learner's starting point, asks for an attempt before giving feedback, offers only the hint currently needed, schedules review, and tests the method in a new situation.
+- It preserves how the teacher notices problems, makes decisions, demonstrates a method, corrects common mistakes, and explains where the method should not be used.
+- Attempts, mistakes, review plans, and real-world results can be kept in an external private state store.
+- Existing 0.x course packages can be upgraded to 1.0 without losing historical references or learner records.
 
 ### Changed
 
-- The full pipeline now continues from evidence distillation through teacher modeling, capability mapping, practice generation, assessment, Mentor packaging, and readiness reporting.
-- Full apprenticeship is available only when the source can support it. Insufficient material is reported clearly and downgraded to guided mode instead of being presented as complete.
+- One pipeline run now takes source material all the way to a ready-to-use learning Skill with source lookup, demonstrations, practice, feedback, review, transfer checks, and graduation criteria.
+- Full coaching is available only when the source can support it. Insufficient material is reported clearly and downgraded to guided learning instead of being presented as complete.
 - Multi-course builds preserve each source's conditions and disagreements rather than producing a false consensus.
 - Evidence can be traced by claim, capability, teacher rule, task, rubric, chunk, or evidence-card ID.
 - Generated Skills are installed only after package and runtime validation succeeds.

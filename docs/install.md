@@ -4,7 +4,7 @@
 
 ## 项目一句话介绍
 
-`lineage-skill` 是一个把课程、书籍、视频、音频、PDF、讲义、转录和笔记编译成可追溯认知师承 Skill 的工具型 Skill。它生成 TeacherModel、CapabilityGraph、练习/评测库和 attempt-first Mentor Runtime，并把真实学习者状态保存在 Skill 外部。
+`lineage-skill` 能把课程、书籍、视频、音频、PDF、讲义和笔记整理成一个会带你学习的 Skill：它能引用原文、示范老师的方法、先让你动手尝试、按明确标准纠错，并逐步检查你能否在真实场景中独立使用。个人练习记录默认保存在 Skill 外部的私有目录。
 
 仓库：https://github.com/JuneYaooo/lineage-skill
 

@@ -1,11 +1,11 @@
 ---
 name: lineage-skill
-description: Compile courses, books, video, audio, PDFs, slides, transcripts, OCR, notes, and long-form learning materials into source-grounded cognitive-apprenticeship Skills. Use when distilling learning sources, migrating or merging CoursePackages, reconstructing a TeacherModel, building a CapabilityGraph, PracticeBank, AssessmentBank, or MentorPackage, generating mentor/expert/consultant/practitioner/custom Skills, running attempt-first training, external learner-state workflows, retrieval and transfer practice, Personal Skill candidates, or graduation evaluation.
+description: Turn courses, books, video, audio, PDFs, slides, transcripts, OCR, notes, and long-form materials into source-grounded learning Skills that explain, demonstrate, ask the learner to try first, give focused feedback, schedule review, test transfer, and support independent work. Also use for CoursePackage migration, teacher-method extraction, learning paths, practice and assessment libraries, private learner-state workflows, reusable personal methods, and graduation evaluation.
 ---
 
 # Lineage Skill
 
-Compile source material into traceable teacher assets and an attempt-first Mentor Runtime that reduces learner dependence over time.
+Compile source material into a learning Skill that can cite the source, demonstrate the teacher's method, guide practice, correct mistakes, and gradually reduce the learner's dependence on help.
 
 Use this method:
 
