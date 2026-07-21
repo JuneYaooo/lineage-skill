@@ -81,7 +81,7 @@ MINERU_API_TOKEN=
 
 安装完成后告诉用户：
 
-> 已安装完成。请重启当前 Agent，让它重新加载 skills。重启后可以直接说：“用 lineage-skill 把我的课程视频和 PDF 编译成完整的认知师承 Skill，学习状态放在外部私有目录。”
+> 已安装完成。请重启当前 Agent，让它重新加载 Skills。重启后可以直接说：“用 Lineage Skill 把这套课程材料整理成一个能回查出处、会带我练习的课程 Skill。原始材料和个人学习记录保持私有；完成后启用新 Skill，并告诉我怎样开始第一课。”
 
 ## 冒烟测试
 
@@ -94,7 +94,7 @@ MINERU_API_TOKEN=
 如果用户已经有课程材料：
 
 ```text
-用 lineage-skill 把这个课程目录编译成 mentor,practitioner 角色的 Skill。启用 full apprenticeship 和外部 learner state，保留来源并生成 readiness audit。
+用 lineage-skill 把这个课程目录整理成一个既能回查出处、又能带我练习和解决真实问题的课程 Skill。原始材料和个人学习记录保持私有；完成后启用新 Skill，并告诉我怎样开始第一课。
 ```
 
 ## 完成标志

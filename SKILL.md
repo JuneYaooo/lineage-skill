@@ -224,4 +224,19 @@ git diff --check
 
 Report source state, workflow, generated path, visual evidence mode, source readiness, mentor readiness, runtime readiness, apprenticeship downgrade, human-review needs, test results, and remaining risks.
 
+## Complete the user handoff
+
+Generation is not complete while the learner still does not know how to use the new Skill.
+
+After validation:
+
+1. Give a plain-language inventory of the material that was processed and anything that was missing or unreadable.
+2. State whether the result supports full coaching, guided learning, or source lookup only, and explain any downgrade without internal jargon.
+3. State whether raw source bodies or private learner records entered the generated Skill. Default to neither.
+4. When the user asked to enable the generated Skill, place the validated Skill in the current host's active Skill location only after checking for an unrelated name collision. Do not overwrite an unrelated Skill. If the host cannot reload it immediately, tell the user that one restart is required.
+5. End with one ready-to-send first-session request that collects the learner's goal, current level, available time, and real application before selecting one baseline task.
+6. For later updates, preserve external learner history and rebuild only the stages affected by new or changed source material.
+
+Do not expose compiler commands, schema names, runtime object names, or validation internals in the normal user handoff unless the user explicitly asks for developer details.
+
 Do not commit private transcripts, images, OCR, learner state, or copyrighted bodies unless the user explicitly authorizes publication.

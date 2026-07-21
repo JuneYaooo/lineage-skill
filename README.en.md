@@ -26,25 +26,57 @@ A normal course summary tells you what the teacher said. Lineage Skill focuses o
 
 The goal is not permanent dependence on an AI tutor. It is independent performance on real problems without prompts or templates.
 
-## How to use it
+## The complete user journey
 
-After following the [installation guide](./docs/install.md), give your learning materials to an AI assistant that supports Skills and describe the outcome in natural language. You do not need to run project scripts or understand the internal file structure.
+You do not need to run project scripts or understand the internal file structure. The complete path is: install Lineage, give it your material, generate and enable a course Skill, and start learning.
 
-For example:
+| Step | What you do | What Lineage does |
+| --- | --- | --- |
+| 1. Install Lineage | Send the [installation guide](./docs/install.md) to your AI assistant and let it install the Skill; restart when prompted | Checks the runtime requirements and completes the installation without asking you to run commands |
+| 2. Provide material | Upload files or point to the course folder, then describe what you ultimately want to be able to do | Inventories video, audio, documents, notes, and existing work so completed stages are not repeated |
+| 3. Confirm the goal | Say whether you mainly want source lookup, systematic learning, help with real problems, or practical checklists and templates | Explains whether the material is sufficient, what is missing, how deep the result can go, and how raw material will be protected |
+| 4. Let it build | Confirm that it should begin; you do not need to direct every stage | Handles transcription, recognition, source mapping, teacher-method extraction, practice design, and quality checks; interrupted work can resume |
+| 5. Review and enable | Read the delivery summary and confirm that no important material was missed | Delivers the course Skill, reports coverage, evidence gaps, coaching depth, and privacy handling, then enables it in the current assistant |
+| 6. Start the first lesson | Tell the new Skill your goal, current level, available time, and a real situation you care about | Runs a short baseline check and gives one appropriate task, waiting for your attempt before feedback |
+| 7. Keep learning | Return with “continue from last time” or submit real work | Preserves attempts, mistakes, and revisions, schedules review, and gradually reduces support |
+| 8. Update or graduate | Add new material when it appears, or request an independent check when ready | Updates the course while preserving progress, then tests delayed recall and transfer before claiming mastery |
 
-> Use Lineage Skill to turn this course into a learning Skill that can coach me through deliberate practice. Keep important claims traceable to their sources and tell me what evidence is missing.
+### A complete first request
 
-With an existing learning Skill, you can say:
+> Use Lineage Skill to inspect this course material and turn it into a course Skill that can help me genuinely learn. My goal is to apply the course method in real work. Keep important claims traceable to their sources, and keep raw material and personal learning records private. First tell me what material you found and what is missing. If there is no risky decision for me to make, continue through organization, validation, and enabling the new Skill, then tell me how to begin the first lesson.
 
-> I want to genuinely master this method. First understand my goal and current level, then give me one exercise. Wait for my first attempt before giving feedback.
+You do not need to learn role names or configuration choices. Describe what you ultimately want to be able to do, and Lineage will choose the suitable approach.
 
-For source lookup only:
+### What a complete delivery should include
 
-> Find the teacher's original position on this question and show me the source. Do not start a practice session this time.
+A complete handoff clearly states:
 
-For a real problem:
+- whether the new course Skill has been generated and is ready to use;
+- which videos, documents, lessons, and notes were processed;
+- whether important claims can be traced back to sources;
+- which passages are weakly supported, unclear, or need human review;
+- whether the result supports full coaching, guided learning, or source lookup only;
+- where raw material and personal learning records are kept, and whether either entered the generated result;
+- how to enable the new Skill and begin the first lesson.
 
-> Help me analyze this real situation using the course method. Ask me for my judgment and proposed approach first, then point out the most important gap.
+If any of this is unclear, ask Lineage to complete the delivery check before starting the course.
+
+### How to begin learning
+
+> Start teaching me with the course Skill you just created. First ask about my goal, current level, weekly time, and one real application. Then run a short baseline check and give me only the most appropriate first exercise. Wait for my first attempt before evaluating it against clear criteria and asking me to revise.
+
+On later visits, you do not need to repeat the full background. These short requests are enough:
+
+| What you want | What to say |
+| --- | --- |
+| Continue learning | “Continue from last time and give me the single most useful exercise for today.” |
+| Check the source | “Find the teacher's original position and source on this question. Do not start an exercise this time.” |
+| Submit real work | “Here is work I produced with the course method. Evaluate it against the course criteria, then identify the single most important problem.” |
+| Review | “Use my previous mistakes to schedule a review, but do not repeat the original question.” |
+| Test transfer | “Use a situation I have not seen before to check whether I can apply the method independently.” |
+| Solve a real problem | “Let me explain my judgment and plan first, then use the course method to correct the most important gap.” |
+| Add new material | “Update the course Skill with these new lessons while preserving my existing learning progress.” |
+| Prepare for an independent check | “Give me no hints. Test me in a new situation and explain what evidence of mastery is still missing.” |
 
 Lineage chooses the smallest suitable workflow for the material you already have. It reuses existing transcripts and notes, and can transcribe or recognize video, audio, and scanned documents when the required services are available. If something essential is unavailable, it explains what is missing and what can still be completed.
 
