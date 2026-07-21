@@ -41,11 +41,11 @@ You do not need to run project scripts or understand the internal file structure
 | 7. Keep learning | Return with “continue from last time” or submit real work | Preserves attempts, mistakes, and revisions, schedules review, and gradually reduces support |
 | 8. Update or graduate | Add new material when it appears, or request an independent check when ready | Updates the course while preserving progress, then tests delayed recall and transfer before claiming mastery |
 
-### See a real run in 8 seconds
+### A simulated legal learning case in 18 seconds
 
-<img src="./docs/img/lineage-real-workflow-demo-en.gif" alt="A real Lineage workflow from receiving course material through building and delivering a course Skill to the first practice session" width="100%">
+<img src="./docs/img/lineage-real-workflow-demo-en.gif" alt="A fictional contract-review course showing the full Lineage learning journey from source organization and method extraction through a first attempt, focused feedback, revision, and transfer" width="100%">
 
-The numbers come from a real run on the repository's public synthetic course: one text source became 18 sourced items, 14 trainable abilities, 14 exercises, and 68 checks. The generated result passed validation with no errors. The interface is a visual reconstruction of that run so no real account, local path, or private course content appears.
+The animation uses an entirely fictional contract-review course, service clause, and learner responses. It shows Lineage organizing a teacher's review method, collecting the learner's judgment before feedback, giving one focused hint, requiring revision, and testing the same method on a new clause. Every course, clause, source, and person is simulated; no real contract or user information appears. It is not legal advice, and real legal matters require a qualified professional who can review the specific facts.
 
 ### A complete first request
 
