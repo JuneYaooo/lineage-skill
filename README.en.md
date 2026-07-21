@@ -45,7 +45,7 @@ You do not need to run project scripts or understand the internal file structure
 
 <img src="./docs/img/lineage-real-workflow-demo-en.gif" alt="A fictional contract-review course showing the full Lineage learning journey from source organization and method extraction through a first attempt, focused feedback, revision, and transfer" width="100%">
 
-The animation uses an entirely fictional contract-review course, service clause, and learner responses. It shows Lineage organizing a teacher's review method, collecting the learner's judgment before feedback, giving one focused hint, requiring revision, and testing the same method on a new clause. Every course, clause, source, and person is simulated; no real contract or user information appears. It is not legal advice, and real legal matters require a qualified professional who can review the specific facts.
+Follow a simulated contract-review case to see how Lineage turns a course method into practice, feedback, revision, and independent use. The example is educational and is not legal advice.
 
 ### A complete first request
 
