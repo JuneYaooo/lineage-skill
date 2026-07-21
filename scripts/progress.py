@@ -18,7 +18,14 @@ STAGE_ORDER = [
     "distill",
     "audit",
     "package",
+    "teacher_model",
+    "capability_graph",
+    "practice_bank",
+    "assessment_bank",
+    "mentor_package",
+    "mentor_audit",
     "build_skill",
+    "validate_skill",
     "catalog",
 ]
 
@@ -59,6 +66,13 @@ def summarize_artifacts(course_dir: Path, skill_dir: Path | None = None) -> dict
     package_path = course_dir / "course_package.json"
     audit_json = course_dir / "distillation_audit.json"
     audit_markdown = course_dir / "distillation_audit.md"
+    teacher_model = course_dir / "teacher_model.json"
+    capability_graph = course_dir / "capability_graph.json"
+    practice_bank = course_dir / "practice_bank.json"
+    assessment_bank = course_dir / "assessment_bank.json"
+    mentor_package = course_dir / "mentor_package.json"
+    mentor_audit_json = course_dir / "mentor_readiness_audit.json"
+    mentor_audit_markdown = course_dir / "mentor_readiness_audit.md"
     mineru_manifest = course_dir / "documents" / "mineru_manifest.json"
     mineru_supplement = course_dir / "documents" / "mineru_supplement.md"
     return {
@@ -81,6 +95,13 @@ def summarize_artifacts(course_dir: Path, skill_dir: Path | None = None) -> dict
         "course_package": package_path.exists(),
         "distillation_audit_json": audit_json.exists(),
         "distillation_audit_markdown": audit_markdown.exists(),
+        "teacher_model": teacher_model.exists(),
+        "capability_graph": capability_graph.exists(),
+        "practice_bank": practice_bank.exists(),
+        "assessment_bank": assessment_bank.exists(),
+        "mentor_package": mentor_package.exists(),
+        "mentor_readiness_audit_json": mentor_audit_json.exists(),
+        "mentor_readiness_audit_markdown": mentor_audit_markdown.exists(),
         "generated_skill": bool(skill_dir and skill_dir.exists()),
     }
 
@@ -88,7 +109,7 @@ def summarize_artifacts(course_dir: Path, skill_dir: Path | None = None) -> dict
 def next_stage(stages: dict[str, Any]) -> str | None:
     for stage in STAGE_ORDER:
         item = stages.get(stage) or {}
-        if item.get("status") != "completed":
+        if item.get("status") not in {"completed", "skipped"}:
             return stage
     return None
 
@@ -116,7 +137,7 @@ def write_progress(
     data = load_progress(course_dir)
     if not data:
         data = {
-            "schema_version": "0.1",
+            "schema_version": "1.0",
             "created_at": now(),
             "stages": {},
         }
@@ -138,6 +159,8 @@ def write_progress(
         data["evidence_strategy"] = evidence
     if progress_strategy is not None:
         data["progress_strategy"] = progress_strategy
+        data["pipeline_progress_strategy"] = progress_strategy
+        data.setdefault("deprecations", {})["progress_strategy"] = "Use pipeline_progress_strategy for compiler state; learner mastery is external."
     if input_dir is not None:
         data["input_dir"] = input_dir
     if documents_input is not None:

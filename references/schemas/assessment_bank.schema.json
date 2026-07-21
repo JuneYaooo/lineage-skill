@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lineage-skill.local/schemas/assessment-bank-1.0.json",
+  "title": "Lineage AssessmentBank 1.0",
+  "type": "object",
+  "required": ["schema_version", "course_package_id", "items", "graduation_matrix", "quality"],
+  "properties": {
+    "schema_version": {"const": "1.0", "type": "string"},
+    "course_package_id": {"type": "string"},
+    "items": {"type": "array", "items": {"type": "object", "required": ["id", "capability_ids", "assessment_type", "prompt", "novelty_dimensions", "allowed_support", "rubric_ids", "blindness_rule", "evidence_answer", "parallel_form_group"]}},
+    "graduation_matrix": {"type": "object", "required": ["required_assessment_types", "requirements"]},
+    "quality": {"type": "object", "required": ["status", "assessment_count"]}
+  }
+}

@@ -82,6 +82,12 @@ def build_course_row(course_dir: Path, output_dir: Path) -> dict[str, Any]:
     manifest = package.get("manifest") if isinstance(package.get("manifest"), dict) else {}
     course_name = progress.get("course_name") or manifest.get("course_name") or course_dir.name
     quality = package.get("quality") if isinstance(package.get("quality"), dict) else {}
+    teacher = load_json(course_dir / "teacher_model.json")
+    graph = load_json(course_dir / "capability_graph.json")
+    practice = load_json(course_dir / "practice_bank.json")
+    assessment = load_json(course_dir / "assessment_bank.json")
+    mentor = load_json(course_dir / "mentor_package.json")
+    readiness = load_json(course_dir / "mentor_readiness_audit.json")
     return {
         "course_name": course_name,
         "course_dir": str(course_dir),
@@ -89,6 +95,24 @@ def build_course_row(course_dir: Path, output_dir: Path) -> dict[str, Any]:
             "next_stage": progress.get("next_stage"),
             "artifacts": progress.get("artifacts") or artifact_counts(course_dir),
             "quality": quality,
+            "source_readiness": readiness.get("source_readiness", {}).get("status", "unknown"),
+            "mentor_readiness": readiness.get("status", "missing"),
+            "runtime_readiness": mentor.get("quality", {}).get("runtime_readiness", "missing"),
+        },
+        "schemas": {
+            "course_package": package.get("schema_version"),
+            "teacher_model": teacher.get("schema_version"),
+            "capability_graph": graph.get("schema_version"),
+            "practice_bank": practice.get("schema_version"),
+            "assessment_bank": assessment.get("schema_version"),
+            "mentor_package": mentor.get("schema_version"),
+        },
+        "apprenticeship_mode": mentor.get("manifest", {}).get("apprenticeship_mode", "none"),
+        "capability_counts": {
+            "capabilities": len(graph.get("nodes", [])),
+            "tasks": len(practice.get("tasks", [])),
+            "rubrics": len(practice.get("rubrics", [])),
+            "assessments": len(assessment.get("items", [])),
         },
         "latest": {
             "distillation": latest(["course_distillation_*.md"], course_dir),
@@ -104,7 +128,7 @@ def build_catalog(base_dir: Path, output_dir: Path) -> dict[str, Any]:
     course_dirs = sorted(path for path in base_dir.iterdir() if path.is_dir()) if base_dir.exists() else []
     rows = [build_course_row(course_dir, output_dir) for course_dir in course_dirs]
     return {
-        "schema_version": "0.1",
+        "schema_version": "1.0",
         "generated_at": dt.datetime.now().isoformat(timespec="seconds"),
         "base_dir": str(base_dir),
         "output_dir": str(output_dir),

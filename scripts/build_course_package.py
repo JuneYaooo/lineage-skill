@@ -9,20 +9,24 @@ import json
 import re
 from pathlib import Path
 
+from migrate_course_package import migrate_package
+from schema_utils import issues_payload, load_json as load_schema_json, validate_schema, write_json
+
 
 SECTION_ALIASES = {
     "concepts": ["关键概念", "概念词汇", "词汇表", "术语"],
     "topics": ["跨课程主题", "主题图谱", "课程体系", "体系图"],
+    "cases": ["完整示范", "讲评案例", "案例示范", "案例"],
     "methods": ["方法", "框架", "行动清单", "可执行行动"],
-    "diagnostics": ["诊断判断", "诊断", "判断标准", "问题定位"],
+    "diagnostics": ["老师首先关注", "问题定性与诊断", "诊断判断", "诊断", "判断标准", "问题定位"],
     "workflows": ["执行流程", "工作流", "操作流程", "作业流程"],
-    "rubrics": ["质量标准", "评价标准", "评分标准", "质检规则"],
+    "rubrics": ["反馈纠错", "进阶与出师", "质量标准", "评价标准", "评分标准", "质检规则"],
     "templates": ["模板资产", "模板", "话术", "表格"],
     "transfer_rules": ["迁移规则", "应用迁移", "场景迁移"],
     "failure_modes": ["失效与误用", "失效", "误用", "反例"],
     "quotes": ["核心金句", "金句", "重要原话"],
-    "study_paths": ["学习路径", "复习路径", "行动清单", "可执行行动"],
-    "boundaries": ["边界", "风险", "注意事项", "限制"],
+    "study_paths": ["进阶与出师", "学习路径", "复习路径", "行动清单", "可执行行动"],
+    "boundaries": ["不可复制背景", "边界", "风险", "注意事项", "限制"],
 }
 
 CARD_TYPE_TO_PACKAGE_FIELD = {
@@ -36,7 +40,26 @@ CARD_TYPE_TO_PACKAGE_FIELD = {
     "failure_mode": "failure_modes",
     "quote": "quotes",
     "boundary": "boundaries",
+    "attention_cue": "diagnostics",
+    "problem_frame": "diagnostics",
+    "decision_rule": "methods",
+    "demonstration": "cases",
+    "feedback_pattern": "rubrics",
+    "progression_rule": "study_paths",
+    "graduation_signal": "rubrics",
+    "non_copyable_context": "boundaries",
 }
+
+
+class AssetRecord(dict):
+    """Structured 1.0 asset with legacy substring-membership compatibility."""
+
+    def __contains__(self, key: object) -> bool:
+        if super().__contains__(key):
+            return True
+        if isinstance(key, str):
+            return any(key in str(self.get(field) or "") for field in ["title", "summary", "legacy_text", "value"])
+        return False
 
 
 def read_text(path: Path | None) -> str:
@@ -127,7 +150,16 @@ def merge_text_cards(package: dict, cards: list[dict]) -> None:
         value = card_value(card)
         target = CARD_TYPE_TO_PACKAGE_FIELD.get(card_type)
         if target:
-            add_unique(package[target], value)
+            row = dict(card)
+            row.setdefault("summary", row.get("quote") or value)
+            row.setdefault("provenance", "direct_source" if card_type in {"quote", "demonstration"} else "source_grounded_synthesis")
+            signature = (row.get("card_id"), row.get("title"), row.get("summary"))
+            if not any(
+                isinstance(existing, dict)
+                and (existing.get("card_id"), existing.get("title"), existing.get("summary")) == signature
+                for existing in package[target]
+            ):
+                package[target].append(row)
         elif card_type == "case":
             package["cases"].append(card)
         elif card_type in {"task", "open_question"}:
@@ -192,6 +224,20 @@ def build_evidence(source_dir: Path) -> list[dict]:
         rows.append({"type": "text_source_chunks", "path": str(path.relative_to(source_dir)), "granularity": "chunk"})
     for path in sorted(source_dir.glob("text_distillation/evidence_cards.jsonl")):
         rows.append({"type": "text_evidence_card", "path": str(path.relative_to(source_dir)), "granularity": "card"})
+        for card in load_jsonl(path):
+            rows.append(
+                {
+                    "id": card.get("card_id"),
+                    "type": "text",
+                    "path": card.get("source_ref") or card.get("source_path") or str(path.relative_to(source_dir)),
+                    "granularity": "card",
+                    "source_id": card.get("source_id"),
+                    "chunk_id": card.get("chunk_id"),
+                    "card_id": card.get("card_id"),
+                    "quote_summary": card.get("quote") or card.get("summary") or "",
+                    "confidence": card.get("confidence", "medium"),
+                }
+            )
     for path in sorted(source_dir.glob("text_distillation/text_course_synthesis.md")):
         rows.append({"type": "text_course_synthesis", "path": str(path.relative_to(source_dir)), "granularity": "course"})
     for path in sorted(source_dir.glob("text_distillation/text_distillation_quality.json")):
@@ -241,7 +287,7 @@ def distillation_audit_summary(source_dir: Path) -> dict | None:
     }
 
 
-def build_package(course_name: str, source_dir: Path) -> dict:
+def build_legacy_package(course_name: str, source_dir: Path) -> dict:
     distillation_md = newest(source_dir, "course_distillation_*.md")
     distillation_json = newest(source_dir, "course_distillation_*.json")
     lesson_json = source_dir / "lesson_summaries.json"
@@ -284,6 +330,23 @@ def build_package(course_name: str, source_dir: Path) -> dict:
     return package
 
 
+def build_package(course_name: str, source_dir: Path) -> dict:
+    """Build the canonical CoursePackage 1.0 while retaining legacy inputs."""
+    legacy = build_legacy_package(course_name, source_dir)
+    package, report = migrate_package(legacy, source_path=source_dir / "course_package.json")
+    audit_summary = distillation_audit_summary(source_dir)
+    if audit_summary:
+        package["quality"]["distillation_audit"] = audit_summary
+    package["manifest"]["build_report"] = {
+        "migrator_version": report["target_schema_version"],
+        "legacy_text_count": report["legacy_text_count"],
+        "human_review_count": report["human_review_count"],
+    }
+    for field in ["concepts", "topics", "cases", "methods", "diagnostics", "workflows", "rubrics", "templates", "transfer_rules", "failure_modes", "boundaries", "quotes", "study_paths"]:
+        package[field] = [AssetRecord(item) if isinstance(item, dict) else item for item in package[field]]
+    return package
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a generic CoursePackage from distilled course outputs.")
     parser.add_argument("--course-name", required=True)
@@ -296,7 +359,12 @@ def main() -> None:
         raise SystemExit(f"source dir does not exist: {source_dir}")
     output = Path(args.output).expanduser().resolve() if args.output else source_dir / "course_package.json"
     package = build_package(args.course_name, source_dir)
-    output.write_text(json.dumps(package, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    schema = load_schema_json(Path(__file__).resolve().parents[1] / "references" / "schemas" / "course_package.schema.json")
+    validation = issues_payload(validate_schema(package, schema))
+    if not validation["valid"]:
+        raise SystemExit(json.dumps(validation, ensure_ascii=False, indent=2))
+    write_json(output, package)
+    write_json(source_dir / "course_package_build_report.json", {"schema_version": "1.0", "validation": validation})
     print(f"wrote {output}")
     print(json.dumps(package["quality"], ensure_ascii=False, indent=2))
 

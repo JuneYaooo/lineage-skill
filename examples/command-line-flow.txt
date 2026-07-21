@@ -1,94 +1,58 @@
-师承.skill 命令行流程图
-==========================
+Lineage Skill 1.0 compiler flow
+================================
 
-输入
-│
-└─ 视频 / 音频课程目录
-    └─ *.mp4 / *.mp3 / *.wav / *.m4a / ...
+Sources
+  video / audio / PDF / OCR / Markdown / notes / legacy package
     │
     ▼
-
-┌─────────────────────────────────────────────────────────────────┐
-│ Stage 1：视频 / 音频转录                                         │
-│ scripts/transcribe_video.py                                      │
-├─────────────────────────────────────────────────────────────────┤
-│ python scripts/transcribe_video.py \                            │
-│   --input-dir <视频或音频目录> \                                │
-│   --course-name <课程名称>                                      │
-│                                                                 │
-│ 输出：<course>/transcripts/*.json                               │
-└─────────────────────────────────────────────────────────────────┘
+Capture and evidence
+  transcribe → analyze → model-selected keyframes → documents → text cards
     │
     ▼
-
-┌─────────────────────────────────────────────────────────────────┐
-│ Stage 2：画面分析                                                │
-│ scripts/analyze_videos.py                                        │
-├─────────────────────────────────────────────────────────────────┤
-│ python scripts/analyze_videos.py \                              │
-│   --input-dir <视频目录> \                                      │
-│   --course-name <课程名称> \                                    │
-│   --chunk-minutes 8                                             │
-│                                                                 │
-│ 输出：                                                          │
-│ <course>/analysis/*_analysis.md                                 │
-│ <course>/analysis/screenshots/<video>/*.jpg（如果模型给出标记） │
-└─────────────────────────────────────────────────────────────────┘
+Distill and audit
+  lesson/course synthesis → source audit → CoursePackage 1.0
     │
     ▼
-
-┌─────────────────────────────────────────────────────────────────┐
-│ Stage 3：模型精选关键帧                                          │
-│ scripts/select_video_keyframes.py                                │
-├─────────────────────────────────────────────────────────────────┤
-│ python scripts/select_video_keyframes.py \                       │
-│   --input-dir <视频目录> \                                      │
-│   --course-name <课程名称>                                      │
-│                                                                 │
-│ 输出：                                                          │
-│ <course>/keyframe_selection/model_keyframe_summary.md            │
-│ <course>/keyframe_selection/*_model_keyframes_manifest.json      │
-│ <course>/keyframes_model_selected/<video>/*.jpg                  │
-└─────────────────────────────────────────────────────────────────┘
+Compile apprenticeship
+  TeacherModel → CapabilityGraph → PracticeBank → AssessmentBank
     │
     ▼
-
-┌─────────────────────────────────────────────────────────────────┐
-│ Stage 4：课程蒸馏                                                │
-│ scripts/distill_course.py                                        │
-├─────────────────────────────────────────────────────────────────┤
-│ python scripts/distill_course.py \                              │
-│   --course-name <课程名称>                                      │
-│                                                                 │
-│ 输出：                                                          │
-│ lesson_summaries.json                                           │
-│ full_transcript.md                                              │
-│ course_distillation_<date>.md                                   │
-│ course_distillation_<date>.json                                 │
-└─────────────────────────────────────────────────────────────────┘
+Runtime package
+  MentorPackage → readiness audit → generated Skill → validation
     │
     ▼
+External learner evolution
+  PracticeEpisodes → MasteryState → ReviewQueue → Personal Skill → graduation
 
-┌─────────────────────────────────────────────────────────────────┐
-│ Stage 5：生成专家 Skill                                          │
-│ scripts/build_course_skill.py                                    │
-├─────────────────────────────────────────────────────────────────┤
-│ python scripts/build_course_skill.py \                          │
-│   --course-name <课程名称> \                                    │
-│   --skill-name <skill名称> \                                    │
-│   --source-dir <课程材料目录> \                                  │
-│   --output-dir <skills目录>                                     │
-│                                                                 │
-│ 输出：                                                          │
-│ <generated-skill>/SKILL.md                                      │
-│ <generated-skill>/references/*                                  │
-└─────────────────────────────────────────────────────────────────┘
-
-一键流水线
-==========
+Full media command
+==================
 
 python scripts/run_course_pipeline.py \
-  --input-dir <视频或音频目录> \
-  --course-name <课程名称> \
-  --skill-name <skill名称> \
-  --output-dir <skills目录>
+  --input-dir <video-or-audio-directory> \
+  --documents-input <pdf-or-document-directory> \
+  --notes-input <notes-file-or-directory> \
+  --course-name <course-name> \
+  --skill-name <skill-name> \
+  --mode mentor,practitioner \
+  --apprenticeship full \
+  --practice-depth deep \
+  --learner-state external \
+  --output-dir ./dist
+
+Text/book command
+=================
+
+DISTILL_USE_LLM=0 python scripts/run_course_pipeline.py \
+  --text-input <markdown-txt-or-directory> \
+  --course-name <course-name> \
+  --mode mentor \
+  --apprenticeship full \
+  --text-no-llm \
+  --output-dir ./dist
+
+Validation
+==========
+
+python scripts/validate_lineage_package.py --package <course_package.json>
+python scripts/validate_mentor_package.py --package <mentor_package.json>
+python scripts/validate_generated_skill.py --skill-dir <generated-skill>

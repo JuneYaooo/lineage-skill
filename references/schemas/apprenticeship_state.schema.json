@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lineage-skill.local/schemas/apprenticeship-state-1.0.json",
+  "title": "External ApprenticeshipState 1.0",
+  "type": "object",
+  "required": ["schema_version", "learner_id", "mentor_package_id", "created_at", "updated_at", "learning_contract", "profile", "current_stage", "active_capabilities", "mastery_state_ref", "review_queue_ref", "episode_log_ref", "autonomy", "status"],
+  "properties": {
+    "schema_version": {"const": "1.0", "type": "string"},
+    "learner_id": {"type": "string", "minLength": 1},
+    "mentor_package_id": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string"},
+    "updated_at": {"type": "string"},
+    "learning_contract": {"type": "object", "required": ["desired_capabilities", "real_project", "constraints", "expected_artifacts", "graduation_target"]},
+    "profile": {"type": "object"},
+    "current_stage": {"enum": ["orientation", "modeling", "imitation", "coached_practice", "independent_practice", "transfer", "graduation", "alumni"], "type": "string"},
+    "active_capabilities": {"type": "array"},
+    "mastery_state_ref": {"type": "string"},
+    "review_queue_ref": {"type": "string"},
+    "episode_log_ref": {"type": "string"},
+    "autonomy": {"type": "object", "required": ["default_hint_ceiling", "mentor_intervention_policy", "recent_hint_trend"]},
+    "status": {"enum": ["active", "paused", "graduated", "archived"], "type": "string"}
+  }
+}

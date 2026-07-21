@@ -115,6 +115,98 @@ def test_build_audit_records_multisource_lesson_traceability_and_review(tmp_path
     assert "第一课：证据优先" in markdown
 
 
+def test_build_audit_matches_transcript_and_visual_analysis_when_transcript_has_parent_prefix(tmp_path: Path) -> None:
+    course_dir = tmp_path / "course"
+    write_json(
+        course_dir / "transcripts" / "4、需求采集与挖掘_需求挖掘与分析（1）-需求定义（1）_transcript.json",
+        {
+            "video": "4、需求采集与挖掘_需求挖掘与分析（1）-需求定义（1）",
+            "duration": 3600,
+            "full_text": "老师讲需求定义、用户场景和需求边界，需要结合课件术语做校对。",
+        },
+    )
+    (course_dir / "analysis").mkdir(parents=True)
+    (course_dir / "analysis" / "需求挖掘与分析（1）-需求定义（1）_analysis.md").write_text(
+        "# 需求挖掘与分析（1）-需求定义（1）\n\nPPT 展示需求定义、用户场景、需求边界和 [SCREENSHOT 03:21]。",
+        encoding="utf-8",
+    )
+    write_json(
+        course_dir
+        / "keyframe_selection"
+        / "4、需求采集与挖掘_需求挖掘与分析（1）-需求定义（1）_model_keyframes_manifest.json",
+        {
+            "media": "4、需求采集与挖掘_需求挖掘与分析（1）-需求定义（1）",
+            "selected_count": 1,
+            "selected": [{"timestamp": "03:21", "reason": "PPT 术语页"}],
+        },
+    )
+    write_json(
+        course_dir / "lesson_summaries.json",
+        [
+            {
+                "video": "4、需求采集与挖掘_需求挖掘与分析（1）-需求定义（1）",
+                "title": "需求定义",
+                "summary": "讲解需求定义。",
+            }
+        ],
+    )
+
+    audit = build_audit("PM Course", course_dir)
+
+    assert audit["coverage_summary"]["expected_lessons"] == 1
+    assert audit["coverage_summary"]["missing_transcripts"] == 0
+    assert audit["coverage_summary"]["missing_visual_analyses"] == 0
+    assert audit["cross_validation_summary"]["multi_source_lessons"] == 1
+
+    lesson = audit["lessons"][0]
+    assert lesson["title"] == "需求定义"
+    assert lesson["transcript_status"]["present"] is True
+    assert lesson["visual_status"]["present"] is True
+    assert lesson["visual_status"]["keyframe_count"] == 1
+    assert "supported_by_multiple_sources" in lesson["cross_validation"]["flags"]
+    assert (
+        "transcripts/4、需求采集与挖掘_需求挖掘与分析（1）-需求定义（1）_transcript.json"
+        in lesson["traceability"]["transcripts"]
+    )
+    assert (
+        "analysis/需求挖掘与分析（1）-需求定义（1）_analysis.md"
+        in lesson["traceability"]["visual_analyses"]
+    )
+
+
+def test_build_audit_matches_axure_parent_prefix(tmp_path: Path) -> None:
+    course_dir = tmp_path / "course"
+    write_json(
+        course_dir / "transcripts" / "AXURE基础课_Axure基础课程1_transcript.json",
+        {
+            "video": "AXURE基础课_Axure基础课程1",
+            "duration": 3600,
+            "full_text": "老师讲 Axure 基础组件和原型页面搭建，需要对照软件界面校正术语。",
+        },
+    )
+    (course_dir / "analysis").mkdir(parents=True)
+    (course_dir / "analysis" / "Axure基础课程1_analysis.md").write_text(
+        "# Axure基础课程1\n\n软件 screen 展示 Axure 基础组件和 [SCREENSHOT 05:00]。",
+        encoding="utf-8",
+    )
+    write_json(
+        course_dir / "keyframe_selection" / "AXURE基础课_Axure基础课程1_model_keyframes_manifest.json",
+        {
+            "media": "AXURE基础课_Axure基础课程1",
+            "selected_count": 1,
+            "selected": [{"timestamp": "05:00", "reason": "Axure 软件界面"}],
+        },
+    )
+
+    audit = build_audit("PM Course", course_dir)
+
+    assert audit["coverage_summary"]["expected_lessons"] == 1
+    assert audit["coverage_summary"]["missing_transcripts"] == 0
+    assert audit["coverage_summary"]["missing_visual_analyses"] == 0
+    assert audit["cross_validation_summary"]["multi_source_lessons"] == 1
+    assert audit["lessons"][0]["visual_status"]["keyframe_count"] == 1
+
+
 def test_build_audit_flags_missing_visual_short_transcript_and_unmatched_documents(tmp_path: Path) -> None:
     course_dir = tmp_path / "course"
     write_json(

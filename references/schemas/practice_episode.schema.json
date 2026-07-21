@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lineage-skill.local/schemas/practice-episode-1.0.json",
+  "title": "Append-only PracticeEpisode 1.0",
+  "type": "object",
+  "required": ["schema_version", "episode_id", "mentor_package_id", "learner_id", "timestamp_start", "stage", "task_id", "capability_ids", "context", "prediction", "attempts", "hints", "feedback", "outcome", "errors", "mastery_events", "next_actions", "provenance"],
+  "properties": {
+    "schema_version": {"const": "1.0", "type": "string"},
+    "episode_id": {"type": "string"},
+    "mentor_package_id": {"type": "string"},
+    "learner_id": {"type": "string"},
+    "timestamp_start": {"type": "string"},
+    "timestamp_end": {"type": ["string", "null"]},
+    "stage": {"type": "string"},
+    "task_id": {"type": "string"},
+    "capability_ids": {"type": "array", "minItems": 1},
+    "context": {"type": "object"},
+    "prediction": {"type": "object", "required": ["learner_prediction", "confidence_before"]},
+    "attempts": {"type": "array", "minItems": 1},
+    "hints": {"type": "array"},
+    "feedback": {"type": "object", "required": ["rubric_results", "source_evidence", "mentor_inference", "next_revision"]},
+    "outcome": {"type": "object", "required": ["task_result", "confidence_after", "learner_reflection"]},
+    "errors": {"type": "array"},
+    "mastery_events": {"type": "array"},
+    "next_actions": {"type": "array"},
+    "provenance": {"type": "string"}
+  }
+}

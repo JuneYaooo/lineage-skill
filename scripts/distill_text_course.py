@@ -28,6 +28,14 @@ CARD_PREFIXES = {
     "template": ["模板", "话术", "表格", "worksheet", "template"],
     "transfer": ["迁移", "应用", "套用", "转化", "transfer", "application"],
     "failure_mode": ["失效", "误用", "反例", "失败", "failure", "anti-pattern"],
+    "attention_cue": ["注意线索", "观察线索", "先看", "attention cue", "signal"],
+    "problem_frame": ["问题定性", "问题框定", "问题框架", "problem frame", "framing"],
+    "decision_rule": ["决策规则", "选择规则", "判断规则", "decision rule"],
+    "demonstration": ["示范", "演示", "讲评案例", "demonstration", "worked example"],
+    "feedback_pattern": ["反馈模式", "纠错", "点评", "feedback pattern", "correction"],
+    "progression_rule": ["进阶规则", "练习顺序", "由浅入深", "progression rule"],
+    "graduation_signal": ["出师标准", "独立标准", "毕业标准", "graduation signal"],
+    "non_copyable_context": ["不可复制背景", "个人背景", "不可照搬", "non-copyable context"],
 }
 
 SECTION_TITLES = {
@@ -44,6 +52,14 @@ SECTION_TITLES = {
     "template": "模板资产",
     "transfer": "迁移规则",
     "failure_mode": "失效与误用",
+    "attention_cue": "老师注意线索",
+    "problem_frame": "问题框定",
+    "decision_rule": "决策规则",
+    "demonstration": "完整示范",
+    "feedback_pattern": "反馈与纠错",
+    "progression_rule": "进阶规则",
+    "graduation_signal": "独立与出师标准",
+    "non_copyable_context": "不可复制背景",
 }
 
 
@@ -110,6 +126,7 @@ def make_card(chunk: dict[str, Any], card_type: str, value: str) -> dict[str, An
         "char_end": chunk["char_end"],
         "content_sha256": chunk["content_sha256"],
         "confidence": "medium",
+        "provenance": "direct_source",
         "extraction": "local",
     }
     if card_type == "quote":
@@ -140,7 +157,7 @@ def build_llm_cards(chunk: dict[str, Any]) -> list[dict[str, Any]]:
     prompt = f"""请从以下课程文字片段中抽取证据卡片。只返回 JSON，不要 Markdown。
 
 每张卡片字段：
-- card_type: concept/method/case/boundary/quote/task/open_question/diagnostic/workflow/rubric/template/transfer/failure_mode
+- card_type: concept/method/case/boundary/quote/task/open_question/diagnostic/workflow/rubric/template/transfer/failure_mode/attention_cue/problem_frame/decision_rule/demonstration/feedback_pattern/progression_rule/graduation_signal/non_copyable_context
 - title
 - summary
 - quote: 仅 quote 类型需要
@@ -149,6 +166,8 @@ def build_llm_cards(chunk: dict[str, Any]) -> list[dict[str, Any]]:
 要求：
 - 只抽取片段明确支持的内容，不要扩展。
 - 方法、诊断、流程、质量标准、模板、迁移规则、案例、边界、原话要优先保留。
+- 特别保留老师首先观察的线索、问题定性、方法选择理由、完整示范、纠错方式、练习进阶和独立标准。
+- 普通讲解中推断出的隐性判断必须标为 medium/low，不能标 high。
 - 最多 12 张。
 
 来源：{chunk['source_ref']} chunk {chunk['chunk_index']}
@@ -176,6 +195,9 @@ def build_llm_cards(chunk: dict[str, Any]) -> list[dict[str, Any]]:
         if not card:
             continue
         card.update({key: item[key] for key in ["title", "summary", "quote", "confidence"] if key in item})
+        if card_type in {"attention_cue", "problem_frame", "decision_rule", "feedback_pattern", "progression_rule", "graduation_signal"} and card.get("confidence") == "high":
+            card["confidence"] = "medium"
+        card["provenance"] = "direct_source" if card_type in {"quote", "demonstration"} else "source_grounded_synthesis"
         card["extraction"] = "llm"
         cards.append(card)
     return cards
@@ -251,6 +273,14 @@ def write_synthesis(course_name: str, cards: list[dict[str, Any]], output: Path)
         "template",
         "transfer",
         "failure_mode",
+        "attention_cue",
+        "problem_frame",
+        "decision_rule",
+        "demonstration",
+        "feedback_pattern",
+        "progression_rule",
+        "graduation_signal",
+        "non_copyable_context",
         "case",
         "boundary",
         "quote",
@@ -288,6 +318,8 @@ def quality_report(
         "empty_chunk_count": sum(1 for chunk in chunks if not chunk.get("text", "").strip()),
         "llm_used": llm_used,
         "llm_failures": llm_failures,
+        "teacher_model_card_count": sum(counts.get(kind, 0) for kind in ["attention_cue", "problem_frame", "decision_rule", "demonstration", "feedback_pattern", "progression_rule", "graduation_signal", "non_copyable_context"]),
+        "teacher_model_card_coverage": {kind: counts.get(kind, 0) for kind in ["attention_cue", "problem_frame", "decision_rule", "demonstration", "feedback_pattern", "progression_rule", "graduation_signal", "non_copyable_context"]},
         "status": "usable" if cards else "thin",
     }
 

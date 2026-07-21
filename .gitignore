@@ -234,3 +234,27 @@ tmp/
 */course_distillation_*.json
 */lesson_summaries.json
 */full_transcript.md
+
+# Private learner state and raw course media (keep outside Git)
+apprenticeships/
+learner-state/
+learner_state/
+learner-store/
+learner_store/
+**/apprenticeship_state.json
+**/mastery_state.json
+**/practice_episodes.jsonl
+**/review_queue.json
+**/error_library.json
+**/artifact_index.json
+**/graduation_record.json
+**/personal_skill_candidates/
+**/keyframe_candidates/
+*.mp4
+*.m4s
+*.mp3
+*.wav
+*.m4a
+*.mov
+*.mkv
+*.webm

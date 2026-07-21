@@ -1,328 +1,292 @@
 <div align="center">
 
+<img src="./docs/img/lineage-apprenticeship-hero.svg" alt="Lineage Skill: apprenticeship, not answer outsourcing" width="100%">
+
 # Lineage Skill
 
-**Turn a dense course, book, or long-form learning source into a source-backed, transferable, output-producing private method system.**
+**Turn long-form learning materials into a coach that helps you practice, improve, and become independent**
 
-Extract judgment frameworks, case experience, operating processes, and quality
-standards from videos, books, handouts, whiteboards, transcripts, and notes, then
-let an Agent carry the teacher's or author's method into your learning,
-decisions, and work output.
+It does more than summarize: it keeps source links, reconstructs how the teacher solves problems, creates step-by-step practice, and checks whether the learner can use the method independently.
 
-For Codex / Claude Code / OpenClaw / Hermes / custom Agents.
+[![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-C46B35.svg)](./LICENSE)
 
-[![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-orange.svg)](./LICENSE)
-[![Skill](https://img.shields.io/badge/AI%20Agent-Skill-orange.svg)](./SKILL.md)
-
-[中文](./README.md)
+[中文](./README.md) · [Installation](./docs/install.md) · [Changelog](./CHANGELOG.md) · [Skill entry](./SKILL.md)
 
 </div>
 
----
+## What it solves
 
-## 2026-06-24 Update
+A summary can tell you what a teacher said, but it cannot show that a learner can act. A generic AI tutor often makes this worse by doing the decisive cognitive work for the learner.
 
-This update moves `lineage-skill` from a course mentor generator toward a
-course/book/long-form method system generator:
+Lineage Skill 1.0 turns “I have the material” into “I can use the method”:
 
-- **Book and long-form source support**: books, chaptered Markdown, OCR text,
-  notes, and course materials can use the same distillation pipeline.
-- **Capability asset extraction**: in addition to concepts, methods, cases, and
-  quotes, packages now extract `diagnostics`, `workflows`, `rubrics`,
-  `templates`, `transfer_rules`, and `failure_modes`.
-- **OKF-compatible knowledge bundle**: generated Skills now include
-  `references/okf/`, a Markdown + frontmatter bundle for progressive reading,
-  human review, cross-tool exchange, and concept graph navigation.
-- **Stronger provenance lookup**: `scripts/fetch_course_evidence.py` can fetch
-  source chunks and related evidence cards by `chunk_id` or `card_id`.
-- **Multi-course capability preservation**: merged packages keep capability
-  fields and source-course boundaries instead of flattening disagreements.
+1. Keep source locations, transcripts, handouts, and key visuals so important claims can be checked.
+2. Organize what the teacher notices first, how a problem is judged, and when a method should or should not be used.
+3. Turn the method into a learning path, practical exercises, clear feedback criteria, and graduation requirements.
+4. Ask the learner to try first, then give focused feedback and verify the skill again in a different situation.
 
-### What Does "Capability Asset Extraction" Mean?
+The goal is not permanent dependence on an AI tutor. It is a reusable personal method that remains linked to its sources and has been tested in real work.
 
-A normal summary answers "what does this book/course say?" Capability asset
-extraction goes further: it turns the source into reusable methods the Agent can
-apply.
+## Four-layer architecture
 
-| Field | Meaning | Use |
+<img src="./docs/img/lineage-system-architecture.svg" alt="Lineage Skill four-layer architecture" width="100%">
+
+| Layer | What it contains | Why it matters |
 | --- | --- | --- |
-| `diagnostics` | Diagnostic rules | Identify where a problem is stuck, such as unclear goals, missing resources, weak feedback, or broken execution. |
-| `workflows` | Execution flows | Convert the teacher's or author's method into repeatable steps. |
-| `rubrics` | Quality standards | Check whether a plan, article, workflow, or decision output is good enough. |
-| `templates` | Reusable templates | Capture tables, scripts, structures, checklists, and worksheets. |
-| `transfer_rules` | Transfer rules | Explain how to adapt cases or methods from the source to the user's real situation. |
-| `failure_modes` | Failure conditions and misuses | Show when the method should not be used, how it can fail, and which missing conditions require caution. |
+| Source evidence | source locations, transcripts, handouts, key visuals | Show where every important claim comes from |
+| Teacher's method | judgment cues, decision rules, demonstrations, boundaries | Teach how the teacher works, not only what the teacher said |
+| Coaching | baseline check, practice, hints, feedback, review, transfer | Turn understanding into independent performance |
+| Learner growth | attempts, recurring mistakes, review plans, real-world results | Keep private evidence of progress and form a personal method |
 
-The generated Skill can therefore do more than repeat content: it can diagnose,
-design workflows, produce templates, evaluate quality, transfer methods, and
-flag misuse risks.
+Teacher packages and generated Skills are immutable, versioned assets. Learner state is private, external, and append-only. Regenerating or deleting a Skill never deletes learner attempts.
 
-## What Is This?
+## Apprenticeship lifecycle
 
-`lineage-skill` is a course and book distillation Skill for Agents. It turns a
-complete set of videos, books, bootcamps, lectures, PDF handouts, whiteboards,
-screenshots, transcripts, and learning notes into an installable, callable,
-source-backed mentor or method Skill.
-
-It is not "summarize this course/book." It turns the source material into a long-lived
-knowledge asset:
-
-- Preserve the source intent: important claims can trace back to lessons,
-  chapters, source text, screenshots, or handouts.
-- Rebuild the material structure: organize scattered videos, book chapters,
-  handouts, cases, and notes into concepts, methods, lesson/chapter indexes,
-  and evidence maps.
-- Generate a usable mentor: let an Agent answer, quiz, review, rehearse, and
-  locate sources from the material.
-- Produce work assets: turn the teacher's or author's method into checklists,
-  playbooks, templates, drafts, and quality criteria.
-
-In one sentence: turn "I bought, watched, or studied a course/book" into "I have
-a private method system I can call on at any time."
-
-## Core Value After Distillation
-
-The expensive part of a serious course or book is usually not the list of facts.
-It is the teacher's or author's judgment framework, way of decomposing problems,
-case experience, and implicit quality standards.
-
-`lineage-skill` extracts those from tens or hundreds of hours of material and
-turns them into Agent-callable capabilities:
-
-| Value | What The Course/Book Becomes |
-| --- | --- |
-| **From content consumption to method asset** | Not just "I watched the course/read the book", but a concept system, decision criteria, operating process, case library, and template library. |
-| **From one-time learning to long-term coaching** | The Agent can question, review, and find weak spots according to your progress, turning the material into a training system. |
-| **From vague memory to source-backed knowledge** | Important claims can trace back to lessons, source text, screenshots, or handouts, so your interpretation does not silently replace the teacher's intent. |
-| **From understanding ideas to producing work** | Apply the teacher's method to real situations: draft plans, check plans, design workflows, write templates, and support decisions. |
-
-In other words, the point is not:
-
-> Summarize this course/book for me.
-
-The point is:
-
-> Turn a dense course, book, or long-form source into a private method system that can keep helping me learn, judge, and produce work.
-
-## Typical Output Scenarios
-
-| Scenario | Result You Actually Want | Example |
-| --- | --- | --- |
-| **Master the course/book** | Recover the through-line, hard parts, traps, and weak spots; let the Agent challenge you like a mentor | "I finished the first 5 lessons / 3 chapters. Check where my understanding is still incomplete according to the source system." |
-| **Trace the source intent** | Locate where a claim, case, or method came from, with quote or screenshot evidence when available | "Did the teacher actually say this? If yes, which lesson was it in and what was the original point?" |
-| **Transfer the teacher's or author's method** | Apply source frameworks to your concrete situation instead of merely repeating concepts | "Use this material's method to analyze my business scenario and identify the key judgments and gaps." |
-| **Produce reusable assets** | Generate checklists, playbooks, templates, drafts, and quality criteria you can use repeatedly | "Turn the teacher's method into a workflow and checklist I can reuse on every project." |
-
-## Optional Roles
-
-You can specify the intended use, or let the Agent choose. Course scope, evidence
-strictness, and learning progress are separate dimensions.
-
-| Role | Best For |
-| --- | --- |
-| `mentor` | Learning internalization: questioning, review, correction, and staged plans that turn the course into a training system |
-| `expert` | Source tracing: concept explanation, lesson lookup, claim checking, and citations |
-| `consultant` | Situational judgment: transfer the teacher's method to your real problem and surface judgments, risks, and recommendations |
-| `practitioner` | Asset production: playbooks, checklists, templates, workflows, and quality rules |
-| `custom` | Custom workflows for your business, research, writing, or training process |
-
-Other dimensions:
-
-| Dimension | Options |
-| --- | --- |
-| Source scope | Single course/book, multi-source with boundaries, multi-source fusion |
-| Evidence strategy | Standard citations, strict source tracing |
-| Learning progress | No progress tracking, or track progress and adjust plans |
-
-You can combine roles:
+<img src="./docs/img/apprenticeship-lifecycle.svg" alt="Eight stages of a Lineage apprenticeship" width="100%">
 
 ```text
-Turn this course/book into mentor,practitioner roles.
-It should help me study like a mentor and also produce practical checklists.
+orientation → modeling → imitation → coached practice
+→ independent practice → transfer → graduation → alumni
 ```
 
-## Real Example
+The Skill coaches in a concrete way:
 
-| Name | Summary | Preview | Stars |
-| --- | --- | --- | --- |
-| [nihaisha-tcm](https://github.com/JuneYaooo/nihaisha-tcm) | An Agent Skill distilled from Ni Haixia TCM course materials. The source set includes **100GB+ of video course materials**, organized into a triggerable, searchable, source-backed domain Skill for course lookup, formula-pattern and acupoint study, note organization, and board screenshot evidence. | ![nihaisha-tcm preview](https://opengraph.githubassets.com/lineage-skill/JuneYaooo/nihaisha-tcm) | ![GitHub Repo stars](https://img.shields.io/github/stars/JuneYaooo/nihaisha-tcm?style=social) |
+- Source lookup is answered directly and is not counted as proof of mastery.
+- Learning and review collect a prediction, judgment, explanation, artifact, or experiment before showing an answer.
+- Feedback identifies what worked, names the most important current problem, and gives only the hint needed for the next revision.
+- The learner revises; the system preserves attempt one, feedback, attempt two, reflection, and real-world outcome.
+- Parallel forms, delayed retrieval, interleaving, and changed constraints test retention and transfer.
+- Templates, hints, and tutor intervention gradually fade as the learner improves.
+- Graduation requires no-hint execution, delayed retention, changed-context transfer, boundary recognition, and a real artifact.
 
-## Why It Matters
+## Core data structures for developers
 
-Most courses fade after you finish them: videos are too long, handouts are
-scattered, cases are hard to find, and the method is hard to reuse when you need
-it later.
+### Course knowledge package (CoursePackage 1.0)
 
-`lineage-skill` is not a summary tool. It turns a course into a
-**queryable, traceable, and executable** knowledge asset.
-
-![lineage-skill methodology value path](./docs/img/lineage-methodology-value-en.png)
-
-It follows `Capture -> Cite -> Compress -> Connect -> Codify -> Evaluate`:
-preserve evidence first, then distill it; separate lessons, handouts,
-whiteboards, cases, and notes before reorganizing them into concepts, methods,
-steps, templates, and mentor capabilities.
-
-- **Capture**: collect videos, audio, handouts, screenshots, OCR, transcripts, and notes.
-- **Cite**: preserve lessons, timestamps, quotes, screenshots, and document sources.
-- **Compress**: turn long material into structured summaries and course through-lines.
-- **Connect**: link concepts, cases, methods, lessons, and use scenarios.
-- **Codify**: turn the teacher's method into workflows, checklists, templates, and criteria.
-- **Evaluate**: use course standards for review, quality checks, follow-up questions, and applied critique.
-
-## Capabilities
-
-This Skill includes the main pipeline needed for course and book distillation.
-You do not need to design the whole "video course or book to method Skill" workflow
-yourself. Provide the source materials and configure suitable model interfaces.
-
-| Capability | What It Does | Output |
-| --- | --- | --- |
-| Video / audio transcription | Extracts audio from `.mp4`, or transcribes `.mp3`, `.wav`, `.m4a`, and similar files; long audio is split automatically | `transcripts/*.json` |
-| Video visual understanding | Uses a vision model to analyze slides, whiteboards, software screens, charts, demos, and key frames | `analysis/*_analysis.md` |
-| Large video handling | Compresses and chunks large videos to reduce upload and analysis pressure | Chunked analysis results |
-| Model-selected keyframes | Builds a dense candidate pool, then asks a multimodal vision model to choose evidence-worthy keyframes from labeled contact sheets; equal intervals are only candidates, not the final evidence rule | `keyframe_selection/`, `keyframes_model_selected/` |
-| PDF / document parsing | Integrates MinerU or other OCR/document parsing outputs for scanned PDFs, image PDFs, and handouts | `documents/`, `mineru_supplement.md` |
-| Pure text / book distillation | Chunks Markdown, TXT, OCR Markdown, notes, book chapters, and handouts into source-backed evidence cards | `text_sources/`, `text_distillation/evidence_cards.jsonl` |
-| Capability asset extraction | Extracts diagnostics, workflows, rubrics, templates, transfer rules, and failure modes from courses and books | capability fields in `course_package.json` |
-| Course/book distillation | Combines transcripts, visual analysis, model-selected keyframes, OCR, and notes into concepts, methods, cases, and citations | `course_distillation_*.md/json` |
-| CoursePackage build | Converts distillation results into a unified structure with evidence map, lesson/chapter index, and quality metadata | `course_package.json` |
-| OKF bundle export | Exports structured capability assets into a progressive Markdown + frontmatter knowledge bundle | `references/okf/` |
-| Multi-course merge | Combines multiple course packages into one cross-course Skill input | combined `course_package.json` |
-| Dedicated mentor Skill generation | Generates `mentor` by default; other roles are also supported | Installable/callable course Skill |
-| Resume and progress tracking | Records stage state, existing artifacts, and next steps so runs can resume | `lineage_progress.json` |
-| Multi-course catalog | Scans multiple course workspaces and generated Skills into one catalog | `course_catalog.json` |
-
-## Usage
-
-### 1. Ask Your Agent to Install This Skill
-
-Send this to your Agent:
+This file organizes sources, lessons, concepts, methods, cases, and exercises in one place. Version 1.0 gives each item a stable ID so updates can preserve old references and learner history.
 
 ```text
-Please install this Skill:
-https://raw.githubusercontent.com/JuneYaooo/lineage-skill/main/docs/install.md
-
-After installation, tell me how I can turn my course/book materials into a method expert.
+course_package.json
+├── sources / lessons / evidence / claims
+├── concepts / methods / cases / boundaries
+├── diagnostics / workflows / rubrics / templates
+├── transfer_rules / failure_modes / learning_checks
+└── quality.coverage / integrity / mentor_readiness
 ```
 
-### 2. Configure Materials, Tools, And Model Interfaces
-
-Everything commonly needed is listed here. `docs/install.md` is kept only for Agent-driven installation.
-
-- **Course/book materials**: videos, audio, books or chaptered Markdown, PDFs, handouts, screenshots, transcripts, OCR output, and notes.
-- **Local tools**: `git`, `python3`, `pip`, plus `ffmpeg` / `ffprobe` when processing videos or raw audio.
-- **Model interfaces**: OpenAI-compatible speech-to-text, vision, text distillation, and optional MinerU OCR.
-
-If you run the repo scripts directly, copy `.env.example` to `.env` and fill only the providers you use:
+Migrate 0.x packages without overwriting the original:
 
 ```bash
-cp .env.example .env
+python scripts/migrate_course_package.py path/to/course_package.json
 ```
 
-Common variables:
+`--in-place` creates a `.bak` first.
+
+The migration report preserves an old-ID → stable-1.0-ID `id_map` for external learner state, review queues, and historical episodes.
+
+### How the teacher approaches problems (TeacherModel 1.0)
+
+This does not clone a teacher's personality or consciousness. It organizes only the working methods supported by the source:
+
+- what signals the teacher notices first;
+- how a problem is framed and diagnosed;
+- when a method is selected or rejected;
+- how a complete worked example proceeds;
+- how common errors are recognized and corrected;
+- which context is non-copyable or contraindicated;
+- what evidence indicates independent performance.
+
+Implicit reasoning inferred from ordinary explanation is capped at medium confidence. Missing demonstrations, critiques, Q&A, or graduation signals are reported as `missing_teacher_evidence`.
+
+### Learning path, practice library, and assessment library
+
+- Learning path (CapabilityGraph): shows what to learn first, what comes next, and which abilities depend on others.
+- Practice library (PracticeBank): provides practical tasks, expected outputs, progressive hints, common mistakes, and clear feedback criteria.
+- Assessment library (AssessmentBank): checks recall, production, transfer to a new situation, boundary recognition, and graduation readiness.
+
+Mastery is evidence state, not a fake percentage:
+
+```text
+unseen → recognized → reconstructed → applied_with_support
+→ applied_independently → transferred → retained → graduated
+```
+
+One successful episode advances at most one state. Transfer requires H0 performance in a changed context; retention requires delayed success on a parallel form.
+
+### Runnable coaching plan (MentorPackage 1.0)
+
+This combines the teacher's method, learning order, exercises, feedback criteria, and graduation requirements into a runnable coaching plan. Full coaching is enabled only when the material supports complete demonstrations, practice, and assessment.
+
+Thin materials are explicitly downgraded to `guided` or `none`. `mentor_readiness_audit.json/.md` explains every blocker; the builder never emits an empty mentor playbook and calls it complete.
+
+## Inputs and capture
+
+| Input | Processing | Main artifacts |
+| --- | --- | --- |
+| Video | audio extraction, transcription, visual analysis, model-selected keyframes | `transcripts/`, `analysis/`, `keyframe_selection/` |
+| Audio | duration-aware segmentation, recursive retry, transcription | `transcripts/` |
+| PDF / scans | MinerU/OCR or reuse existing OCR | `documents/` |
+| Markdown / TXT / chapters / notes | source spans, evidence cards, text synthesis | `text_sources/`, `text_distillation/` |
+| Legacy CoursePackage | explicit 0.x → 1.0 migration | v1 package and migration report |
+| Multiple courses | per-package migration, namespaced IDs, explicit conflicts | combined CoursePackage 1.0 |
+
+Keyframe capture combines scene changes with a density floor to build candidates, then asks a vision model to choose evidence-worthy frames. Fixed intervals are candidate generation only, never the final evidence rule.
+
+## Quick start
 
 ```bash
-# Audio transcription
+git clone https://github.com/JuneYaooo/lineage-skill.git
+cd lineage-skill
+python -m pip install -r requirements.txt
+```
+
+Media processing also requires `ffmpeg` and `ffprobe`. Copy `.env.example` and configure only the providers you need; never commit real secrets.
+
+```bash
 AUDIO_TRANSCRIBE_API_KEY=
-AUDIO_TRANSCRIBE_BASE_URL=https://api.siliconflow.cn/v1
-AUDIO_TRANSCRIBE_MODEL=FunAudioLLM/SenseVoiceSmall
+AUDIO_TRANSCRIBE_BASE_URL=
+AUDIO_TRANSCRIBE_MODEL=
 
-# Vision analysis. Use a model with video-understanding support.
 LINEAGE_VISION_API_KEY=
-LINEAGE_VISION_BASE_URL=https://your-openai-compatible-vision-endpoint/v1
-LINEAGE_VISION_MODEL=gemini-3.1-pro-preview
-LINEAGE_VISION_TIMEOUT=600
+LINEAGE_VISION_BASE_URL=
+LINEAGE_VISION_MODEL=
 
-# Text distillation
 LINEAGE_TEXT_API_KEY=
-LINEAGE_TEXT_BASE_URL=https://api.openai.com/v1
-LINEAGE_TEXT_MODEL=gpt5.5
-LINEAGE_TEXT_MAX_TOKENS=4096
-LINEAGE_TEXT_TIMEOUT=300
+LINEAGE_TEXT_BASE_URL=
+LINEAGE_TEXT_MODEL=
 
-# Optional PDF OCR
 MINERU_API_TOKEN=
 ```
 
-Minimum setup depends on the materials:
+### Full multimedia apprenticeship
 
-| Materials | Minimum setup |
+```bash
+python scripts/run_course_pipeline.py \
+  --input-dir /path/to/course-media \
+  --documents-input /path/to/handouts \
+  --notes-input /path/to/notes \
+  --course-name product-discovery \
+  --skill-name product-discovery-mentor-lineage \
+  --mode mentor,practitioner \
+  --apprenticeship full \
+  --practice-depth deep \
+  --learner-state external \
+  --output-dir ./dist
+```
+
+### Text or book apprenticeship
+
+```bash
+DISTILL_USE_LLM=0 python scripts/run_course_pipeline.py \
+  --text-input /path/to/book-or-notes \
+  --course-name evidence-first-delivery \
+  --mode mentor \
+  --apprenticeship full \
+  --text-no-llm \
+  --output-dir ./dist
+```
+
+The deterministic extractor works well for explicitly labeled material. Use a strong long-context text model for implicit relationships, then review high-impact rules through the readiness audit.
+
+## Generated Skill
+
+```text
+{course}-mentor-lineage/
+├── SKILL.md
+├── agents/
+├── lineage_manifest.json
+├── mentor_manifest.json
+├── references/
+│   ├── course_package.json
+│   ├── teacher_model.json
+│   ├── capability_graph.json
+│   ├── practice_bank.json
+│   ├── assessment_bank.json
+│   ├── mentor_package.json
+│   ├── mentor_protocol.md
+│   ├── graduation_policy.json
+│   ├── mentor_readiness_audit.json
+│   ├── schemas/
+│   ├── okf/
+│   └── available source evidence
+├── scripts/
+│   ├── search_course_notes.py
+│   ├── fetch_course_evidence.py
+│   ├── initialize_apprenticeship.py
+│   ├── record_practice_episode.py
+│   ├── rebuild_mastery_state.py
+│   ├── select_next_practice.py
+│   ├── schedule_retrieval.py
+│   ├── validate_learner_state.py
+│   └── build_personal_skill_candidate.py
+└── assets/
+    ├── learning_contract.template.json
+    ├── practice_episode.template.json
+    └── graduation_report.template.md
+```
+
+Generation happens in a temporary directory and replaces the target atomically only after validation. Dense keyframe candidates, real learner state, and private raw materials are not packaged by default.
+
+Use `--include-source-artifacts` only when source redistribution is authorized and offline source bodies are genuinely required. It opts in to transcripts, OCR, analyses, text sources, and model-selected keyframes. The default retains structured knowledge, stable evidence IDs, and redacted `withheld://` references only.
+
+## Where personal learning records live
+
+Attempts, mistakes, review plans, and real-world results stay in a private external directory chosen by the learner, rather than inside the course Skill:
+
+```text
+{learner_store_root}/apprenticeships/{mentor_package_id}/
+├── apprenticeship_state.json
+├── mastery_state.json
+├── practice_episodes.jsonl
+├── error_library.json
+├── review_queue.json
+├── artifact_index.json
+├── graduation_record.json
+└── personal_skill_candidates/
+```
+
+Practice history is appended rather than overwritten, and progress can be recalculated from that history. The system suggests a reusable personal method only after repeated success, different contexts, an unaided attempt, and reflection on a failure or counterexample. Promotion always requires explicit learner approval.
+
+External hosts exchange only the necessary state through versioned JSON contracts. They do not import Lineage Python internals or mutate immutable teacher packages. See [the contract](./references/external-learner-store-contract.md).
+
+## Roles
+
+| Role | Purpose |
 | --- | --- |
-| Existing transcripts, OCR, and notes | `LINEAGE_TEXT_*`; use `DISTILL_USE_LLM=0` for local extractive fallback |
-| Pure Markdown / TXT / book chapters / notes | `LINEAGE_TEXT_*`; `DISTILL_USE_LLM=0` can be used for local evidence-card extraction |
-| Audio course | `AUDIO_TRANSCRIBE_*`, `LINEAGE_TEXT_*`, and `ffmpeg` |
-| Video course, speech only | `AUDIO_TRANSCRIBE_*`, `LINEAGE_TEXT_*`, and `ffmpeg` |
-| Video course with slides / boards / screen demos | `AUDIO_TRANSCRIBE_*`, `LINEAGE_VISION_*`, `LINEAGE_TEXT_*`, and `ffmpeg` |
-| Scanned PDFs or complex handouts | Add `MINERU_API_TOKEN`; skip it if OCR output already exists |
+| `mentor` | Full or guided apprenticeship: diagnosis, practice, feedback, retrieval, transfer, graduation |
+| `expert` | Source Q&A, original-claim lookup, explanation, and evidence |
+| `consultant` | Course-grounded situational diagnosis, trade-offs, and recommendations |
+| `practitioner` | Playbooks, checklists, templates, workflows, and work artifacts |
+| `custom` | A user-defined source-bounded workflow |
 
-### 3. Tell the Agent Where Your Materials Are
+Roles can be combined. Scope, evidence strictness, apprenticeship mode, and learner-state strategy remain independent dimensions.
 
-Example:
+## Validation
 
-```text
-I have a video/audio course directory and a set of PDF handouts.
-Use lineage-skill to turn them into a course expert Skill.
-Keep sources wherever possible so I can trace answers later.
+```bash
+python -m pytest -q -c /dev/null --rootdir=. -o cache_dir=.pytest_cache tests
+python scripts/validate_lineage_package.py --package path/to/course_package.json
+python scripts/validate_mentor_package.py --package path/to/mentor_package.json
+python scripts/validate_generated_skill.py --skill-dir path/to/generated-skill
+python "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" .
+git diff --check
 ```
 
-If you already have transcripts or notes:
+The full pipeline reports whether the material is complete enough, whether it can support full coaching, and whether the generated Skill can run. Strict mode rejects unsupported full coaching; automatic mode clearly downgrades to guided learning or source lookup only.
 
-```text
-I already have course transcripts, OCR documents, and study notes.
-Skip fresh capture and package them directly into a source-backed, reviewable course Skill.
-```
+## Provenance, safety, and copyright
 
-If the material is a book or long-form text source:
+- Keep teacher source, source-grounded synthesis, Mentor inference, learner hypothesis, and real-world evidence distinct.
+- Preserve conflicting teachers and their conditions instead of manufacturing consensus.
+- Never claim to clone a teacher's mind, personality, or complete reasoning.
+- Keep medical, legal, financial, investment, and other high-risk material educational and source-bounded. Graduation is not professional licensure.
+- Do not commit transcripts, screenshots, OCR output, course media, learner state, or protected source bodies by default.
+- Personal Skills retain procedures, personal adaptations, necessary evidence pointers, and known failures—not copyrighted source bodies.
 
-```text
-I have chaptered Markdown / OCR text from a book.
-Use lineage-skill to distill it into a source-backed, transferable, output-producing method Skill.
-Prioritize diagnostics, workflows, rubrics, templates, transfer rules, and failure modes.
-```
+## Example
 
-### 4. Use Natural Language
-
-After the Skill is generated, it behaves like a mentor or method system focused on this source material:
-
-```text
-I finished the first 5 lessons. Review my understanding through the teacher's system and challenge the key judgments I may have missed.
-```
-
-```text
-Use this material's method to analyze the real project below. Identify the key assumptions, judgment steps, and risks.
-```
-
-```text
-Turn the teacher's method into a reusable playbook: use cases, inputs, steps, review criteria, and common mistakes.
-```
-
-```text
-Is this conclusion actually grounded in the source material? Give me the lesson/chapter, source gist, evidence strength, and which parts are inference.
-```
-
-```text
-Use the source's quality criteria to review my plan. Tell me where it skips steps, lacks evidence, or drifts from the source method.
-```
-
-## Open Source Attribution
-
-If you use `lineage-skill` to distill a course and open-source the generated
-Skill, consider citing this repository in the generated project's README or notes
-so others can trace the method and tooling.
-
-You are also welcome to share high-quality open-source Skills or course knowledge
-projects in this repository's Issues.
-
-## Acknowledgements
-
-- [Datawhale](https://github.com/datawhalechina) — thanks to the Datawhale open-source community for its long-running work in AI education, open courses, and learner-centered community building.
-- [rfeng1016](https://github.com/rfeng1016) — thanks for the reminder and recommendation around OKF, which led to adding the OKF-compatible knowledge bundle to this project.
-- [LINUX DO — Chinese Developer Community](https://linux.do/) — thanks to the LINUX DO community for discussion, feedback, and distribution support. The community is also a good place to discuss course distillation and Agent Skill practice.
+[nihaisha-tcm](https://github.com/JuneYaooo/nihaisha-tcm) uses the evidence-distillation path on more than 100GB of TCM course material for source lookup, formula-pattern and acupoint study, board evidence, and a specialized domain Skill.
 
 ## License
 
-This project is licensed under the
-[PolyForm Noncommercial License 1.0.0](./LICENSE).
-
-For commercial use or business collaboration, contact <juneyaooo@gmail.com>.
+Licensed under [PolyForm Noncommercial License 1.0.0](./LICENSE). For commercial use or collaboration, contact <juneyaooo@gmail.com>.

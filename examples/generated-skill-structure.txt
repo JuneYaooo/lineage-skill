@@ -1,65 +1,52 @@
-生成后的课程 Skill 建议结构
-===========================
+Generated Mentor Skill 1.0
+==========================
 
 <generated-skill>/
 ├── SKILL.md
 ├── lineage_manifest.json
+├── mentor_manifest.json
 ├── agents/
 │   ├── openai.yaml
 │   └── openclaw.yaml
 ├── references/
 │   ├── course_package.json
+│   ├── teacher_model.json
+│   ├── capability_graph.json
+│   ├── practice_bank.json
+│   ├── assessment_bank.json
+│   ├── mentor_package.json
+│   ├── mentor_protocol.md
+│   ├── graduation_policy.json
+│   ├── mentor_readiness_audit.json
+│   ├── mentor_readiness_audit.md
 │   ├── course_digest.md
-│   ├── full_transcript.md
 │   ├── lesson_index.json
 │   ├── concept_glossary.md
 │   ├── evidence_map.json
-│   ├── quote_index.md
-│   ├── study_paths.md
-│   ├── keyframe_selection/          # 可选：模型选帧 manifest 与 summary
-│   ├── keyframes_model_selected/    # 可选：模型精选关键帧图片
-│   ├── transcripts/                 # 可选：打包后的 ASR 证据
-│   ├── analysis/                    # 可选：视频视觉分析
-│   └── documents/                   # 可选：讲义/OCR/文档证据
-└── scripts/
-    └── search_course_notes.py
+│   ├── schemas/
+│   ├── okf/
+│   └── source evidence when available
+├── scripts/
+│   ├── search_course_notes.py
+│   ├── fetch_course_evidence.py
+│   ├── initialize_apprenticeship.py
+│   ├── record_practice_episode.py
+│   ├── rebuild_mastery_state.py
+│   ├── select_next_practice.py
+│   ├── schedule_retrieval.py
+│   ├── validate_learner_state.py
+│   └── build_personal_skill_candidate.py
+└── assets/
+    ├── learning_contract.template.json
+    ├── practice_episode.template.json
+    └── graduation_report.template.md
 
-lineage_manifest.json 是生成产物的轻量溯源水印：
+Real learner state is never stored above. The host owns:
 
-- generated_by.id: lineage-skill
-- generated_by.repository: https://github.com/JuneYaooo/lineage-skill
-- generated_by.script: scripts/build_course_skill.py
-- provenance.watermark: lineage-skill:course-skill-builder:v0.1
-- provenance.watermark_visibility: manifest-only
-
-SKILL.md 应包含：
-
-- skill 触发条件
-- 课程范围
-- 回答原则
-- 溯源规则
-- 安全边界
-- references 使用说明
-
-references 应包含：
-
-- 课程总览
-- 逐课索引
-- 概念索引
-- 证据索引
-- 学习路径
-- 模型精选关键帧 manifest 与图片路径（当课程含视频时）
-
-不同 mode 会增加额外 references：
-
-- mentor: mentor_playbook.md, mentor_sessions.md, learner_progress.json
-- consultant: consulting_playbook.md, scenario_templates.md
-- practitioner: playbooks.md, checklists.md, templates.md, case_index.json
-- custom: custom_role.md, custom_workflows.md
-
-兼容别名：
-
-- study-coach -> mentor，并设置 progress=tracked
-- citation-archive -> expert，并设置 evidence=strict
-- knowledge-base -> expert，并设置 scope=multi-course
-- domain-expert -> expert，并设置 scope=fused
+<learner-store>/apprenticeships/<mentor-package-id>/
+├── apprenticeship_state.json
+├── mastery_state.json
+├── practice_episodes.jsonl
+├── error_library.json
+├── review_queue.json
+└── personal_skill_candidates/

@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="680" viewBox="0 0 1440 680" role="img" aria-labelledby="title desc">
+  <title id="title">Lineage Skill guided learning system</title>
+  <desc id="desc">Source evidence becomes the teacher's problem-solving method, guided practice, and an independent personal method.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FCFCF9"/>
+      <stop offset="0.58" stop-color="#F6F8F6"/>
+      <stop offset="1" stop-color="#EEF3F4"/>
+    </linearGradient>
+    <linearGradient id="signal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3E9D91"/>
+      <stop offset="0.52" stop-color="#607FC5"/>
+      <stop offset="1" stop-color="#9271B8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#BDE5DD" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#BDE5DD" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="24" flood-color="#506474" flood-opacity="0.14"/>
+    </filter>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#78909F" stroke-opacity="0.08"/>
+    </pattern>
+  </defs>
+  <rect width="1440" height="680" rx="28" fill="url(#bg)"/>
+  <rect width="1440" height="680" rx="28" fill="url(#grid)"/>
+  <circle cx="1160" cy="155" r="260" fill="url(#glow)"/>
+  <circle cx="1340" cy="610" r="280" fill="url(#glow)" opacity="0.45"/>
+
+  <g font-family="Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <g transform="translate(72 68)">
+      <rect width="248" height="34" rx="17" fill="#EAF6F3" stroke="#8BC5BA"/>
+      <circle cx="18" cy="17" r="4" fill="#3E9D91"/>
+      <text x="32" y="22" fill="#286F68" font-size="13" font-weight="650" letter-spacing="1.5">LINEAGE SKILL 1.0</text>
+    </g>
+
+    <text x="72" y="182" fill="#182A38" font-size="68" font-weight="720" letter-spacing="-2.8">师承，不是代做。</text>
+    <text x="72" y="248" fill="#536879" font-size="27" font-weight="430">把老师的证据、判断与标准，变成一套会示范、会纠错、最终放手的学习方法。</text>
+    <text x="72" y="292" fill="#718596" font-size="18">Source-backed method · guided practice · independent work</text>
+
+    <g transform="translate(72 356)" filter="url(#shadow)">
+      <rect width="1296" height="238" rx="24" fill="#FFFFFF" stroke="#D4DEE3"/>
+      <path d="M255 119H335M575 119H655M895 119H975" stroke="url(#signal)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M323 111L335 119 323 127M643 111L655 119 643 127M963 111L975 119 963 127" fill="none" stroke="#607FC5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <g transform="translate(28 28)">
+        <rect width="227" height="182" rx="18" fill="#EFF8F6" stroke="#BFDDD7"/>
+        <path d="M26 46H70M26 66H98M26 86H84" stroke="#3E9D91" stroke-width="4" stroke-linecap="round" opacity="0.8"/>
+        <circle cx="185" cy="52" r="18" fill="#DCEFEB" stroke="#3E9D91"/>
+        <path d="M178 52L183 57 193 46" fill="none" stroke="#3E9D91" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="26" y="126" fill="#214541" font-size="20" font-weight="650">可靠证据层</text>
+        <text x="26" y="153" fill="#5E7F7B" font-size="14">原文 · 讲义 · 关键画面 · 出处</text>
+      </g>
+
+      <g transform="translate(348 28)">
+        <rect width="227" height="182" rx="18" fill="#F1F5FB" stroke="#C8D5EA"/>
+        <circle cx="64" cy="60" r="26" fill="#E1E8F6" stroke="#607FC5"/>
+        <path d="M51 62C60 47 72 47 80 62M56 69H76" fill="none" stroke="#607FC5" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M112 45H198M112 64H178M112 83H190" stroke="#7891C4" stroke-width="4" stroke-linecap="round" opacity="0.75"/>
+        <text x="26" y="126" fill="#293B57" font-size="20" font-weight="650">老师怎么判断</text>
+        <text x="26" y="153" fill="#657798" font-size="14">看什么 · 怎么判断 · 何时不用</text>
+      </g>
+
+      <g transform="translate(668 28)">
+        <rect width="227" height="182" rx="18" fill="#F7F3FA" stroke="#DDD0E8"/>
+        <path d="M28 48H196M28 79H167M28 110H138" stroke="#A783C4" stroke-width="2" stroke-opacity="0.55"/>
+        <circle cx="74" cy="48" r="8" fill="#B794D0"/>
+        <circle cx="140" cy="79" r="8" fill="#9C7BBC"/>
+        <circle cx="108" cy="110" r="8" fill="#8063A4"/>
+        <text x="26" y="145" fill="#463455" font-size="20" font-weight="650">循序练习</text>
+        <text x="26" y="170" fill="#786889" font-size="14">先做 · 反馈 · 复习 · 换场景</text>
+      </g>
+
+      <g transform="translate(988 28)">
+        <rect width="280" height="182" rx="18" fill="#F3F8F0" stroke="#CDDDC6"/>
+        <path d="M42 94C66 41 107 46 128 82C147 115 191 119 233 56" fill="none" stroke="#7CA36D" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="42" cy="94" r="7" fill="#3E9D91"/>
+        <circle cx="128" cy="82" r="7" fill="#82B1A5"/>
+        <circle cx="233" cy="56" r="9" fill="#9FC389"/>
+        <text x="26" y="138" fill="#34492F" font-size="20" font-weight="650">自己的方法</text>
+        <text x="26" y="164" fill="#6D8068" font-size="14">师承有源 · 方法有别 · 能力可证</text>
+      </g>
+    </g>
+
+    <text x="72" y="640" fill="#718596" font-size="14" letter-spacing="0.5">CAPTURE → CITE → COMPRESS → CONNECT → CODIFY → COACH → PRACTICE → CONSOLIDATE → TRANSFER → GRADUATE</text>
+  </g>
+</svg>
