@@ -41,6 +41,12 @@ You do not need to run project scripts or understand the internal file structure
 | 7. Keep learning | Return with “continue from last time” or submit real work | Preserves attempts, mistakes, and revisions, schedules review, and gradually reduces support |
 | 8. Update or graduate | Add new material when it appears, or request an independent check when ready | Updates the course while preserving progress, then tests delayed recall and transfer before claiming mastery |
 
+### See a real run in 8 seconds
+
+<img src="./docs/img/lineage-real-workflow-demo-en.gif" alt="A real Lineage workflow from receiving course material through building and delivering a course Skill to the first practice session" width="100%">
+
+The numbers come from a real run on the repository's public synthetic course: one text source became 18 sourced items, 14 trainable abilities, 14 exercises, and 68 checks. The generated result passed validation with no errors. The interface is a visual reconstruction of that run so no real account, local path, or private course content appears.
+
 ### A complete first request
 
 > Use Lineage Skill to inspect this course material and turn it into a course Skill that can help me genuinely learn. My goal is to apply the course method in real work. Keep important claims traceable to their sources, and keep raw material and personal learning records private. First tell me what material you found and what is missing. If there is no risky decision for me to make, continue through organization, validation, and enabling the new Skill, then tell me how to begin the first lesson.
