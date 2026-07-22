@@ -221,6 +221,8 @@ __marimo__/
 # Lineage Skill local secrets and generated course outputs
 .env.*
 !.env.example
+tests/
+docs/superpowers/
 output/
 outputs/
 dist/

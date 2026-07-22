@@ -142,7 +142,6 @@ main() {
         --exclude='venv' \
         --exclude='env' \
         --exclude='__pycache__' \
-        --exclude='.pytest_cache' \
         --exclude='dist' \
         --exclude='output' \
         --exclude='outputs' \

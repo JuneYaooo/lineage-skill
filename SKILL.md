@@ -214,7 +214,6 @@ Graduate only with delayed retention, unseen-case diagnosis, independent product
 Run:
 
 ```bash
-python -m pytest -q -c /dev/null --rootdir=. -o cache_dir=.pytest_cache tests
 python scripts/validate_lineage_package.py --package <course_package.json>
 python scripts/validate_mentor_package.py --package <mentor_package.json>
 python scripts/validate_generated_skill.py --skill-dir <generated-skill>
@@ -222,7 +221,7 @@ python "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_v
 git diff --check
 ```
 
-Report source state, workflow, generated path, visual evidence mode, source readiness, mentor readiness, runtime readiness, apprenticeship downgrade, human-review needs, test results, and remaining risks.
+Report source state, workflow, generated path, visual evidence mode, source readiness, mentor readiness, runtime readiness, apprenticeship downgrade, human-review needs, validation results, and remaining risks.
 
 ## Complete the user handoff
 

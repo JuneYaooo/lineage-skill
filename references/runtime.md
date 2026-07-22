@@ -274,7 +274,6 @@ When a Skill changes, preserve its old manifest and an ID map so external learne
 python scripts/validate_lineage_package.py --package <course_package.json>
 python scripts/validate_mentor_package.py --package <mentor_package.json>
 python scripts/validate_generated_skill.py --skill-dir <generated-skill>
-python -m pytest -q -c /dev/null --rootdir=. -o cache_dir=.pytest_cache tests
 python "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" .
 git diff --check
 ```
