@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="720" viewBox="0 0 1440 720" role="img" aria-labelledby="title desc">
+  <title id="title">Lineage visual micro-lesson workflow</title>
+  <desc id="desc">A source-grounded concept moves through progressive explanation, terminal-safe ASCII or SVG visualization, two questions shown together, separate feedback, and the next learning step.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FCFCF9"/>
+      <stop offset="0.55" stop-color="#F5F8F6"/>
+      <stop offset="1" stop-color="#EEF3F5"/>
+    </linearGradient>
+    <linearGradient id="signal" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3E9D91"/>
+      <stop offset="0.52" stop-color="#607FC5"/>
+      <stop offset="1" stop-color="#9271B8"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="13" flood-color="#506474" flood-opacity="0.12"/>
+    </filter>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#78909F" stroke-opacity="0.055"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5 0 10Z" fill="#607FC5"/>
+    </marker>
+  </defs>
+
+  <rect width="1440" height="720" rx="28" fill="url(#bg)"/>
+  <rect width="1440" height="720" rx="28" fill="url(#grid)"/>
+
+  <g font-family="Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <g transform="translate(58 48)">
+      <rect width="210" height="32" rx="16" fill="#EAF6F3" stroke="#8BC5BA"/>
+      <circle cx="18" cy="16" r="4" fill="#3E9D91"/>
+      <text x="31" y="21" fill="#286F68" font-size="12" font-weight="700" letter-spacing="1.2">ONE MICRO-LESSON</text>
+    </g>
+    <text x="58" y="126" fill="#182A38" font-size="36" font-weight="740">一节课，怎样从“看懂”走到“会用”</text>
+    <text x="58" y="158" fill="#6B7F8E" font-size="16">Source-grounded explanation → reliable visual → two-question check → focused feedback</text>
+
+    <g transform="translate(58 205)" filter="url(#shadow)">
+      <rect width="220" height="282" rx="22" fill="#FFFFFF" stroke="#C9DFDA"/>
+      <rect x="18" y="18" width="38" height="24" rx="12" fill="#E7F4F1"/>
+      <text x="37" y="35" text-anchor="middle" fill="#2E7B73" font-size="12" font-weight="750">01</text>
+      <text x="18" y="78" fill="#214541" font-size="23" font-weight="700">选准知识点</text>
+      <text x="18" y="104" fill="#66817D" font-size="13">SELECT ONE CAPABILITY</text>
+      <g transform="translate(18 134)">
+        <rect width="184" height="112" rx="15" fill="#EFF8F6" stroke="#C5E0DA"/>
+        <path d="M18 27H73M18 49H112M18 71H92" stroke="#4DA397" stroke-width="4" stroke-linecap="round" opacity="0.72"/>
+        <circle cx="150" cy="38" r="17" fill="#DCEFEB" stroke="#3E9D91"/>
+        <path d="M143 38L148 43 158 32" fill="none" stroke="#3E9D91" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="18" y="96" fill="#52736E" font-size="13">前置关系 · 来源证据</text>
+      </g>
+      <text x="18" y="268" fill="#718985" font-size="12">一次只讲一个核心能力</text>
+    </g>
+
+    <path d="M290 346H318" stroke="#607FC5" stroke-width="2.3" marker-end="url(#arrow)"/>
+
+    <g transform="translate(330 205)" filter="url(#shadow)">
+      <rect width="294" height="282" rx="22" fill="#FFFFFF" stroke="#CDD9EA"/>
+      <rect x="18" y="18" width="38" height="24" rx="12" fill="#ECF1FA"/>
+      <text x="37" y="35" text-anchor="middle" fill="#4F6EA9" font-size="12" font-weight="750">02</text>
+      <text x="18" y="78" fill="#293B57" font-size="23" font-weight="700">循序讲清楚</text>
+      <text x="18" y="104" fill="#6C7C98" font-size="13">PLAIN → PRECISE</text>
+      <g transform="translate(18 124)">
+        <path d="M9 10V115" stroke="#CFD9EC" stroke-width="3"/>
+        <g fill="#FFFFFF" stroke="#607FC5" stroke-width="2">
+          <circle cx="9" cy="10" r="7"/><circle cx="9" cy="45" r="7"/><circle cx="9" cy="80" r="7"/><circle cx="9" cy="115" r="7"/>
+        </g>
+        <text x="30" y="15" fill="#405572" font-size="15" font-weight="650">直觉与用途</text>
+        <text x="30" y="50" fill="#405572" font-size="15" font-weight="650">准确定义与机制</text>
+        <text x="30" y="85" fill="#405572" font-size="15" font-weight="650">具体例子</text>
+        <text x="30" y="120" fill="#405572" font-size="15" font-weight="650">反例与边界</text>
+      </g>
+      <text x="18" y="268" fill="#78869B" font-size="12">最后压缩成 3 个要点</text>
+    </g>
+
+    <path d="M636 346H664" stroke="#607FC5" stroke-width="2.3" marker-end="url(#arrow)"/>
+
+    <g transform="translate(676 205)" filter="url(#shadow)">
+      <rect width="268" height="282" rx="22" fill="#FFFFFF" stroke="#D8D0E5"/>
+      <rect x="18" y="18" width="38" height="24" rx="12" fill="#F2EDF7"/>
+      <text x="37" y="35" text-anchor="middle" fill="#755C96" font-size="12" font-weight="750">03</text>
+      <text x="18" y="78" fill="#463455" font-size="23" font-weight="700">用图降低难度</text>
+      <text x="18" y="104" fill="#7A698C" font-size="13">ASCII OR REAL SVG</text>
+      <g transform="translate(18 126)">
+        <rect width="232" height="95" rx="14" fill="#FAF8FC" stroke="#E1D8EA"/>
+        <text x="15" y="25" fill="#5E4A70" font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">观察 ──→ 判断 ──→ 验证</text>
+        <path d="M25 53H84M84 53L75 46M84 53L75 60M100 53H159M159 53L150 46M159 53L150 60" fill="none" stroke="#9271B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="25" cy="53" r="6" fill="#3E9D91"/><circle cx="100" cy="53" r="6" fill="#607FC5"/><circle cx="175" cy="53" r="6" fill="#9271B8"/>
+        <text x="15" y="82" fill="#8A7898" font-size="11">终端可见 · 静态 · 有文字降级</text>
+      </g>
+      <rect x="18" y="235" width="232" height="28" rx="14" fill="#FFF3EA" stroke="#E7C3A8"/>
+      <text x="134" y="254" text-anchor="middle" fill="#9A5631" font-size="12" font-weight="650">NO RAW MERMAID</text>
+    </g>
+
+    <path d="M956 346H984" stroke="#607FC5" stroke-width="2.3" marker-end="url(#arrow)"/>
+
+    <g transform="translate(996 205)" filter="url(#shadow)">
+      <rect width="386" height="282" rx="22" fill="#FFFFFF" stroke="#D9D0E6"/>
+      <rect x="18" y="18" width="38" height="24" rx="12" fill="#F2EDF7"/>
+      <text x="37" y="35" text-anchor="middle" fill="#755C96" font-size="12" font-weight="750">04</text>
+      <text x="18" y="78" fill="#463455" font-size="23" font-weight="700">两道题一起判断</text>
+      <text x="18" y="104" fill="#7A698C" font-size="13">TWO QUESTIONS, SHOWN TOGETHER</text>
+      <g transform="translate(18 126)">
+        <rect width="165" height="116" rx="15" fill="#F5F3FA" stroke="#DCCFE8"/>
+        <circle cx="24" cy="24" r="13" fill="#8063A4"/>
+        <text x="24" y="29" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="750">1</text>
+        <text x="45" y="29" fill="#4D3D5D" font-size="15" font-weight="700">检查理解</text>
+        <text x="16" y="59" fill="#796A87" font-size="12">机制 · 区别 · 边界</text>
+        <path d="M16 79H142M16 94H120" stroke="#BBA9CB" stroke-width="3" stroke-linecap="round" opacity="0.64"/>
+      </g>
+      <g transform="translate(185 126)">
+        <rect width="183" height="116" rx="15" fill="#F0F4FB" stroke="#CBD7EA"/>
+        <circle cx="24" cy="24" r="13" fill="#607FC5"/>
+        <text x="24" y="29" text-anchor="middle" fill="#FFFFFF" font-size="12" font-weight="750">2</text>
+        <text x="45" y="29" fill="#344A68" font-size="15" font-weight="700">检查应用</text>
+        <text x="16" y="59" fill="#6F7F98" font-size="12">案例 · 迁移 · 失败条件</text>
+        <path d="M16 79H158M16 94H131" stroke="#9EB0CF" stroke-width="3" stroke-linecap="round" opacity="0.64"/>
+      </g>
+      <text x="18" y="268" fill="#7B7187" font-size="12">等待回答，不附答案或提示</text>
+    </g>
+
+    <path d="M1189 500V527H1110" fill="none" stroke="#607FC5" stroke-width="2.3" marker-end="url(#arrow)"/>
+
+    <g transform="translate(220 548)" filter="url(#shadow)">
+      <rect width="1002" height="112" rx="22" fill="#FFFFFF" stroke="#D5DEE4"/>
+      <g transform="translate(24 22)">
+        <rect width="216" height="68" rx="15" fill="#F5F3FA" stroke="#DCCFE8"/>
+        <text x="18" y="27" fill="#604A73" font-size="14" font-weight="700">反馈 1 · FEEDBACK 1</text>
+        <text x="18" y="49" fill="#826F91" font-size="12">有效理解 + 一个关键缺口</text>
+      </g>
+      <path d="M250 56H288" stroke="#607FC5" stroke-width="2" marker-end="url(#arrow)"/>
+      <g transform="translate(300 22)">
+        <rect width="216" height="68" rx="15" fill="#F0F4FB" stroke="#CBD7EA"/>
+        <text x="18" y="27" fill="#405A7F" font-size="14" font-weight="700">反馈 2 · FEEDBACK 2</text>
+        <text x="18" y="49" fill="#70809A" font-size="12">应用证据 + 最小修订</text>
+      </g>
+      <path d="M526 56H564" stroke="#607FC5" stroke-width="2" marker-end="url(#arrow)"/>
+      <g transform="translate(576 22)">
+        <rect width="196" height="68" rx="15" fill="#EFF8F6" stroke="#C5E0DA"/>
+        <text x="18" y="27" fill="#2E736C" font-size="14" font-weight="700">记录学习证据</text>
+        <text x="18" y="49" fill="#66817D" font-size="12">错误 · 修订 · 复习队列</text>
+      </g>
+      <path d="M782 56H820" stroke="#607FC5" stroke-width="2" marker-end="url(#arrow)"/>
+      <g transform="translate(832 22)">
+        <rect width="146" height="68" rx="15" fill="#F3F8F0" stroke="#CDDDC6"/>
+        <text x="73" y="27" text-anchor="middle" fill="#45613C" font-size="14" font-weight="700">下一知识点</text>
+        <text x="73" y="49" text-anchor="middle" fill="#74856E" font-size="12">NEXT STEP</text>
+      </g>
+    </g>
+
+    <g transform="translate(58 682)">
+      <circle cx="5" cy="-5" r="5" fill="#3E9D91"/>
+      <text x="18" y="0" fill="#718596" font-size="13">来源有据 · 图示可见 · 两题同出 · 分题点评 · 学习状态可续</text>
+      <text x="1324" y="0" text-anchor="end" fill="#718596" font-size="12" letter-spacing="0.6">TEACH → CHECK → FEEDBACK → CONTINUE</text>
+    </g>
+  </g>
+</svg>

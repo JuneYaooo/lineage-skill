@@ -8,7 +8,7 @@
 
 It does more than summarize. It teaches concepts through progressive micro-lessons and reliable terminal ASCII/SVG visuals, asks two end-of-lesson questions together, responds to each answer, and tests independent use in real situations.
 
-[![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-C46B35.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-4C7BBE.svg)](./LICENSE)
 
 [中文](./README.md) · [Installation](./docs/install.md) · [Changelog](./CHANGELOG.md)
 
@@ -114,6 +114,8 @@ The material does not have to be perfect. Lineage identifies missing evidence, u
 
 A typical journey is: clarify the goal, study a demonstration, imitate, receive correction, work independently, transfer the method to a changed situation, pass a final check, and continue with long-term review.
 
+<img src="./docs/img/micro-lesson-workflow.svg" alt="A micro-lesson moving from progressive explanation and ASCII or SVG visuals to two questions shown together and feedback on each answer" width="100%">
+
 ## How it coaches
 
 - Source questions are answered directly with evidence and are not counted as proof of mastery.
@@ -151,4 +153,4 @@ When the material is rich enough, Lineage can support full coaching. When it sup
 
 ## License
 
-Licensed under [PolyForm Noncommercial License 1.0.0](./LICENSE). For commercial use or collaboration, contact <juneyaooo@gmail.com>.
+Licensed under the [Apache License 2.0](./LICENSE).

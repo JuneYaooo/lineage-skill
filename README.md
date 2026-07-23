@@ -8,7 +8,7 @@
 
 它不只总结内容，还会用深入浅出的微课和必要的 ASCII/SVG 图示讲清知识点，逐题检查理解，针对你的回答给反馈，并检查你能不能在真实场景中独立使用。
 
-[![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-C46B35.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-4C7BBE.svg)](./LICENSE)
 
 [English](./README.en.md) · [安装说明](./docs/install.md) · [更新记录](./CHANGELOG.md)
 
@@ -114,6 +114,8 @@ Lineage 会根据材料现状选择合适的处理方式。已有文字稿或整
 
 典型学习过程是：明确目标、观看示范、尝试模仿、接受纠偏、独立实战、换场景应用、完成检验，再进入长期复习和精进。
 
+<img src="./docs/img/micro-lesson-workflow.svg" alt="一节微课从渐进讲解、ASCII 或 SVG 图示，到两题同出和分题点评的流程" width="100%">
+
 ## 它会怎样带你练
 
 - 查资料时直接回答并附上出处，不会把一次查询算成“已经掌握”。
@@ -157,4 +159,4 @@ Lineage 会根据材料现状选择合适的处理方式。已有文字稿或整
 
 ## License
 
-本项目采用 [PolyForm Noncommercial License 1.0.0](./LICENSE)。商业使用或合作请联系 <juneyaooo@gmail.com>。
+本项目采用 [Apache License 2.0](./LICENSE)。
