@@ -29,6 +29,7 @@ MENTOR_REQUIRED = [
     "references/assessment_bank.json",
     "references/mentor_package.json",
     "references/mentor_protocol.md",
+    "references/micro_lesson_protocol.md",
     "references/graduation_policy.json",
     "references/schemas/apprenticeship_state.schema.json",
     "references/schemas/practice_episode.schema.json",
@@ -41,6 +42,8 @@ MENTOR_REQUIRED = [
     "scripts/schedule_retrieval.py",
     "scripts/validate_learner_state.py",
     "scripts/build_personal_skill_candidate.py",
+    "scripts/advance_micro_lesson.py",
+    "scripts/render_learning_svg.py",
 ]
 PLACEHOLDERS = [re.compile(pattern, re.I) for pattern in [r"\bTODO\b", r"add .+ here", r"implement here", r"rest of code", r"similar to above"]]
 
@@ -100,6 +103,18 @@ def validate_skill(skill_dir: Path) -> dict:
     if manifest_path.exists():
         if manifest.get("generated_by", {}).get("id") != "lineage-skill":
             issues.append(ValidationIssue("lineage_manifest.json", "generated_by.id must be lineage-skill"))
+        if "mentor" in manifest.get("roles", []):
+            features = manifest.get("runtime_features", {})
+            expected = {
+                "progressive_micro_lessons": True,
+                "formative_questions_per_unit": 2,
+                "question_pacing_default": "together",
+                "supports_one_at_a_time": True,
+                "static_svg_explanations": True,
+            }
+            for name, value in expected.items():
+                if features.get(name) != value:
+                    issues.append(ValidationIssue(f"lineage_manifest.json.runtime_features.{name}", f"expected {value!r}"))
         for filename, expected_hash in manifest.get("package_hashes", {}).items():
             artifact = skill_dir / "references" / filename
             if not artifact.exists():

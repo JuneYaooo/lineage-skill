@@ -222,6 +222,9 @@ __marimo__/
 .env.*
 !.env.example
 tests/
+!tests/
+tests/*
+!tests/test_micro_lesson_runtime.py
 docs/superpowers/
 output/
 outputs/

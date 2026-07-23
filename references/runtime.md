@@ -58,7 +58,7 @@ Each stage writes compiler status to `lineage_progress.json`. `pipeline_progress
 | package | distilled assets | CoursePackage 1.0 | write 1.0; keep 0.x migration explicit |
 | teacher_model | CoursePackage | TeacherModel 1.0 | thin evidence yields partial/blocked, never invented behavior |
 | capability_graph | CoursePackage | nodes, edges, graph audit | reject cycles and dangling references |
-| practice_bank | package + graph | tasks, rubrics, hints, errors | tasks must be standalone and observable |
+| practice_bank | package + graph | micro-lessons, two-question units, tasks, rubrics, hints, errors | every capability gets one progressive unit and exactly two gated formative questions |
 | assessment_bank | graph + rubrics | blind retrieval/transfer/graduation items | practice scores do not replace assessment |
 | mentor_package | compiler assets | runtime contract and policies | full mode only when ready |
 | mentor_audit | mentor assets | readiness JSON/Markdown | report ready, partial, or blocked |
@@ -92,6 +92,7 @@ Each stage writes compiler status to `lineage_progress.json`. `pipeline_progress
 ├── assessment_bank.json
 ├── mentor_package.json
 ├── mentor_protocol.md
+├── micro_lesson_protocol.md
 ├── graduation_policy.json
 ├── mentor_readiness_audit.json
 ├── mentor_readiness_audit.md
@@ -172,7 +173,7 @@ Structured assets carry `id`, `title`, `summary`, `details`, `conditions`, `inpu
 ### Stable IDs
 
 ```text
-src_ lesson_ chunk_ card_ claim_ cap_ edge_ rule_
+src_ lesson_ chunk_ card_ claim_ cap_ edge_ rule_ learning_unit_
 rubric_ task_ assess_ demo_ episode_ error_ candidate_
 ```
 
@@ -208,6 +209,8 @@ Capability node types are `concept`, `discrimination`, `diagnosis`, `decision`, 
 
 Each target needs observable outputs, prerequisites, source evidence, practice, rubrics, and assessment. Graduation capabilities need transfer assessment.
 
+Each LearningUnit carries an ordered plain-to-precise teaching sequence, visual strategy, source evidence, and exactly two formative questions: understanding first, application second. Show both together by default, wait for the learner, and give separate numbered feedback. Preserve one-at-a-time pacing as an explicit or cognitive-load fallback.
+
 PracticeTask carries stage, task type, difficulty, cognitive load, context, standalone prompt, inputs, expected output, rubric IDs, H0–H4 hints, error IDs, feedback rules, revision requirement, transfer variants, evidence answer, and safety. Rubric criteria use observable 0–4 anchors.
 
 AssessmentItem carries type, novelty dimensions, allowed support, blindness rule, rubric IDs, evidence answer, and parallel-form group. Do not show demonstrations, answers, or rubric anchors before a blind attempt.
@@ -221,7 +224,7 @@ Full mode requires:
 1. ready TeacherModel;
 2. valid acyclic capability dependencies;
 3. practice and assessment coverage for every core capability;
-4. anchored rubrics and complete hint ladders;
+4. one complete two-question visual micro-lesson per core capability, anchored rubrics, and complete hint ladders;
 5. retrieval, production, transfer, boundary, and graduation coverage;
 6. non-empty protocol and graduation policy;
 7. no blocking source audit, duplicate IDs, dangling references, or private learner data.
@@ -238,11 +241,13 @@ When requested full mode cannot pass, emit guided or none and record the downgra
 ├── error_library.json
 ├── review_queue.json
 ├── artifact_index.json
+├── artifacts/
+│   └── diagrams/
 ├── graduation_record.json
 └── personal_skill_candidates/
 ```
 
-Generated scripts initialize state, append episodes, rebuild mastery, schedule retrieval, select the next task, validate state, and build Personal Skill candidates.
+Generated scripts initialize state, enforce the two-question micro-lesson phase machine, render static accessible SVG diagrams, append episodes, rebuild mastery, schedule retrieval, select the next task, validate state, and build Personal Skill candidates.
 
 PracticeEpisodes are immutable events. Correct an old event by appending a correction event. MasteryState is derived and may decrease with counterevidence.
 

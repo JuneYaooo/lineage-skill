@@ -1,4 +1,4 @@
 interface:
   display_name: "Lineage Skill"
-  short_description: "Turn courses into Skills that teach and coach."
-  default_prompt: "Use $lineage-skill to turn my course, book, or media into a source-backed learning Skill that demonstrates the method, guides practice, corrects mistakes, and helps me work independently."
+  short_description: "Turn courses into Skills with visual micro-lessons."
+  default_prompt: "Use $lineage-skill to turn my course, book, or media into a source-backed learning Skill that teaches progressively with terminal ASCII or SVG, asks two questions together, gives focused feedback on each, and helps me work independently."

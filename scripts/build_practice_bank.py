@@ -80,7 +80,7 @@ def rubric_for_node(node: dict[str, Any], course_id: str) -> dict[str, Any]:
 
 def task_shape(node_type: str) -> tuple[str, str, str]:
     return {
-        "concept": ("imitation", "explain", "Explain the capability in your own words, contrast it with a nearby idea, and give one boundary example."),
+        "concept": ("imitation", "apply", "Apply the capability to a concrete case: identify what fits, what does not, and what conclusion or action the distinction supports."),
         "discrimination": ("coached", "compare", "Compare two plausible options, select one, and explain why the other does not apply."),
         "diagnosis": ("coached", "diagnose", "Diagnose the case from observable cues before naming a method."),
         "decision": ("coached", "predict", "Commit to a decision and confidence level, then list the evidence that would reverse it."),
@@ -126,7 +126,7 @@ def practice_task(node: dict[str, Any], rubric: dict[str, Any], error: dict[str,
         "difficulty": int(node.get("difficulty_band") or 2),
         "estimated_cognitive_load": "medium" if int(node.get("difficulty_band") or 2) < 4 else "high",
         "context": f"Use a case or project that requires {node['description']}",
-        "learner_prompt": f"Before seeing an explanation, make a concrete attempt. {action} Submit the artifact, your reasoning, and confidence (0-100).",
+        "learner_prompt": f"Question 2 of 2 — Application. {action} Submit the artifact, your reasoning, and confidence (0-100).",
         "inputs": ["A relevant case or real project", "Known constraints", "Any source index explicitly allowed by the Mentor"],
         "expected_output": {
             "type": "mixed" if task_type in {"produce", "experiment"} else "text",
@@ -152,6 +152,111 @@ def practice_task(node: dict[str, Any], rubric: dict[str, Any], error: dict[str,
             "high_risk_policy": "Keep medical, legal, financial, investment, and other high-risk practice educational and non-operational unless appropriately supervised.",
             "source_boundary": "Label teacher content, synthesis, Mentor inference, learner hypothesis, and real-world evidence separately.",
         },
+        "micro_lesson": {"question_index": 2, "purpose": "application", "present_together": True, "wait_for_response": True},
+    }
+
+
+def understanding_task(node: dict[str, Any], rubric: dict[str, Any], error: dict[str, Any], course_id: str) -> dict[str, Any]:
+    task_id = stable_id("task", course_id, node["id"], "micro-lesson-question-1")
+    return {
+        "id": task_id,
+        "title": f"Understanding check: {node['name']}",
+        "capability_ids": [node["id"]],
+        "prerequisite_ids": list(node.get("prerequisites") or []),
+        "stage": "imitation",
+        "task_type": "explain",
+        "difficulty": max(1, int(node.get("difficulty_band") or 2) - 1),
+        "estimated_cognitive_load": "low",
+        "context": f"Check the learner's mental model of {node['description']} after the micro-lesson explanation.",
+        "learner_prompt": (
+            f"Question 1 of 2 — Understanding. Explain {node['name']} in your own words, "
+            "identify the most important relationship or distinction, and give one case where it would not apply."
+        ),
+        "inputs": ["The completed micro-lesson explanation and its source-grounded visual"],
+        "expected_output": {
+            "type": "text",
+            "requirements": ["Own-words explanation", "Key relationship or distinction", "Boundary or counterexample"],
+        },
+        "rubric_ids": [rubric["id"]],
+        "hint_ladder": HINT_LADDER,
+        "common_errors": [error["id"]],
+        "feedback_rules": [
+            "Describe the learner's actual mental model before correcting it.",
+            "Name one effective idea and one primary misconception or missing distinction.",
+            "Give the smallest source-grounded correction without repeating the full lesson; evaluate question 2 separately.",
+        ],
+        "revision_required": False,
+        "transfer_variants": [],
+        "evidence_answer": {
+            "provenance": "source_grounded_synthesis",
+            "evidence": list(node.get("source_evidence") or []),
+            "scoring_notes": f"Check the learner's mental model of {node['name']}; wording need not match the source.",
+        },
+        "safety": {
+            "high_risk_policy": "Keep medical, legal, financial, investment, and other high-risk checks educational and non-operational unless appropriately supervised.",
+            "source_boundary": "Label teacher content, synthesis, Mentor inference, learner hypothesis, and real-world evidence separately.",
+        },
+        "micro_lesson": {"question_index": 1, "purpose": "understanding", "present_together": True, "wait_for_response": True},
+    }
+
+
+def micro_lesson_unit(node: dict[str, Any], question_one: dict[str, Any], question_two: dict[str, Any], course_id: str) -> dict[str, Any]:
+    unit_id = stable_id("learning_unit", course_id, node["id"], "micro-lesson")
+    return {
+        "id": unit_id,
+        "capability_id": node["id"],
+        "title": f"Micro-lesson: {node['name']}",
+        "objective": node["description"],
+        "prerequisite_ids": list(node.get("prerequisites") or []),
+        "source_evidence": list(node.get("source_evidence") or []),
+        "teaching_sequence": [
+            {"stage": "orientation", "instruction": "State why this idea matters and connect it to one learner goal or familiar situation."},
+            {"stage": "prerequisite_bridge", "instruction": "Recall only the prerequisite needed for this idea; diagnose first if that prerequisite is uncertain."},
+            {"stage": "plain_language_model", "instruction": "Give a short intuitive explanation before introducing precise terminology."},
+            {"stage": "precise_model", "instruction": "State the source-grounded definition, mechanism, conditions, and important distinction."},
+            {"stage": "visual_model", "instruction": "Use a source visual, compact ASCII diagram, or generated SVG when relationships are easier to see than read."},
+            {"stage": "worked_example", "instruction": "Walk through one concrete example step by step and point back to the visual."},
+            {"stage": "counterexample", "instruction": "Show one plausible non-example, boundary, or common confusion."},
+            {"stage": "recap", "instruction": "End with no more than three takeaways before showing the two-question check."},
+        ],
+        "visual_strategy": {
+            "priority": ["source_visual", "ascii", "svg", "text_only"],
+            "svg_when": [
+                "three or more entities or stages interact",
+                "a cycle, hierarchy, comparison, or causal flow is central",
+                "spatial grouping materially reduces explanation length",
+            ],
+            "allowed_svg_kinds": ["flow", "cycle", "compare", "hierarchy"],
+            "accessibility": ["title", "description", "high_contrast", "text_fallback"],
+            "avoid": ["mermaid_code_unless_the_host_renderer_is_confirmed"],
+        },
+        "questions": [
+            {
+                "order": 1,
+                "task_id": question_one["id"],
+                "purpose": "understanding",
+                "unlock_after": "teaching_complete",
+                "present_together": True,
+                "wait_for_response": True,
+            },
+            {
+                "order": 2,
+                "task_id": question_two["id"],
+                "purpose": "application",
+                "unlock_after": "teaching_complete",
+                "present_together": True,
+                "wait_for_response": True,
+            },
+        ],
+        "completion_policy": {
+            "required_answer_count": 2,
+            "question_pacing_default": "together",
+            "question_pacing_allowed": ["together", "one-at-a-time"],
+            "present_both_after_teaching": True,
+            "feedback_per_numbered_answer": True,
+            "advance_only_after_both_answers_feedback": True,
+            "formative_checks_alone_do_not_prove_mastery": True,
+        },
     }
 
 
@@ -160,15 +265,22 @@ def build_practice_bank(package: dict[str, Any], graph: dict[str, Any], *, depth
     rubrics: list[dict[str, Any]] = []
     tasks: list[dict[str, Any]] = []
     errors: list[dict[str, Any]] = []
+    learning_units: list[dict[str, Any]] = []
     for node in graph.get("nodes", []):
         rubric = rubric_for_node(node, course_id)
         error = error_pattern(node, course_id)
+        question_one = understanding_task(node, rubric, error, course_id)
         task = practice_task(node, rubric, error, course_id)
+        unit = micro_lesson_unit(node, question_one, task, course_id)
+        question_one["micro_lesson"]["unit_id"] = unit["id"]
+        task["micro_lesson"]["unit_id"] = unit["id"]
         rubrics.append(rubric)
         errors.append(error)
+        tasks.append(question_one)
         tasks.append(task)
+        learning_units.append(unit)
         node["success_rubrics"] = [rubric["id"]]
-        node["practice_tasks"] = [task["id"]]
+        node["practice_tasks"] = [question_one["id"], task["id"]]
         if depth == "deep" and node["type"] != "transfer":
             transfer_task = dict(task)
             transfer_task["id"] = stable_id("task", course_id, node["id"], "transfer-variant")
@@ -177,6 +289,7 @@ def build_practice_bank(package: dict[str, Any], graph: dict[str, Any], *, depth
             transfer_task["difficulty"] = min(5, task["difficulty"] + 1)
             transfer_task["learner_prompt"] = f"Apply {node['name']} in a context that changes at least one of domain, scale, time, resources, audience, or risk. Explain what transfers, what does not, and provide a counterexample."
             transfer_task["transfer_variants"] = [task["id"]]
+            transfer_task.pop("micro_lesson", None)
             task["transfer_variants"] = [transfer_task["id"]]
             tasks.append(transfer_task)
             node["practice_tasks"].append(transfer_task["id"])
@@ -184,11 +297,19 @@ def build_practice_bank(package: dict[str, Any], graph: dict[str, Any], *, depth
         "schema_version": "1.0",
         "course_package_id": package["manifest"]["package_id"],
         "practice_depth": depth,
+        "learning_units": learning_units,
         "rubrics": rubrics,
         "tasks": tasks,
         "error_patterns": errors,
         "quality": {
-            "status": "ready" if tasks and all(task["hint_ladder"] == HINT_LADDER for task in tasks) else "blocked",
+            "status": "ready" if tasks and learning_units and all(task["hint_ladder"] == HINT_LADDER for task in tasks) and all(
+                len(unit["questions"]) == 2
+                and all(question.get("unlock_after") == "teaching_complete" and question.get("present_together") is True for question in unit["questions"])
+                and unit["completion_policy"].get("question_pacing_default") == "together"
+                for unit in learning_units
+            ) else "blocked",
+            "learning_unit_count": len(learning_units),
+            "two_question_unit_count": sum(len(unit["questions"]) == 2 for unit in learning_units),
             "task_count": len(tasks),
             "rubric_count": len(rubrics),
             "error_pattern_count": len(errors),

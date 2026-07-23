@@ -26,12 +26,17 @@ def initialize(mentor_package_path: Path, learner_store_root: Path, learner_id: 
             "desired_capabilities": capabilities,
             "real_project": project,
             "constraints": {"time": "", "tools": [], "risk": [], "access": []},
+            "teaching_preferences": mentor["learning_contract_template"].get(
+                "teaching_preferences",
+                {"explanation_density": "normal", "visual_mode": "auto", "svg": "when-useful", "formative_question_count": 2, "question_pacing": "together"},
+            ),
             "expected_artifacts": [],
             "graduation_target": mentor["learning_contract_template"]["graduation_target"],
         },
-        "profile": {"prior_experience": "", "preferred_language": "", "accessibility_needs": None, "explanation_density": "normal"},
+        "profile": {"prior_experience": "", "preferred_language": "", "accessibility_needs": None, "explanation_density": "normal", "visual_preference": "auto"},
         "current_stage": "orientation",
         "active_capabilities": capabilities,
+        "active_learning_unit": None,
         "mastery_state_ref": "mastery_state.json",
         "review_queue_ref": "review_queue.json",
         "episode_log_ref": "practice_episodes.jsonl",
@@ -44,6 +49,7 @@ def initialize(mentor_package_path: Path, learner_store_root: Path, learner_id: 
     write_json(root / "review_queue.json", {"schema_version": "1.0", "items": []})
     write_json(root / "artifact_index.json", {"schema_version": "1.0", "artifacts": []})
     (root / "practice_episodes.jsonl").touch(exist_ok=True)
+    (root / "artifacts" / "diagrams").mkdir(parents=True, exist_ok=True)
     (root / "personal_skill_candidates").mkdir(exist_ok=True)
     return root
 

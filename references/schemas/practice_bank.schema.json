@@ -3,10 +3,17 @@
   "$id": "https://lineage-skill.local/schemas/practice-bank-1.0.json",
   "title": "Lineage PracticeBank 1.0",
   "type": "object",
-  "required": ["schema_version", "course_package_id", "rubrics", "tasks", "error_patterns", "quality"],
+  "required": ["schema_version", "course_package_id", "learning_units", "rubrics", "tasks", "error_patterns", "quality"],
   "properties": {
     "schema_version": {"const": "1.0", "type": "string"},
     "course_package_id": {"type": "string"},
+    "learning_units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "capability_id", "title", "objective", "teaching_sequence", "visual_strategy", "questions", "completion_policy"]
+      }
+    },
     "rubrics": {"type": "array", "items": {"type": "object", "required": ["id", "name", "capability_ids", "criteria", "failure_conditions", "source_evidence", "scoring_policy"]}},
     "tasks": {"type": "array", "items": {"type": "object", "required": ["id", "title", "capability_ids", "stage", "task_type", "difficulty", "learner_prompt", "expected_output", "rubric_ids", "hint_ladder", "revision_required", "evidence_answer", "safety"]}},
     "error_patterns": {"type": "array"},

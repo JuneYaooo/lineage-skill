@@ -14,6 +14,20 @@
     "profile": {"type": "object"},
     "current_stage": {"enum": ["orientation", "modeling", "imitation", "coached_practice", "independent_practice", "transfer", "graduation", "alumni"], "type": "string"},
     "active_capabilities": {"type": "array"},
+    "active_learning_unit": {
+      "type": ["object", "null"],
+      "properties": {
+        "unit_id": {"type": "string"},
+        "capability_id": {"type": "string"},
+        "phase": {"enum": ["teaching", "awaiting_answers", "feedback_batch", "awaiting_answer_1", "feedback_1", "ready_question_2", "awaiting_answer_2", "feedback_2", "complete"], "type": "string"},
+        "pacing": {"enum": ["together", "one-at-a-time"], "type": "string"},
+        "question_ids": {"type": "array", "minItems": 2},
+        "current_question_index": {"type": "integer"},
+        "answered_question_ids": {"type": "array"},
+        "last_answered_question_ids": {"type": "array"},
+        "diagram_refs": {"type": "array"}
+      }
+    },
     "mastery_state_ref": {"type": "string"},
     "review_queue_ref": {"type": "string"},
     "episode_log_ref": {"type": "string"},

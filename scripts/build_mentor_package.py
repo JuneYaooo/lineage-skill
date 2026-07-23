@@ -48,6 +48,8 @@ def build_mentor_package(source_dir: Path, *, requested_mode: str = "full", evid
     assessment = load_json(source_dir / "assessment_bank.json")
     protocol_source = ROOT / "references" / "apprenticeship-protocol.md"
     shutil.copy2(protocol_source, source_dir / "mentor_protocol.md")
+    micro_lesson_source = ROOT / "references" / "micro-lesson-protocol.md"
+    shutil.copy2(micro_lesson_source, source_dir / "micro_lesson_protocol.md")
     policy = graduation_policy(assessment)
     write_json(source_dir / "graduation_policy.json", policy)
     audit = build_readiness_audit(source_dir)
@@ -77,6 +79,13 @@ def build_mentor_package(source_dir: Path, *, requested_mode: str = "full", evid
             "desired_capabilities": [],
             "real_project": "",
             "constraints": {"time": "", "tools": [], "risk": [], "access": []},
+            "teaching_preferences": {
+                "explanation_density": "normal",
+                "visual_mode": "auto",
+                "svg": "when-useful",
+                "formative_question_count": 2,
+                "question_pacing": "together",
+            },
             "expected_artifacts": [],
             "graduation_target": policy["evidence_requirements"],
             "baseline_diagnostic_required": True,
@@ -86,6 +95,7 @@ def build_mentor_package(source_dir: Path, *, requested_mode: str = "full", evid
         "practice_bank_ref": "practice_bank.json",
         "assessment_bank_ref": "assessment_bank.json",
         "mentor_protocol_ref": "mentor_protocol.md",
+        "micro_lesson_protocol_ref": "micro_lesson_protocol.md",
         "graduation_policy_ref": "graduation_policy.json",
         "learner_state_schema_ref": "schemas/apprenticeship_state.schema.json",
         "episode_schema_ref": "schemas/practice_episode.schema.json",

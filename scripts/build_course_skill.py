@@ -58,16 +58,16 @@ PROVENANCE_WATERMARK = "lineage-skill:cognitive-apprenticeship-builder:v1.0"
 MODE_SPECS = {
     "mentor": {
         "label": "Mentor",
-        "description": "a source-grounded cognitive apprenticeship mentor for diagnosis, attempt-first practice, feedback, retrieval, transfer, and graduation",
+        "description": "a source-grounded cognitive apprenticeship mentor for progressive visual micro-lessons, guided practice, feedback, retrieval, transfer, and graduation",
         "focus": [
             "Act as a course-specific mentor grounded in the packaged course materials.",
-            "Guide the learner from baseline diagnosis through modeling, coached practice, independent transfer, retention, and graduation.",
+            "Teach unseen capabilities progressively with a useful visual and a two-question loop, then guide coached practice, independent transfer, retention, and graduation.",
             "Ask clarifying or diagnostic questions when the user's goal, level, schedule, or application context is unclear.",
         ],
         "rules": [
             "Use course references first, and distinguish direct course content from mentor-style synthesis.",
-            "Route explicit source lookup directly; use attempt-first for learning and training.",
-            "Use the lowest effective hint, require revision, and record a PracticeEpisode after every training attempt.",
+            "Route explicit source lookup directly; teach unseen capabilities before formative checks, and use attempt-first for retrieval and assessment.",
+            "Use the lowest effective hint, require revision when the task or critical gap calls for it, and record a PracticeEpisode after every training attempt.",
             "Treat learner state as external private data; never store real learner state in this Skill.",
             "If the course materials do not support a claim, say what is missing.",
         ],
@@ -175,6 +175,8 @@ RUNTIME_SCRIPTS = [
     "schedule_retrieval.py",
     "validate_learner_state.py",
     "build_personal_skill_candidate.py",
+    "advance_micro_lesson.py",
+    "render_learning_svg.py",
 ]
 MENTOR_ARTIFACTS = [
     "teacher_model.json",
@@ -183,6 +185,7 @@ MENTOR_ARTIFACTS = [
     "assessment_bank.json",
     "mentor_package.json",
     "mentor_protocol.md",
+    "micro_lesson_protocol.md",
     "graduation_policy.json",
     "mentor_readiness_audit.json",
     "mentor_readiness_audit.md",
@@ -638,19 +641,22 @@ def build_skill_md(
         mentor_runtime = f"""
 ## Mentor Runtime
 
-This package runs in `{apprenticeship_mode}` apprenticeship mode. Read `references/mentor_package.json`, `references/mentor_protocol.md`, `references/capability_graph.json`, `references/practice_bank.json`, `references/assessment_bank.json`, and `references/graduation_policy.json` before training.
+This package runs in `{apprenticeship_mode}` apprenticeship mode. Read `references/mentor_package.json`, `references/mentor_protocol.md`, `references/micro_lesson_protocol.md`, `references/capability_graph.json`, `references/practice_bank.json`, `references/assessment_bank.json`, and `references/graduation_policy.json` before training.
 
 Route each request as source lookup, direct explanation, diagnostic learning, guided practice, artifact feedback, real-world application, retrieval review, transfer test, or graduation test.
 
 - Answer explicit source lookup directly and do not count it as mastery evidence.
 - Honor an explicit direct-answer request, but say that it creates no mastery evidence.
-- For learning, review, transfer, and graduation, collect a prediction or observable attempt before explanation.
-- Evaluate the artifact against criterion-level rubrics; give the lowest effective H0-H4 hint and require a concrete revision.
+- For an unseen capability, follow its `learning_unit`: explain progressively, use a useful source visual/terminal ASCII/SVG, then present exactly two numbered questions together and wait.
+- Do not output Mermaid code unless the current host is known to render it and the learner explicitly prefers it.
+- Give separate feedback for answers 1 and 2. If only one was answered, ask briefly for the missing number. Do not begin the next capability before both have feedback.
+- For retrieval, review, assessment, transfer, and graduation, collect a prediction or observable attempt before explanation.
+- Evaluate the artifact against criterion-level rubrics; give the lowest effective H0-H4 hint and require a concrete revision when the task or critical gap calls for it.
 - Advance a capability by at most one evidence state. Transfer requires H0 success in a changed context; retention requires delayed parallel-form retrieval.
 - Fade templates, hints, and intervention timing one dimension at a time as independent success accumulates.
 - Keep `[Teacher source]`, `[Source-grounded synthesis]`, `[Mentor inference]`, `[Learner hypothesis]`, and `[Learner real-world evidence]` distinct.
 
-Learner state is external and private. Resolve the host-provided learner store as `{{learner_store_root}}/apprenticeships/{{mentor_package_id}}/`. Never write real learner data under `references/`. Initialize it with `scripts/initialize_apprenticeship.py`; append attempts with `scripts/record_practice_episode.py`; rebuild derived mastery with `scripts/rebuild_mastery_state.py`; schedule reviews and choose next practice with the provided runtime scripts. If the host cannot write state, return a complete JSON patch and state clearly that it was not persisted.
+Learner state is external and private. Resolve the host-provided learner store as `{{learner_store_root}}/apprenticeships/{{mentor_package_id}}/`. Never write real learner data under `references/`. Initialize it with `scripts/initialize_apprenticeship.py`; persist two-question pacing with `scripts/advance_micro_lesson.py`; generate explanatory SVG files with `scripts/render_learning_svg.py`; append attempts with `scripts/record_practice_episode.py`; rebuild derived mastery with `scripts/rebuild_mastery_state.py`; schedule reviews and choose next practice with the provided runtime scripts. If the host cannot write state, return a complete JSON patch and state clearly that it was not persisted.
 
 For high-risk medical, legal, financial, investment, or safety-sensitive materials, keep practice educational and source-bounded. Graduation shows competence with the packaged method, not professional licensure.
 """
@@ -1020,6 +1026,13 @@ def build_lineage_manifest(
             "practice_bank": "1.0" if mentor_package else None,
             "assessment_bank": "1.0" if mentor_package else None,
             "mentor_package": "1.0" if mentor_package else None,
+        },
+        "runtime_features": {
+            "progressive_micro_lessons": bool(mentor_package),
+            "formative_questions_per_unit": 2 if mentor_package else 0,
+            "question_pacing_default": "together" if mentor_package else "none",
+            "supports_one_at_a_time": bool(mentor_package),
+            "static_svg_explanations": bool(mentor_package),
         },
         "package_hashes": package_hashes,
     }

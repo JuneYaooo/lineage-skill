@@ -37,6 +37,7 @@ def build_readiness_audit(source_dir: Path) -> dict[str, Any]:
         "practice_bank": source_dir / "practice_bank.json",
         "assessment_bank": source_dir / "assessment_bank.json",
         "mentor_protocol": source_dir / "mentor_protocol.md",
+        "micro_lesson_protocol": source_dir / "micro_lesson_protocol.md",
         "graduation_policy": source_dir / "graduation_policy.json",
     }
     missing_files = [name for name, path in required.items() if not path.exists()]
@@ -52,6 +53,7 @@ def build_readiness_audit(source_dir: Path) -> dict[str, Any]:
     graph_nodes = (data.get("capability_graph") or {}).get("nodes", [])
     practice_tasks = (data.get("practice_bank") or {}).get("tasks", [])
     rubrics = (data.get("practice_bank") or {}).get("rubrics", [])
+    learning_units = (data.get("practice_bank") or {}).get("learning_units", [])
     assessments = (data.get("assessment_bank") or {}).get("items", [])
     blockers: list[str] = []
     blockers.extend(f"missing artifact: {name}" for name in missing_files)
@@ -65,9 +67,11 @@ def build_readiness_audit(source_dir: Path) -> dict[str, Any]:
         blockers.append("one or more capability nodes have no assessment")
     if practice_quality.get("status") != "ready" or not practice_tasks or not rubrics:
         blockers.append("PracticeBank lacks complete tasks, rubrics, or hint ladders")
+    if graph_nodes and (len(learning_units) != len(graph_nodes) or any(len(unit.get("questions") or []) != 2 for unit in learning_units)):
+        blockers.append("PracticeBank lacks one complete two-question micro-lesson for every capability")
     if assessment_quality.get("status") != "ready" or not assessments:
         blockers.append("AssessmentBank does not cover the graduation matrix")
-    placeholder_files = placeholder_hits([source_dir / "mentor_protocol.md", source_dir / "graduation_policy.json"])
+    placeholder_files = placeholder_hits([source_dir / "mentor_protocol.md", source_dir / "micro_lesson_protocol.md", source_dir / "graduation_policy.json"])
     if placeholder_files:
         blockers.append("mentor protocol or graduation policy contains placeholder content")
     package_integrity = ((data.get("course_package") or {}).get("quality") or {}).get("integrity", {})
@@ -97,7 +101,7 @@ def build_readiness_audit(source_dir: Path) -> dict[str, Any]:
             "cycles": graph_quality.get("cycle_count", 0),
             "dangling_references": graph_quality.get("dangling_reference_count", 0),
         },
-        "practice": {"tasks": len(practice_tasks), "rubrics": len(rubrics), "capability_coverage": practice_quality.get("capability_coverage", 0)},
+        "practice": {"tasks": len(practice_tasks), "rubrics": len(rubrics), "learning_units": len(learning_units), "two_question_units": sum(len(unit.get("questions") or []) == 2 for unit in learning_units), "capability_coverage": practice_quality.get("capability_coverage", 0)},
         "assessment": {"items": len(assessments), "types": assessment_quality.get("types", []), "missing_types": assessment_quality.get("missing_types", [])},
         "integrity": {
             "placeholder_files": placeholder_files,
@@ -121,6 +125,7 @@ def audit_markdown(audit: dict[str, Any]) -> str:
         f"- Teacher grounded ratio: {audit['teacher_model']['grounded_ratio']}",
         f"- Capability nodes: {audit['capability_graph']['nodes']}",
         f"- Practice tasks / rubrics: {audit['practice']['tasks']} / {audit['practice']['rubrics']}",
+        f"- Two-question micro-lessons: {audit['practice']['two_question_units']}",
         f"- Assessments: {audit['assessment']['items']}",
         "",
         "## Blockers",

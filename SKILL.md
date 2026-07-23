@@ -1,6 +1,6 @@
 ---
 name: lineage-skill
-description: Turn courses, books, video, audio, PDFs, slides, transcripts, OCR, notes, and long-form materials into source-grounded learning Skills that explain, demonstrate, ask the learner to try first, give focused feedback, schedule review, test transfer, and support independent work. Also use for CoursePackage migration, teacher-method extraction, learning paths, practice and assessment libraries, private learner-state workflows, reusable personal methods, and graduation evaluation.
+description: Turn courses, books, video, audio, PDFs, slides, transcripts, OCR, notes, and long-form materials into source-grounded learning Skills that teach unseen concepts progressively with reliable terminal ASCII or SVG visuals, ask two end-of-lesson questions together by default, give focused feedback, schedule review, test transfer, and support independent work. Also use for CoursePackage migration, teacher-method extraction, learning paths, practice and assessment libraries, private learner-state workflows, reusable personal methods, and graduation evaluation.
 ---
 
 # Lineage Skill
@@ -16,7 +16,8 @@ Preserve evidence before synthesis. Require observable learner work before maste
 ## Read when needed
 
 - Pipeline, providers, schemas, recovery, and output layouts: [references/runtime.md](references/runtime.md)
-- Session routing, attempt-first, feedback, and fading: [references/apprenticeship-protocol.md](references/apprenticeship-protocol.md)
+- Session routing, attempt-first assessment, feedback, and fading: [references/apprenticeship-protocol.md](references/apprenticeship-protocol.md)
+- Progressive concept teaching, SVG/ASCII explanation, and the two-question check: [references/micro-lesson-protocol.md](references/micro-lesson-protocol.md)
 - Claim and feedback provenance: [references/provenance-policy.md](references/provenance-policy.md)
 - Mastery transitions and review scheduling: [references/mastery-policy.md](references/mastery-policy.md)
 - Graduation evidence: [references/graduation-policy.md](references/graduation-policy.md)
@@ -30,6 +31,7 @@ Preserve evidence before synthesis. Require observable learner work before maste
 - Treat TeacherModel as source-supported domain behavior, not a personality or consciousness clone.
 - Treat recognition, fluency, lesson completion, and one success as insufficient mastery evidence.
 - Require an observable attempt before updating capability state.
+- Teach one unseen capability with a plain-language model, precise explanation, useful ASCII/SVG visual, example, counterexample, and exactly two end-of-lesson questions presented together by default.
 - Advance at most one mastery state per successful episode.
 - Require changed-context H0 performance for transfer and delayed parallel-form success for retention.
 - Keep PracticeEpisodes append-only and rebuild MasteryState from events.
@@ -176,8 +178,9 @@ First route the request as source lookup, direct explanation, diagnostic learnin
 
 - Answer explicit lookup directly; do not update mastery.
 - Honor explicit quick answers but label them as non-mastery evidence.
-- For learning, review, transfer, and graduation, collect a prediction or attempt first.
-- Evaluate criterion-level rubric evidence, name one primary bottleneck, give the minimum effective hint, and request one concrete revision.
+- For an unseen capability, teach one progressive micro-lesson first, then present exactly two numbered formative questions together and wait. Use one-at-a-time pacing only when requested or needed for cognitive load.
+- For retrieval, review, assessment, transfer, and graduation, collect a prediction or attempt first.
+- Evaluate criterion-level rubric evidence, name one primary bottleneck, give the minimum effective hint, and request a concrete revision when the task or critical gap calls for it.
 - Record prediction, confidence, attempts, hints, rubric results, source evidence, inference, errors, outcome, reflection, mastery events, and next actions.
 - Explain why the next task was selected.
 - Fade only one support dimension after repeated success.

@@ -6,7 +6,7 @@
 
 **Turn courses, books, and handouts into a source-grounded learning Skill that helps you practice**
 
-It does more than summarize. It organizes how the teacher solves problems, creates progressive practice, responds to your attempts, and checks whether you can use the method independently in real situations.
+It does more than summarize. It teaches concepts through progressive micro-lessons and reliable terminal ASCII/SVG visuals, asks two end-of-lesson questions together, responds to each answer, and tests independent use in real situations.
 
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-C46B35.svg)](./LICENSE)
 
@@ -37,7 +37,7 @@ You do not need to run project scripts or understand the internal file structure
 | 3. Confirm the goal | Say whether you mainly want source lookup, systematic learning, help with real problems, or practical checklists and templates | Explains whether the material is sufficient, what is missing, how deep the result can go, and how raw material will be protected |
 | 4. Let it build | Confirm that it should begin; you do not need to direct every stage | Handles transcription, recognition, source mapping, teacher-method extraction, practice design, and quality checks; interrupted work can resume |
 | 5. Review and enable | Read the delivery summary and confirm that no important material was missed | Delivers the course Skill, reports coverage, evidence gaps, coaching depth, and privacy handling, then enables it in the current assistant |
-| 6. Start the first lesson | Tell the new Skill your goal, current level, available time, and a real situation you care about | Runs a short baseline check and gives one appropriate task, waiting for your attempt before feedback |
+| 6. Start the first lesson | Tell the new Skill your goal, current level, available time, and a real situation you care about | Runs a short baseline check, teaches one concept progressively with terminal ASCII or SVG when useful, then shows two questions together and evaluates each answer |
 | 7. Keep learning | Return with “continue from last time” or submit real work | Preserves attempts, mistakes, and revisions, schedules review, and gradually reduces support |
 | 8. Update or graduate | Add new material when it appears, or request an independent check when ready | Updates the course while preserving progress, then tests delayed recall and transfer before claiming mastery |
 
@@ -69,7 +69,7 @@ If any of this is unclear, ask Lineage to complete the delivery check before sta
 
 ### How to begin learning
 
-> Start teaching me with the course Skill you just created. First ask about my goal, current level, weekly time, and one real application. Then run a short baseline check and give me only the most appropriate first exercise. Wait for my first attempt before evaluating it against clear criteria and asking me to revise.
+> Start teaching me with the course Skill you just created. First ask about my goal, current level, weekly time, and one real application. After a short baseline check, teach one concept progressively and use terminal ASCII or SVG when it clarifies the idea; do not output Mermaid source. Then show both questions together, wait for my answers, and evaluate them separately.
 
 On later visits, you do not need to repeat the full background. These short requests are enough:
 
@@ -117,7 +117,10 @@ A typical journey is: clarify the goal, study a demonstration, imitate, receive 
 ## How it coaches
 
 - Source questions are answered directly with evidence and are not counted as proof of mastery.
-- During learning, you submit a judgment, explanation, plan, or artifact before seeing feedback.
+- New concepts move from intuition to precise definition, visual model, example, counterexample, and a three-point recap.
+- Visuals default to terminal-safe ASCII, with real SVG files for more complex relationships; raw Mermaid is not emitted when rendering is uncertain.
+- Each concept uses two formative questions: understanding first and application second. Both are shown together, then evaluated separately.
+- Baseline checks, retrieval, transfer, and independent assessment remain attempt-first so answers are not leaked.
 - Each round of feedback focuses on the most important current problem and gives only the hint needed for revision.
 - Your first attempt, revision, and reason for changing are preserved.
 - Delayed review, parallel tasks, and changed constraints test whether the ability lasts and transfers.

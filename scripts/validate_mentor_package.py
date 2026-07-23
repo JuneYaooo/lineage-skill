@@ -31,6 +31,7 @@ def validate_mentor(path: Path) -> dict:
         "practice_bank_ref",
         "assessment_bank_ref",
         "mentor_protocol_ref",
+        "micro_lesson_protocol_ref",
         "graduation_policy_ref",
     ]
     for field in references:
@@ -42,6 +43,25 @@ def validate_mentor(path: Path) -> dict:
         issues.extend(duplicate_ids(graph.get("nodes", []), "$.capability_graph.nodes"))
         for cycle in find_prerequisite_cycles(graph.get("nodes", [])):
             issues.append(ValidationIssue("$.capability_graph.nodes", f"prerequisite cycle: {' -> '.join(cycle)}"))
+    practice_path = base / mentor.get("practice_bank_ref", "practice_bank.json")
+    if practice_path.exists():
+        practice = load_json(practice_path)
+        practice_schema = load_json(ROOT / "references" / "schemas" / "practice_bank.schema.json")
+        issues.extend(
+            ValidationIssue(f"$.practice_bank{item.path[1:]}", item.message, item.severity)
+            for item in validate_schema(practice, practice_schema)
+        )
+        units = practice.get("learning_units", [])
+        if not units:
+            issues.append(ValidationIssue("$.practice_bank.learning_units", "micro-lesson learning units are missing"))
+        for index, unit in enumerate(units):
+            questions = unit.get("questions") or []
+            if len(questions) != 2:
+                issues.append(ValidationIssue(f"$.practice_bank.learning_units[{index}].questions", "each micro-lesson must contain exactly two questions"))
+            elif any(question.get("unlock_after") != "teaching_complete" for question in questions):
+                issues.append(ValidationIssue(f"$.practice_bank.learning_units[{index}].questions", "both formative questions must unlock after teaching"))
+            elif not all(question.get("present_together") is True for question in questions):
+                issues.append(ValidationIssue(f"$.practice_bank.learning_units[{index}].questions", "both formative questions must be presented together by default"))
     mode = mentor.get("manifest", {}).get("apprenticeship_mode")
     readiness = mentor.get("quality", {}).get("mentor_readiness")
     if mode == "full" and readiness != "ready":
